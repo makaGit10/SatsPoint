@@ -1,0 +1,23 @@
+{
+  "name": "satspoint-e2e",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:mobile": "playwright test --project=mobile",
+    "test:bureau": "playwright test --project=bureau",
+    "rapport": "playwright show-report",
+    "install-navigateurs": "playwright install chromium"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "private": "true",
+  "devDependencies": {
+    "@playwright/test": "1.65",
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
+  }
+}

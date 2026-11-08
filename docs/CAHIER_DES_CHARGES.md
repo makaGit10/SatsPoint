@@ -788,7 +788,19 @@ Le MVP est **accepté** quand :
 | 1 | **Activation PayTech en production** : vérifié le 8 nov. — le mode test fonctionne, la production renvoie « contactez le support pour activer votre compte ». Contacter support@paytech.sn / WhatsApp. Développement en mode test en attendant. | Propriétaire | Au plus tôt |
 | 2 | Profil Devpost : passer de « Professional » à « Student (college / university) » | Propriétaire | Au plus tôt |
 
+### À faire par la propriétaire (liste vivante)
+| Quand | Quoi | État |
+|---|---|---|
+| Dès que possible | Profil Devpost : passer de « Professional » à « Student (college / university) » | ⏳ |
+| Dès que possible | WhatsApp à PayTech (+221 77 125 57 99) pour activer la production — non bloquant pour le hackathon | ⏳ |
+| Avant J4 (12 nov.) | Obtenir ~1 100 sats dans Wallet of Satoshi (Banxaas : bouton « Troc » grisé le 9 nov. à 2 h, réessayer en journée ; plan B : communauté du hackathon) | ⏳ |
+| J11 (19 nov.) | Enregistrer les audios wolof / sérère / pulaar / diola dans le studio (~1 h 30, clés essentielles d'abord) | ⏳ |
+| Avant la démo publique | Révoquer la connexion Coinos actuelle (passée dans le chat) et en recréer une, collée directement dans `.env` | ⏳ |
+| Pendant toute la durée | Laisser le PC allumé avec Docker Desktop ouvert pendant que les agents travaillent | ⏳ |
+
 ### Réglés
 - Adresse e-mail du compte super-admin : fournie (conservée **hors dépôt**, dans le `.env`, car le dépôt est public).
+- Éligibilité : la propriétaire est étudiante (université) → éligible ; seul le profil Devpost est à corriger.
+- PayTech : mode test suffisant pour le hackathon (vérifié le 8 nov. : test OK, production non activée).
 - Portefeuille de développement et de démo : **Coinos** (connexion NWC) ; Alby Hub envisagé pour la démo finale.
 - Hébergement : Netlify (front) + Render (back) + Neon (base), voir section 16.
