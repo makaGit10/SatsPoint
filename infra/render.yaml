@@ -1,0 +1,109 @@
+# Blueprint Render (offre gratuite) — un seul service web « tout-en-un » :
+# Caddy + PHP (API), Reverb, worker de files, planificateur et passerelle Lightning
+# dans le même conteneur (SATSPOINT_ROLE=all → supervisord). Base PostgreSQL sur Neon
+# (gratuite, sans expiration) ; Redis remplacé par la base de données.
+#
+# Front servi par Netlify (web/netlify.toml) qui proxifie /api, /sanctum, /broadcasting,
+# /r, /webhooks, /audio vers ce service ; le WebSocket se connecte directement ici (/app).
+#
+# Déploiement : Render → New → Blueprint → ce dépôt. Renseigner les variables marquées sync: false.
+services:
+  - type: web
+    name: satspoint-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./infra/api.Dockerfile
+    dockerContext: .
+    dockerCommand: ""            # l'entrypoint choisit supervisord grâce à SATSPOINT_ROLE=all
+    healthCheckPath: /up
+    autoDeploy: true
+    envVars:
+      - key: SATSPOINT_ROLE
+        value: all
+      - key: API_BUILD_TARGET
+        value: all
+      - key: SERVER_NAME
+        value: ":8000"
+      - key: PORT
+        value: "8000"
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_NAME
+        value: SatsPoint
+      - key: APP_URL
+        sync: false               # https://satspoint.netlify.app (origine vue par les utilisateurs)
+      - key: FRONTEND_URL
+        sync: false               # https://satspoint.netlify.app
+      - key: SANCTUM_STATEFUL_DOMAINS
+        sync: false               # satspoint.netlify.app
+      - key: SESSION_DOMAIN
+        value: "null"             # cookie limité au domaine appelé (proxy Netlify = même origine)
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
+      - key: TRUSTED_PROXIES
+        value: "*"
+      - key: APP_KEY
+        generateValue: true
+      - key: DATA_ENCRYPTION_KEY
+        sync: false               # base64 de 32 octets aléatoires, distinct de APP_KEY
+      - key: GATEWAY_HMAC_SECRET
+        generateValue: true
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DATABASE_URL
+        sync: false               # chaîne Neon (postgresql://…?sslmode=require)
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: SESSION_DRIVER
+        value: database
+      - key: BROADCAST_CONNECTION
+        value: reverb
+      - key: REVERB_APP_ID
+        value: satspoint
+      - key: REVERB_APP_KEY
+        generateValue: true
+      - key: REVERB_APP_SECRET
+        generateValue: true
+      - key: REVERB_HOST
+        value: 127.0.0.1
+      - key: REVERB_PORT
+        value: "8080"
+      - key: REVERB_SCHEME
+        value: http
+      - key: REVERB_UPSTREAM
+        value: 127.0.0.1:8080
+      - key: REVERB_PUBLIC_HOST
+        sync: false               # satspoint-api.onrender.com
+      - key: REVERB_PUBLIC_PORT
+        value: "443"
+      - key: REVERB_PUBLIC_SCHEME
+        value: https
+      - key: LIGHTNING_GATEWAY_URL
+        value: http://127.0.0.1:3011
+      - key: API_INTERNAL_URL
+        value: http://127.0.0.1:8000
+      - key: SUPERADMIN_EMAIL
+        sync: false
+      - key: SUPERADMIN_PASSWORD
+        sync: false
+      - key: DEMO_SEED
+        value: "true"
+      - key: DEMO_PASSWORD
+        sync: false
+      - key: DEMO_NWC_URI
+        sync: false               # lien Coinos (jamais dans le dépôt)
+      - key: PAYTECH_ENV
+        value: test
+      - key: PAYTECH_API_KEY
+        sync: false
+      - key: PAYTECH_API_SECRET
+        sync: false
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: info
