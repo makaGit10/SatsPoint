@@ -11,6 +11,9 @@ const CODES: Record<string, string> = {
   PAIEMENT_INCERTAIN: 'portefeuille.paiementIncertain',
   MOT_DE_PASSE_INCORRECT: 'portefeuille.motDePasseIncorrect',
   DERNIER_PROPRIETAIRE: 'equipe.dernierProprietaire',
+  DEJA_DANS_EQUIPE: 'equipe.dejaDansEquipe',
+  DEJA_MEMBRE: 'invitation.dejaMembre',
+  INVITATION_EXPIREE: 'invitation.expiree.texte',
   PAIEMENT_TERMINE: 'erreurs.conflit',
   VENTE_DEJA_PAYEE: 'erreurs.conflit',
   VENTE_ANNULEE: 'erreurs.conflit',
@@ -30,7 +33,8 @@ export function useMessageErreur() {
         if (options.identifiants) return t('auth.connexion.erreurIdentifiants')
         return erreur.message || t('erreurs.validation')
       }
-      if (erreur.estNonAuthentifie) return t('erreurs.sessionExpiree')
+      // Connexion refusée : le serveur répond 401 (IDENTIFIANTS_INCORRECTS) — message générique, jamais « session expirée ».
+      if (erreur.estNonAuthentifie) return options.identifiants ? t('auth.connexion.erreurIdentifiants') : t('erreurs.sessionExpiree')
       if (erreur.estInterdit) return t('erreurs.accesRefuse')
       if (erreur.statut === 409) return t('erreurs.conflit')
     }

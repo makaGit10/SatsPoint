@@ -50,7 +50,7 @@ export function Courbe({ serie, className }: PropsCourbe) {
         {!vide && (
           <>
             <path d={trace.aire} fill="url(#sp-courbe-aire)" />
-            <path d={trace.ligne} fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+            <path d={trace.ligne} fill="none" stroke="var(--accent-trait)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
           </>
         )}
         {trace.points.map(([x, y], i) => {
@@ -58,7 +58,7 @@ export function Courbe({ serie, className }: PropsCourbe) {
           return (
             <g key={p.jour}>
               {!vide && p.montant_xof > 0 && (
-                <circle cx={x} cy={y} r="3" fill="var(--surface)" stroke="var(--accent)" strokeWidth="2" vectorEffect="non-scaling-stroke">
+                <circle cx={x} cy={y} r="3" fill="var(--surface)" stroke="var(--accent-trait)" strokeWidth="2" vectorEffect="non-scaling-stroke">
                   <title>{`${libelleJour(p.jour, locale, false)} · ${formaterFCFA(p.montant_xof)} · ${p.nombre}`}</title>
                 </circle>
               )}

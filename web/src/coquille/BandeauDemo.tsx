@@ -11,9 +11,9 @@ export function BandeauDemo() {
     <div
       role="status"
       data-bandeau="demo"
-      className="flex h-7 shrink-0 items-center justify-center gap-1.5 bg-attente-doux px-3 text-xs font-medium text-attente-texte"
+      className="flex h-7 shrink-0 items-center justify-center gap-1.5 border-b border-bordure bg-surface-2 px-3 text-xs font-medium text-texte-2"
     >
-      <FlaskConical size={13} aria-hidden="true" />
+      <FlaskConical size={13} className="text-accent-texte" aria-hidden="true" />
       {t('demo.bandeau')}
     </div>
   )

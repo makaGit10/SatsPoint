@@ -22,12 +22,12 @@ type Environnement = 'test' | 'prod'
 export function FormulairePaytech({ boutique, proprietaire }: { boutique: BoutiqueDetail; proprietaire: boolean }) {
   const { t } = useTranslation()
   const messageErreur = useMessageErreur()
-  useSaisieEnCours(proprietaire)
   const configure = boutique.paytech.configure
 
   const [apiKey, setApiKey] = useState('')
   const [apiSecret, setApiSecret] = useState('')
   const [environnement, setEnvironnement] = useState<Environnement>(boutique.paytech.environnement)
+  useSaisieEnCours(proprietaire && (apiKey !== '' || apiSecret !== '' || environnement !== boutique.paytech.environnement))
   const [erreur, setErreur] = useState<string | null>(null)
   const [erreursChamps, setErreursChamps] = useState<{ api_key?: string; api_secret?: string }>({})
   const [suppressionOuverte, setSuppressionOuverte] = useState(false)

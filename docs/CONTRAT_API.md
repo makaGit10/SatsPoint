@@ -261,3 +261,14 @@ Sans 2FA validée, `/api/v1/admin/*` → `403 { code: 'DEUX_FA_REQUISE' }`.
 - **Invitation** : `410 INVITATION_EXPIREE` → écran « Invitation expirée » ; `404` → « Invitation introuvable » ; `422 DEJA_MEMBRE` (acceptation par un compte qui a déjà une boutique) → message dédié. `/connexion` et `/inscription` acceptent `?suite=/invitation/{jeton}` (chemin interne uniquement : pas de redirection ouverte).
 - **Boutique suspendue** : `403 BOUTIQUE_SUSPENDUE` → « Cette boutique est suspendue. Contactez l'équipe SatsPoint. »
 - **Exports** : le nom de fichier de `Content-Disposition` est repris s'il est fourni.
+
+## V3.11 Précisions issues de l'intégration front ↔ back (tests de bout en bout du 8 novembre)
+- **Manifeste audio** : le front appelle `GET /api/v1/audio/manifeste/{langue}` (et non `/audio/manifeste/…`, qui n'existe pas) ; les fichiers restent servis sous `/audio/{langue}/{cle}.{empreinte8}.mp3` (URL absolue dans le manifeste).
+- **`POST /boutique`** renvoie bien `201 { boutique, utilisateur }` (l'utilisateur est la forme de `GET /moi`).
+- **Recherche** : `resultats[].url` des ventes = `/ventes?vente={ulid}` ; équipe = `/equipe` ; pages « Connexion du portefeuille » = `/portefeuille`, « Thème » = `/reglages#preferences` ; « Démarrage guidé » réservé au propriétaire.
+- **Codes d'erreur** : `DERNIER_PROPRIETAIRE` (422, `PATCH`/`DELETE /equipe/{ulid}`) ; `DEJA_DANS_EQUIPE` (409, `POST /equipe/invitations` vers un membre actif) ; `INVITATION_EXPIREE` (410) aussi à l'acceptation ; `DEJA_MEMBRE` (422, acceptation par un compte déjà membre d'une autre boutique) ; `MOT_DE_PASSE_INCORRECT` (422, `POST /wallet/envoyer`, avec `errors.password`).
+- **Ordre des contrôles** : `POST /wallet/recevoir`, `/wallet/envoyer/apercu`, `/wallet/envoyer` vérifient le droit **avant** la validation du corps (un rôle non autorisé reçoit 403, jamais le détail des champs).
+- **Préférences** : `PATCH /moi/preferences` accepte `langue_audio: null` (interface en anglais, aide vocale coupée).
+- **Articles** : `couleur` reste `#RRGGBB` ; le front rattache chaque valeur à la teinte la plus proche de sa palette (jetons clair / sombre) et envoie la valeur de référence de la teinte choisie.
+- **Journal** : les suspensions sont tracées `plateforme.boutique_suspendue` / `plateforme.boutique_reactivee` (famille « plateforme. » du filtre de la console).
+- **Environnement local uniquement** : `php artisan e2e:compte {prefixe} [--nom=] [--super-admin]` (compte de test, mot de passe aléatoire affiché une fois) et `php artisan e2e:nettoyer {prefixe=TEST-E2E-}` (suppression des données de test) — refusées hors `APP_ENV=local|testing`.

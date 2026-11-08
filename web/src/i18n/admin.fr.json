@@ -102,25 +102,27 @@
         "equipe": "Équipe",
         "wallet": "Portefeuilles",
         "paytech": "Mobile money",
-        "vente": "Ventes"
+        "vente": "Ventes",
+        "paiement": "Paiements",
+        "plateforme": "Plateforme (suspensions)"
       },
       "actions": {
         "auth_connexion": "Connexion",
-        "auth_echec_connexion": "Connexion refusée",
+        "auth_echec": "Connexion refusée",
         "auth_2fa_verifiee": "Double authentification validée",
         "auth_2fa_activee": "Double authentification activée",
         "auth_2fa_desactivee": "Double authentification désactivée",
         "auth_2fa_echec": "Code de double authentification refusé",
         "audio_publie": "Audios publiés",
         "boutique_creee": "Boutique créée",
-        "boutique_suspendue": "Boutique suspendue",
-        "boutique_reactivee": "Boutique réactivée",
+        "plateforme_boutique_suspendue": "Boutique suspendue",
+        "plateforme_boutique_reactivee": "Boutique réactivée",
         "wallet_connecte": "Portefeuille connecté",
-        "wallet_envoi": "Envoi de sats",
+        "wallet_envoi_reussi": "Envoi de sats",
         "paytech_ipn_refusee": "Notification PayTech refusée",
         "paytech_configure": "Mobile money configuré",
-        "equipe_invitation": "Invitation envoyée",
-        "vente_confirmee_manuellement": "Paiement confirmé à la main"
+        "equipe_invitation_creee": "Invitation envoyée",
+        "paiement_confirme_manuellement": "Paiement confirmé à la main"
       }
     }
   },
@@ -342,7 +344,7 @@
       "nomTropLong": "nom trop long (120 caractères maximum)",
       "prixInvalide": "prix illisible",
       "skuInvalide": "référence invalide (lettres, chiffres, . _ -)",
-      "couleurInconnue": "couleur inconnue",
+      "couleurInconnue": "couleur au format #RRGGBB attendue",
       "actifInvalide": "« en vente » doit être oui ou non"
     },
     "modes": {

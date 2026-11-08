@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { Link2, NotebookPen, Package, Settings, Zap } from 'lucide-react'
+import { Link2, NotebookPen, Package, Zap } from 'lucide-react'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -34,6 +34,8 @@ export const MONTANT_MIN = 100
 const ChoixMethode = lazy(() => import('./caisse/ChoixMethode').then((m) => ({ default: m.ChoixMethode })))
 const GrilleArticles = lazy(() => import('./caisse/Articles').then((m) => ({ default: m.GrilleArticles })))
 const Panier = lazy(() => import('./caisse/Articles').then((m) => ({ default: m.Panier })))
+const BandeauAucunMoyen = lazy(() => import('./caisse/AucunMoyen').then((m) => ({ default: m.BandeauAucunMoyen })))
+const BoutonBrancherMoyen = lazy(() => import('./caisse/AucunMoyen').then((m) => ({ default: m.BoutonBrancherMoyen })))
 const BandeauDemarrage = lazy(() => import('@/coquille/BandeauDemarrage').then((m) => ({ default: m.BandeauDemarrage })))
 const MONTANT_MAX_DEFAUT = 2_000_000
 
@@ -47,7 +49,10 @@ export default function Caisse() {
   const messageErreur = useMessageErreur()
 
   const { data: boutique } = useBoutique()
-  const { data: cours } = useCours()
+  const { data: cours, isPending: coursEnChargement } = useCours()
+  // Les moyens disponibles dépendent de la boutique ET du cours : tant qu'ils ne sont pas connus, on n'encaisse pas
+  // (sinon un clic rapide part sur le seul moyen « connu » ou annonce à tort qu'aucun moyen n'est actif).
+  const moyensConnus = Boolean(boutique) && !coursEnChargement
   const { data: articles } = useArticles()
 
   useDonneesEnDirect(['parametres', 'articles', 'wallet'], () => {
@@ -84,7 +89,10 @@ export default function Caisse() {
     }
   }, [boutique, coursDisponible, t])
   const nombreMoyens = [moyens.lightning, moyens.paytech, moyens.wave_manuel].filter(Boolean).length
-  const aucunMoyenConfigure = Boolean(boutique) && nombreMoyens === 0 && !moyens.lightningRaison
+  // Aucun moyen branché (ni portefeuille relié, ni PayTech, ni lien Wave) : on ne propose pas « Encaisser » (erreur évitable),
+  // mais « Brancher un moyen de paiement ». Un cours momentanément indisponible n'entre pas dans ce cas.
+  const lightningBranche = Boolean(boutique?.reglages.moyens.lightning && boutique?.configuration.wallet)
+  const aucunMoyenBranche = Boolean(boutique) && !lightningBranche && !moyens.paytech && !moyens.wave_manuel
 
   const creation = useMutation({
     mutationFn: creerVente,
@@ -94,7 +102,10 @@ export default function Caisse() {
       if (tentative) navigate(`/caisse/paiement/${tentative.ulid}`)
     },
     onError: (e) => {
-      setErreur(messageErreur(e))
+      const message = messageErreur(e)
+      setErreur(message)
+      // Encaissement direct (un seul moyen) : la feuille de choix n'est pas ouverte, l'erreur doit se voir quand même.
+      if (!choixOuvert) notifier({ type: 'erreur', titre: message })
       // Lightning indisponible côté serveur : on relit le cours et la boutique pour refléter l'état réel.
       if (e instanceof ErreurApi && (e.code === 'COURS_INDISPONIBLE' || e.code === 'WALLET_INJOIGNABLE')) {
         void queryClient.invalidateQueries({ queryKey: CLE_COURS })
@@ -122,7 +133,7 @@ export default function Caisse() {
   )
 
   const encaisser = useCallback(() => {
-    if (horsBornes || montant === 0 || creation.isPending) return
+    if (horsBornes || montant === 0 || creation.isPending || !moyensConnus || aucunMoyenBranche) return
     if (nombreMoyens === 0) {
       notifier({ type: 'erreur', titre: t('caisse.aucunMoyen'), description: moyens.lightningRaison ?? t('caisse.aucunMoyenAction'), voix: 'caisse.aucunMoyen' })
       return
@@ -133,7 +144,7 @@ export default function Caisse() {
       return
     }
     setChoixOuvert(true)
-  }, [creation.isPending, encaisserAvec, horsBornes, montant, moyens, nombreMoyens, t])
+  }, [aucunMoyenBranche, creation.isPending, encaisserAvec, horsBornes, montant, moyens, moyensConnus, nombreMoyens, t])
 
   // Clavier physique (bureau) : chiffres, Retour arrière, Entrée, Échap — seulement hors champ de saisie.
   useEffect(() => {
@@ -156,6 +167,7 @@ export default function Caisse() {
   const configuration = utilisateur?.boutique?.configuration
   const demarrageEnCours = utilisateur?.boutique?.role === 'proprietaire' && !(configuration?.wallet && configuration?.paiement_test)
   const aDesArticles = articlesActifs.length > 0
+  const versBranchement = demarrageEnCours ? '/demarrage' : boutique?.reglages.moyens.lightning && !boutique.configuration.wallet ? '/portefeuille' : '/reglages'
 
   return (
     <div className="anim-apparition flex flex-1 flex-col gap-3" data-ecran="caisse">
@@ -164,115 +176,123 @@ export default function Caisse() {
           <BandeauDemarrage />
         </Suspense>
       )}
-      <div className="flex flex-1 flex-col gap-4 md:flex-row md:items-start md:gap-6">
-      {/* Bureau : articles rapides + panier à gauche. */}
-      {aDesArticles && (
-        <Carte className="hidden min-w-0 flex-1 md:block" rembourrage="sm">
-          <CarteEnTete titre={t('caisse.articles')} className="mb-2" />
-          <Suspense fallback={<div className="h-20" data-chargement="articles" />}>
-            <GrilleArticles articles={articlesActifs} onAjouter={(a) => setPanier((p) => ajouterAuPanier(p, a))} />
-          </Suspense>
-          <div className="mt-3 border-t border-bordure pt-2">
-            <h3 className="mb-1 text-xs font-semibold tracking-wide text-texte-3 uppercase">{t('caisse.panier')}</h3>
-            <Suspense fallback={null}>
-              <Panier panier={panier} onChanger={(ulid, d) => setPanier((p) => changerQuantite(p, ulid, d))} onVider={() => setPanier([])} />
-            </Suspense>
-          </div>
-        </Carte>
-      )}
+      {/* Mobile : une colonne (montant en haut, pavé en bas). Bureau : montant, conversion et articles à gauche,
+          pavé + action à droite, pour que le montant reste toujours visible sans défiler. */}
+      <section className="flex min-h-0 flex-1 flex-col md:grid md:grid-cols-[minmax(0,1fr)_minmax(300px,360px)] md:items-start md:gap-6" aria-label={t('caisse.titre')}>
+        <div className="flex min-h-0 flex-1 flex-col md:gap-3">
+          <header className="mb-1 flex items-center justify-between gap-2 md:mb-0">
+            <h1 className="flex items-center gap-1.5 text-xl font-semibold tracking-tight text-texte">
+              {t('caisse.titre')}
+              <HautParleur cle="caisse.titre" />
+            </h1>
+            <div className="flex items-center gap-1">
+              {aDesArticles && (
+                <BoutonIcone
+                  libelle={t('caisse.articles')}
+                  icone={<Package />}
+                  voix="caisse.articles"
+                  actif={articlesOuverts}
+                  onClick={() => setArticlesOuverts(true)}
+                  className="md:hidden"
+                />
+              )}
+              <BoutonIcone libelle={t('caisse.note')} icone={<NotebookPen />} voix="caisse.note" actif={noteVisible} onClick={() => setNoteVisible((v) => !v)} />
+            </div>
+          </header>
 
-      <section className="flex min-h-0 flex-1 flex-col md:w-[380px] md:flex-none" aria-label={t('caisse.titre')}>
-        <header className="mb-1 flex items-center justify-between gap-2">
-          <h1 className="flex items-center gap-1.5 text-xl font-semibold tracking-tight text-texte">
-            {t('caisse.titre')}
-            <HautParleur cle="caisse.titre" />
-          </h1>
-          <div className="flex items-center gap-1">
-            {aDesArticles && (
-              <BoutonIcone
-                libelle={t('caisse.articles')}
-                icone={<Package />}
-                voix="caisse.articles"
-                actif={articlesOuverts}
-                onClick={() => setArticlesOuverts(true)}
-                className="md:hidden"
-              />
+          {/* Montant + conversion : zone qui respire, centrée (carte sur bureau). */}
+          <div className="flex flex-1 flex-col items-center justify-center py-3 text-center md:flex-none md:rounded-lg md:border md:border-bordure md:bg-surface md:px-4 md:py-6 md:shadow-xs" data-montant>
+            <p className={cn('text-[2.6rem] leading-none font-semibold tracking-tight tabulaire md:text-5xl', montant === 0 ? 'text-texte-3' : 'text-texte')} aria-live="polite" aria-atomic="true" aria-label={t('caisse.montantAria')}>
+              {formaterFCFA(montant)}
+            </p>
+            <p className="mt-2 min-h-5 text-base text-texte-2 tabulaire" aria-live="polite">
+              {sats !== null ? formaterSats(sats, { approx: true }) : coursDisponible || !cours ? '' : t('caisse.coursIndisponible')}
+            </p>
+            {coursDisponible ? (
+              <p className="mt-1 text-xs text-texte-3 tabulaire">
+                {t('caisse.coursValeur', { cours: formaterFCFA(cours!.btc_xof!) })}
+                {ageCours && ` · ${t(ageCours.cle, { count: ageCours.count })}`}
+              </p>
+            ) : (
+              cours && <p className="mt-1 text-xs text-mm-texte">{t('caisse.coursIndisponibleAction')}</p>
             )}
-            <BoutonIcone libelle={t('caisse.note')} icone={<NotebookPen />} voix="caisse.note" actif={noteVisible} onClick={() => setNoteVisible((v) => !v)} />
+            {raisonBornes && (
+              <p role="alert" className="mt-2 rounded-md bg-danger-doux px-2.5 py-1 text-xs font-medium text-danger-texte">
+                {raisonBornes}
+              </p>
+            )}
+            {panier.length > 0 && (
+              <button type="button" onClick={() => setArticlesOuverts(true)} className="mt-2 rounded-md bg-surface-2 px-2.5 py-1 text-xs font-medium text-texte-2 md:hidden">
+                {t('caisse.panier')} · {panier.reduce((s, l) => s + l.quantite, 0)} · {formaterFCFA(totalPanier(panier))}
+              </button>
+            )}
           </div>
-        </header>
 
-        {/* Montant + conversion : zone qui respire, centrée. */}
-        <div className="flex flex-1 flex-col items-center justify-center py-3 text-center md:min-h-[150px] md:py-4">
-          <p className={cn('text-[2.6rem] leading-none font-semibold tracking-tight tabulaire md:text-5xl', montant === 0 ? 'text-texte-3' : 'text-texte')} aria-live="polite" aria-atomic="true" aria-label={t('caisse.montantAria')}>
-            {formaterFCFA(montant)}
-          </p>
-          <p className="mt-2 min-h-5 text-base text-texte-2 tabulaire" aria-live="polite">
-            {sats !== null ? formaterSats(sats, { approx: true }) : coursDisponible || !cours ? '' : t('caisse.coursIndisponible')}
-          </p>
-          {coursDisponible ? (
-            <p className="mt-1 text-xs text-texte-3 tabulaire">
-              {t('caisse.coursValeur', { cours: formaterFCFA(cours!.btc_xof!) })}
-              {ageCours && ` · ${t(ageCours.cle, { count: ageCours.count })}`}
-            </p>
-          ) : (
-            cours && <p className="mt-1 text-xs text-mm-texte">{t('caisse.coursIndisponibleAction')}</p>
+          {noteVisible && (
+            <Champ
+              libelle={t('caisse.note')}
+              mentionOptionnel={t('commun.optionnel')}
+              placeholder={t('caisse.notePlaceholder')}
+              value={note}
+              maxLength={120}
+              onChange={(e) => setNote(e.target.value)}
+              classeConteneur="mb-3 md:mb-0"
+              autoFocus
+            />
           )}
-          {raisonBornes && (
-            <p role="alert" className="mt-2 rounded-md bg-danger-doux px-2.5 py-1 text-xs font-medium text-danger-texte">
-              {raisonBornes}
-            </p>
+
+          {aucunMoyenBranche && (
+            <Suspense fallback={null}>
+              <BandeauAucunMoyen gestion={gestion} />
+            </Suspense>
           )}
-          {panier.length > 0 && (
-            <button type="button" onClick={() => setArticlesOuverts(true)} className="mt-2 rounded-md bg-surface-2 px-2.5 py-1 text-xs font-medium text-texte-2 md:hidden">
-              {t('caisse.panier')} · {panier.reduce((s, l) => s + l.quantite, 0)} · {formaterFCFA(totalPanier(panier))}
-            </button>
+          {!aucunMoyenBranche && boutique && !boutique.configuration.wallet && boutique.reglages.moyens.lightning && gestion && (
+            <div className="mb-3 flex items-center gap-2 rounded-md border border-attente/40 bg-attente-doux px-3 py-2 text-sm text-attente-texte md:mb-0">
+              <span className="min-w-0 flex-1">{t('caisse.walletNonConnecte')}</span>
+              <BoutonLien to="/portefeuille" variante="secondaire" taille="sm" icone={<Link2 />} voix="caisse.connecterWallet">{t('caisse.connecterWallet')}</BoutonLien>
+            </div>
+          )}
+
+          {/* Bureau : articles rapides + panier sous le montant. */}
+          {aDesArticles && (
+            <Carte className="hidden min-w-0 md:block" rembourrage="sm">
+              <CarteEnTete titre={t('caisse.articles')} className="mb-2" />
+              <Suspense fallback={<div className="h-20" data-chargement="articles" />}>
+                <GrilleArticles articles={articlesActifs} onAjouter={(a) => setPanier((p) => ajouterAuPanier(p, a))} />
+              </Suspense>
+              <div className="mt-3 border-t border-bordure pt-2">
+                <h3 className="mb-1 text-xs font-semibold tracking-wide text-texte-3 uppercase">{t('caisse.panier')}</h3>
+                <Suspense fallback={null}>
+                  <Panier panier={panier} onChanger={(ulid, d) => setPanier((p) => changerQuantite(p, ulid, d))} onVider={() => setPanier([])} />
+                </Suspense>
+              </div>
+            </Carte>
           )}
         </div>
 
-        {noteVisible && (
-          <Champ
-            libelle={t('caisse.note')}
-            mentionOptionnel={t('commun.optionnel')}
-            placeholder={t('caisse.notePlaceholder')}
-            value={note}
-            maxLength={120}
-            onChange={(e) => setNote(e.target.value)}
-            classeConteneur="mb-3"
-            autoFocus
-          />
-        )}
+        <div className="flex flex-col md:sticky md:top-0">
+          <Pave valeur={saisie} onChange={setSaisie} desactive={creation.isPending} />
 
-        {aucunMoyenConfigure && (
-          <div className="mb-3 flex items-center gap-2 rounded-md border border-attente/40 bg-attente-doux px-3 py-2 text-sm text-attente-texte">
-            <span className="min-w-0 flex-1">{t('caisse.aucunMoyen')}</span>
-            {gestion && <BoutonLien to="/reglages" variante="secondaire" taille="sm" icone={<Settings />} voix="caisse.ouvrirReglages">{t('caisse.ouvrirReglages')}</BoutonLien>}
-          </div>
-        )}
-        {!aucunMoyenConfigure && boutique && !boutique.configuration.wallet && boutique.reglages.moyens.lightning && gestion && (
-          <div className="mb-3 flex items-center gap-2 rounded-md border border-attente/40 bg-attente-doux px-3 py-2 text-sm text-attente-texte">
-            <span className="min-w-0 flex-1">{t('caisse.walletNonConnecte')}</span>
-            <BoutonLien to="/portefeuille" variante="secondaire" taille="sm" icone={<Link2 />} voix="caisse.connecterWallet">{t('caisse.connecterWallet')}</BoutonLien>
-          </div>
-        )}
-
-        <Pave valeur={saisie} onChange={setSaisie} desactive={creation.isPending} />
-
-        <Bouton
-          taille="xl"
-          pleineLargeur
-          icone={<Zap />}
-          voix="caisse.encaisser"
-          className="mt-3 h-14 text-lg"
-          disabled={montant === 0 || horsBornes}
-          chargement={creation.isPending}
-          onClick={encaisser}
-        >
-          {t('caisse.encaisser')}
-        </Bouton>
+          {aucunMoyenBranche && gestion ? (
+            <Suspense fallback={<div className="mt-3 h-14" />}>
+              <BoutonBrancherMoyen vers={versBranchement} />
+            </Suspense>
+          ) : (
+            <Bouton
+              taille="xl"
+              pleineLargeur
+              icone={<Zap />}
+              voix="caisse.encaisser"
+              className="mt-3 h-14 text-lg"
+              disabled={montant === 0 || horsBornes || aucunMoyenBranche}
+              chargement={creation.isPending || (montant > 0 && !horsBornes && !moyensConnus)}
+              onClick={encaisser}
+            >
+              {t('caisse.encaisser')}
+            </Bouton>
+          )}
+        </div>
       </section>
-
-      </div>
 
       {choixOuvert && (
         <Suspense fallback={null}>

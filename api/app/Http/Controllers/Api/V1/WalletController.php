@@ -12,7 +12,6 @@ use App\Services\Portefeuille;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 /** Portefeuille (CONTRAT_API § 7). Caissier : 403 partout. Envoi : propriétaire + mot de passe revérifié. */
 class WalletController extends Controller
@@ -79,7 +78,12 @@ class WalletController extends Controller
         if (! Hash::check((string) $request->input('password'), $request->user()->password)) {
             Audit::enregistrer('wallet.envoi_refuse_mot_de_passe', $boutique);
 
-            throw ValidationException::withMessages(['password' => 'Mot de passe incorrect.']);
+            // CONTRAT_API § 12 : code stable MOT_DE_PASSE_INCORRECT, avec l'erreur du champ pour le formulaire.
+            return response()->json([
+                'message' => 'Mot de passe incorrect.',
+                'code' => 'MOT_DE_PASSE_INCORRECT',
+                'errors' => ['password' => ['Mot de passe incorrect.']],
+            ], 422);
         }
 
         return response()->json($this->portefeuille->envoyer(

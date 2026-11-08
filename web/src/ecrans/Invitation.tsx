@@ -38,7 +38,12 @@ export default function Invitation() {
       notifier({ type: 'succes', titre: t('invitation.bienvenue', { boutique: u.boutique?.nom ?? invitation?.boutique.nom ?? '' }), voix: 'invitation.bienvenue' })
       navigate(cheminAccueil(u), { replace: true })
     },
-    onError: (e) => setErreur(e instanceof ErreurApi && e.code === 'DEJA_MEMBRE' ? t('invitation.dejaMembre') : messageErreur(e)),
+    onError: (e) => {
+      if (e instanceof ErreurApi && e.code === 'DEJA_MEMBRE') setErreur(t('invitation.dejaMembre'))
+      // 403 : le compte connecté n'est pas le contact invité.
+      else if (e instanceof ErreurApi && e.estInterdit && !e.code?.startsWith('BOUTIQUE_')) setErreur(t('invitation.memeContact'))
+      else setErreur(messageErreur(e))
+    },
   })
 
   return (

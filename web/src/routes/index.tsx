@@ -24,7 +24,7 @@ import {
   Ventes,
   VerificationDeuxFacteurs,
 } from './ecrans'
-import { Aiguillage, RequiertBoutique, RequiertInvite, RequiertRole, RequiertSession, RequiertSuperAdmin } from './gardes'
+import { Aiguillage, RequiertBoutique, RequiertDemarrage, RequiertInvite, RequiertRole, RequiertSession, RequiertSuperAdmin } from './gardes'
 import { ErreurRacine, Racine } from './Racine'
 
 export const routeur = createBrowserRouter([
@@ -64,7 +64,7 @@ export const routeur = createBrowserRouter([
                   { path: '/ventes', element: <Ventes /> },
                   { path: '/tableau-de-bord', element: <TableauDeBord /> },
                   { path: '/articles', element: <Articles /> },
-                  { path: '/demarrage', element: <Demarrage /> },
+                  { element: <RequiertDemarrage />, children: [{ path: '/demarrage', element: <Demarrage /> }] },
                   {
                     element: <RequiertRole roles={['proprietaire', 'gerant']} />,
                     children: [

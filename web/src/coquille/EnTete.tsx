@@ -12,9 +12,11 @@ export function EnTete() {
   const utilisateur = useAuth((s) => s.utilisateur)
   return (
     <header className="sticky top-0 z-30 flex h-[var(--hauteur-entete)] shrink-0 items-center gap-2 border-b border-bordure bg-fond/90 px-3 backdrop-blur-sm md:px-5">
-      <Link to={cheminAccueil(utilisateur)} aria-label={t('entete.accueil')} className="flex min-w-0 items-center gap-2 md:hidden">
+      {/* Nom accessible = texte visible + destination (WCAG 2.5.3 « label dans le nom ») : pas d'aria-label qui le masquerait. */}
+      <Link to={cheminAccueil(utilisateur)} className="flex min-w-0 items-center gap-2 md:hidden">
         <Marque taille="sm" sansTexte />
         <span className="truncate text-base font-semibold text-texte">{utilisateur?.boutique?.nom ?? t('app.nom')}</span>
+        <span className="sr-only">{` — ${t('entete.accueil')}`}</span>
       </Link>
       <div className="flex flex-1 items-center md:max-w-md">
         <RechercheGlobale />

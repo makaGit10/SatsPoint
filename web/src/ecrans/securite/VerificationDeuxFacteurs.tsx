@@ -22,7 +22,7 @@ export default function VerificationDeuxFacteurs() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const utilisateur = useAuth((s) => s.utilisateur)
-  const deconnexion = useDeconnexion()
+  const deconnexion = useDeconnexion('/connexion')
   const messageErreur = useMessageErreur()
   useSaisieEnCours()
   const [secours, setSecours] = useState(false)

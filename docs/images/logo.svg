@@ -1,12 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="SatsPoint">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#1b1b1f"/>
-      <stop offset="1" stop-color="#2a2a31"/>
+    <linearGradient id="or" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e2c25c"/>
+      <stop offset="1" stop-color="#b38a1f"/>
     </linearGradient>
   </defs>
-  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#g)"/>
-  <path d="M72 18 L38 72 h26 l-8 38 L92 56 H66 Z" fill="#F7931A" stroke="#F7931A" stroke-width="4" stroke-linejoin="round"/>
-  <circle cx="98" cy="98" r="14" fill="#22c55e"/>
-  <path d="M91 98 l5 5 l11 -11" fill="none" stroke="#0b1a10" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <style>
+    .carre { fill: #ffffff; stroke: #e8e4db; }
+    .pastille { fill: #1a1814; }
+    @media (prefers-color-scheme: dark) { .carre { fill: #1c1a17; stroke: #3d3932; } .pastille { fill: #f3eee3; } }
+  </style>
+  <rect class="carre" x="4" y="4" width="120" height="120" rx="28" stroke-width="2"/>
+  <path d="M72 18 L38 72 h26 l-8 38 L92 56 H66 Z" fill="url(#or)" stroke="url(#or)" stroke-width="4" stroke-linejoin="round"/>
+  <circle class="pastille" cx="98" cy="98" r="14"/>
+  <path d="M91 98 l5 5 l11 -11" fill="none" stroke="#d4af37" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

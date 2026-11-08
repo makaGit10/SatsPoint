@@ -18,10 +18,11 @@ import { invaliderBoutique } from './invalider'
 export function FormulaireBoutique({ boutique }: { boutique: BoutiqueDetail }) {
   const { t } = useTranslation()
   const messageErreur = useMessageErreur()
-  useSaisieEnCours()
   const [nom, setNom] = useState(boutique.nom)
   const [telephone, setTelephone] = useState(boutique.telephone ?? '')
   const [ville, setVille] = useState(boutique.ville)
+  // Saisie en cours seulement si le formulaire a été modifié : un formulaire intact ne bloque pas le temps réel.
+  useSaisieEnCours(nom !== boutique.nom || telephone !== (boutique.telephone ?? '') || ville !== boutique.ville)
   const [erreur, setErreur] = useState<string | null>(null)
   const [erreursChamps, setErreursChamps] = useState<Record<string, string | undefined>>({})
 

@@ -161,10 +161,10 @@ function appliquerUtilisateur(utilisateur: Utilisateur) {
 function FormulaireBoutique() {
   const { t } = useTranslation()
   const messageErreur = useMessageErreur()
-  useSaisieEnCours()
   const [nom, setNom] = useState('')
   const [telephone, setTelephone] = useState('')
   const [ville, setVille] = useState('Dakar')
+  useSaisieEnCours(nom !== '' || telephone !== '' || ville !== 'Dakar')
   const [erreur, setErreur] = useState<string | null>(null)
   const [champs, setChamps] = useState<{ nom?: string; ville?: string }>({})
 
@@ -208,12 +208,12 @@ type ChoixMobile = 'paytech' | 'wave'
 function FormulaireMobileMoney({ boutique, onPasser }: { boutique: BoutiqueDetail; onPasser: () => void }) {
   const { t } = useTranslation()
   const messageErreur = useMessageErreur()
-  useSaisieEnCours()
   const [choix, setChoix] = useState<ChoixMobile>(boutique.reglages.wave_lien && !boutique.paytech.configure ? 'wave' : 'paytech')
   const [apiKey, setApiKey] = useState('')
   const [apiSecret, setApiSecret] = useState('')
   const [environnement, setEnvironnement] = useState<'test' | 'prod'>(boutique.paytech.environnement)
   const [waveLien, setWaveLien] = useState(boutique.reglages.wave_lien ?? '')
+  useSaisieEnCours(apiKey !== '' || apiSecret !== '' || waveLien !== (boutique.reglages.wave_lien ?? ''))
   const [erreur, setErreur] = useState<string | null>(null)
   const [champs, setChamps] = useState<Record<string, string | undefined>>({})
 

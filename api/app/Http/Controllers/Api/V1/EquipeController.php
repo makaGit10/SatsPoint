@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\ErreurMetier;
 use App\Facades\Audit;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Equipe\ModifierMembreRequest;
@@ -15,7 +16,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class EquipeController extends Controller
 {
@@ -68,7 +68,7 @@ class EquipeController extends Controller
                 && ($nouveauRole !== Membre::ROLE_PROPRIETAIRE || ! $nouveauActif);
 
             if ($perdLaPropriete && $this->nombreProprietairesActifs() <= 1) {
-                throw new ConflictHttpException('La boutique doit garder au moins un propriétaire actif.');
+                throw new ErreurMetier('DERNIER_PROPRIETAIRE', 'La boutique doit garder au moins un propriétaire actif.', 422);
             }
 
             $membre->fill(['role' => $nouveauRole, 'actif' => $nouveauActif])->save();
@@ -103,7 +103,7 @@ class EquipeController extends Controller
             $verrouille = Membre::query()->whereKey($membre->id)->lockForUpdate()->firstOrFail();
 
             if ($verrouille->estProprietaire() && $verrouille->actif && $this->nombreProprietairesActifs() <= 1) {
-                throw new ConflictHttpException('Le dernier propriétaire ne peut pas quitter la boutique.');
+                throw new ErreurMetier('DERNIER_PROPRIETAIRE', 'Le dernier propriétaire ne peut pas quitter la boutique.', 422);
             }
 
             $utilisateur = $verrouille->user()->firstOrFail();

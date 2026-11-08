@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Wallet;
 
+use App\Services\BoutiqueCourante;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -10,9 +11,12 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class EnvoyerRequest extends FormRequest
 {
+    /** Droit vérifié AVANT la validation (règle n° 1) : un rôle non autorisé reçoit 403, jamais le détail des champs. */
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        $boutique = app(BoutiqueCourante::class)->obtenir();
+
+        return $this->user() !== null && $boutique !== null && $this->user()->can('envoyerSats', $boutique);
     }
 
     public function rules(): array

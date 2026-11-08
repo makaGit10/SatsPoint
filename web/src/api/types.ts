@@ -319,6 +319,8 @@ export interface Invitation {
   contact: string
   role: RoleBoutique
   expire_le: string
+  /** Lien complet, renvoyé seulement à la création d'une invitation par téléphone (aucun SMS envoyé : le responsable le transmet). */
+  lien?: string
 }
 
 export interface Equipe {

@@ -81,7 +81,7 @@ it('POST /wallet/envoyer/apercu et /envoyer : propriétaire seulement, mot de pa
         ->assertJsonStructure(['type', 'montant_sats', 'montant_xof', 'destinataire', 'description', 'min_sats', 'max_sats']);
 
     $this->postJson('/api/v1/wallet/envoyer', ['destination' => 'lnbc10u1pfake'])->assertStatus(422)->assertJsonValidationErrors(['password']);
-    $this->postJson('/api/v1/wallet/envoyer', ['destination' => 'lnbc10u1pfake', 'password' => 'faux'])->assertStatus(422)->assertJsonValidationErrors(['password']);
+    $this->postJson('/api/v1/wallet/envoyer', ['destination' => 'lnbc10u1pfake', 'password' => 'faux'])->assertStatus(422)->assertJsonValidationErrors(['password'])->assertJsonPath('code', 'MOT_DE_PASSE_INCORRECT');
     $this->postJson('/api/v1/wallet/envoyer', ['destination' => "lnbc10u1p\nfake", 'password' => MDP_TEST])->assertStatus(422)->assertJsonValidationErrors(['destination']);
     Http::assertNotSent(fn (Request $r) => str_ends_with($r->url(), '/paiements'));
 
@@ -182,4 +182,15 @@ it('en production, mock:// est refusé à la connexion (règle de validation)', 
     } finally {
         app()->detectEnvironment(fn () => 'testing');
     }
+});
+
+it('vérifie le rôle avant la validation : un caissier reçoit 403 même avec un corps invalide', function () {
+    ['user' => $proprio, 'boutique' => $boutique] = boutiqueAvec('proprietaire');
+    ['user' => $caissier] = boutiqueAvec('caissier', $boutique);
+    ['user' => $gerant] = boutiqueAvec('gerant', $boutique);
+
+    connecte($caissier)->postJson('/api/v1/wallet/envoyer/apercu', [])->assertForbidden();
+    connecte($caissier)->postJson('/api/v1/wallet/envoyer', ['destination' => 'x'])->assertForbidden();
+    connecte($caissier)->postJson('/api/v1/wallet/recevoir', [])->assertForbidden();
+    connecte($gerant)->postJson('/api/v1/wallet/envoyer/apercu', [])->assertForbidden();
 });

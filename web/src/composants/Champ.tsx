@@ -12,6 +12,8 @@ export interface PropsChamp extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   icone?: ReactNode
   /** Élément à droite (ex. bouton afficher le mot de passe). */
   suffixe?: ReactNode
+  /** Élément interactif à gauche (ex. indicatif du pays) ; remplace l'icône. */
+  prefixe?: ReactNode
   /** Mention « facultatif » à droite du libellé. */
   mentionOptionnel?: string
   classeConteneur?: string
@@ -19,7 +21,7 @@ export interface PropsChamp extends Omit<InputHTMLAttributes<HTMLInputElement>, 
 
 /** Champ de saisie avec libellé, aide et erreur accessibles. */
 export const Champ = forwardRef<HTMLInputElement, PropsChamp>(function Champ(
-  { libelle, aide, erreur, icone, suffixe, mentionOptionnel, classeConteneur, className, id, ...reste },
+  { libelle, aide, erreur, icone, suffixe, prefixe, mentionOptionnel, classeConteneur, className, id, ...reste },
   ref,
 ) {
   const idAuto = useId()
@@ -35,7 +37,8 @@ export const Champ = forwardRef<HTMLInputElement, PropsChamp>(function Champ(
         {mentionOptionnel && <span className="text-xs font-normal text-texte-3">{mentionOptionnel}</span>}
       </label>
       <div className="relative flex items-center">
-        {icone && (
+        {prefixe && <span className="absolute inset-y-0 left-0 z-[1] inline-flex items-center">{prefixe}</span>}
+        {icone && !prefixe && (
           <span className="pointer-events-none absolute left-3 inline-flex text-texte-3 [&>svg]:size-4" aria-hidden="true">
             {icone}
           </span>
@@ -51,7 +54,8 @@ export const Champ = forwardRef<HTMLInputElement, PropsChamp>(function Champ(
             'focus:border-accent focus:ring-2 focus:ring-accent/25',
             'disabled:bg-surface-2 disabled:text-texte-3',
             erreur ? 'border-danger focus:border-danger focus:ring-danger/20' : 'border-bordure hover:border-bordure-forte',
-            icone && 'pl-9',
+            icone && !prefixe && 'pl-9',
+            prefixe && 'pl-[4.75rem]',
             suffixe && 'pr-11',
             className,
           )}

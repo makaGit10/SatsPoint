@@ -22,8 +22,6 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
-use Symfony\Component\HttpKernel\Exception\GoneHttpException;
 
 class InvitationController extends Controller
 {
@@ -47,7 +45,7 @@ class InvitationController extends Controller
             ->exists();
 
         if ($dejaMembre) {
-            throw new ConflictHttpException('Cette personne fait déjà partie de l\'équipe.');
+            throw new ErreurMetier('DEJA_DANS_EQUIPE', 'Cette personne fait déjà partie de l\'équipe.', 409);
         }
 
         $jeton = Str::random(48);
@@ -146,13 +144,15 @@ class InvitationController extends Controller
         abort_if($invitation === null, 404);
 
         if (! $invitation->estValide()) {
-            throw new GoneHttpException('Cette invitation a expiré ou a déjà été utilisée.');
+            throw new ErreurMetier('INVITATION_EXPIREE', 'Cette invitation a expiré ou a déjà été utilisée.', 410);
         }
 
         $this->authorize('accepter', $invitation);
 
         $boutique = $invitation->boutique;
-        abort_if($boutique === null || ! $boutique->estActive(), 410, 'Cette boutique n\'est plus disponible.');
+        if ($boutique === null || ! $boutique->estActive()) {
+            throw new ErreurMetier('INVITATION_EXPIREE', 'Cette boutique n\'est plus disponible.', 410);
+        }
 
         // Une seule boutique active par utilisateur (P0).
         $autreAdhesion = Membre::toutesBoutiques()
@@ -162,7 +162,7 @@ class InvitationController extends Controller
             ->exists();
 
         if ($autreAdhesion) {
-            throw new ConflictHttpException('Ce compte appartient déjà à une autre boutique.');
+            throw new ErreurMetier('DEJA_MEMBRE', 'Ce compte appartient déjà à une autre boutique.', 422);
         }
 
         $membre = DB::transaction(function () use ($invitation, $boutique, $utilisateur) {

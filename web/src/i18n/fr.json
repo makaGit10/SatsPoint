@@ -76,19 +76,19 @@
     },
     "inscription": {
       "titre": "Créer ma boutique",
-      "sousTitre": "Un compte en moins d'une minute. Vous configurerez votre boutique juste après.",
+      "sousTitre": "Trois informations et c'est parti. Votre boutique se crée juste après.",
       "nom": "Votre nom",
       "identifiant": "Téléphone ou e-mail",
       "identifiantAide": "Vous l'utiliserez pour vous connecter.",
       "motDePasse": "Mot de passe",
       "motDePasseAide": "12 caractères minimum.",
-      "confirmation": "Confirmez le mot de passe",
       "confirmationErreur": "Les deux mots de passe ne sont pas identiques.",
-      "motDePasseCourt": "Le mot de passe doit contenir au moins 12 caractères.",
+      "motDePasseCourt": "Le mot de passe doit contenir au moins 12 caractères. Ajoutez des mots ou des chiffres.",
       "valider": "Créer mon compte",
-      "dejaUnCompte": "Déjà un compte ?",
-      "connexion": "Me connecter",
-      "succes": "Votre compte est créé. Bienvenue !"
+      "succes": "Votre compte est créé. Bienvenue !",
+      "nomRequis": "Ce champ est obligatoire. Écrivez votre prénom et votre nom.",
+      "identifiantRequis": "Ce champ est obligatoire. Écrivez votre numéro de téléphone ou votre e-mail.",
+      "jaiUnCompte": "J'ai déjà un compte"
     },
     "oubli": {
       "titre": "Mot de passe oublié",
@@ -109,7 +109,22 @@
       "succes": "Mot de passe changé. Vous pouvez vous connecter.",
       "lienInvalide": "Ce lien n'est plus valable. Demandez-en un nouveau."
     },
-    "champRequis": "Ce champ est obligatoire."
+    "champRequis": "Ce champ est obligatoire.",
+    "identifiant": {
+      "indicatif": "Indicatif du pays",
+      "exemple": "Par ex. 77 123 45 67 ou awa@exemple.sn",
+      "telephoneSenegal": "Ce numéro n'est pas complet. Un numéro du Sénégal a 9 chiffres, par exemple 77 123 45 67.",
+      "telephoneInvalide": "Ce numéro ne semble pas valide. Vérifiez l'indicatif du pays et le nombre de chiffres.",
+      "emailInvalide": "Cette adresse e-mail n'est pas valide. Vérifiez qu'elle ressemble à nom@exemple.com.",
+      "invalide": "Ce n'est ni un numéro ni un e-mail. Écrivez votre numéro de téléphone ou votre adresse e-mail."
+    },
+    "motDePasse": {
+      "minimum": "{{count}} caractères minimum.",
+      "encore_one": "Encore {{count}} caractère pour arriver à 12.",
+      "encore_other": "Encore {{count}} caractères pour arriver à 12.",
+      "correct": "Correct. Plus long, c'est encore plus sûr.",
+      "solide": "Mot de passe solide."
+    }
   },
   "nav": {
     "caisse": "Caisse",
@@ -248,14 +263,16 @@
     "montantLibre": "Montant libre",
     "aucunMoyen": "Aucun moyen de paiement n'est actif.",
     "aucunMoyenAction": "Activez-en un dans les réglages.",
-    "ouvrirReglages": "Ouvrir les réglages",
     "walletInjoignable": "Votre portefeuille ne répond pas.",
     "walletNonConnecte": "Aucun portefeuille connecté : le bitcoin est indisponible.",
     "connecterWallet": "Connecter mon portefeuille",
     "vide": {
       "titre": "Votre caisse arrive",
       "texte": "Tapez un montant, encaissez en bitcoin ou en mobile money, et voyez le paiement arriver en direct."
-    }
+    },
+    "brancherMoyen": "Brancher un moyen de paiement",
+    "aucunMoyenGestion": "Branchez votre portefeuille bitcoin ou le mobile money pour pouvoir encaisser.",
+    "aucunMoyenCaissier": "Demandez au propriétaire de la boutique d'en brancher un."
   },
   "paiement": {
     "titre": "Demande de paiement",
@@ -476,6 +493,7 @@
     "supprimerTitre": "Supprimer les clés PayTech ?",
     "supprimerTexte": "Le mobile money sera désactivé jusqu'à la saisie de nouvelles clés.",
     "enregistre": "Réglages enregistrés",
+    "unMoyenRequis": "Au moins un moyen de paiement doit rester actif.",
     "vide": {
       "titre": "Réglages de la boutique",
       "texte": "Nom, ville, durée des demandes de paiement, montant maximum et message du reçu : tout se règle ici."

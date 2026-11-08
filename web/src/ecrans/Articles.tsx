@@ -22,7 +22,7 @@ import { notifier } from '@/composants/toastStore'
 import { ErreurFormulaire } from '@/ecrans/auth/communs'
 import { useMessageErreur } from '@/ecrans/auth/useMessageErreur'
 import { cn } from '@/lib/cn'
-import { classePointCouleur, classesTuile, COULEURS_ARTICLES, estCouleurArticle, type CouleurArticle } from '@/lib/couleursArticles'
+import { classePointCouleur, classesTuile, COULEURS_ARTICLES, couleurDepuis, versHex, type CouleurArticle } from '@/lib/couleursArticles'
 import { chargerPaquet } from '@/i18n'
 import { formaterFCFA } from '@/lib/format'
 import { queryClient } from '@/lib/queryClient'
@@ -163,7 +163,7 @@ export default function Articles() {
               <span
                 className={cn('inline-block size-3 shrink-0 rounded-full', classePointCouleur(a.couleur))}
                 role="img"
-                aria-label={estCouleurArticle(a.couleur) ? t(`articles.couleurs.${a.couleur}`) : t('articles.couleur')}
+                aria-label={t(`articles.couleurs.${couleurDepuis(a.couleur)}`)}
               />
               <div className="min-w-0 flex-1">
                 <p className="flex items-center gap-1.5 truncate text-sm font-medium text-texte">
@@ -225,7 +225,7 @@ function FormulaireArticle({ article, onFermer }: { article: Article | null; onF
   const [prix, setPrix] = useState(article ? String(article.prix_xof) : '')
   const [categorie, setCategorie] = useState(article?.categorie ?? '')
   const [sku, setSku] = useState(article?.sku ?? '')
-  const [couleur, setCouleur] = useState<CouleurArticle>(estCouleurArticle(article?.couleur) ? article!.couleur as CouleurArticle : 'orange')
+  const [couleur, setCouleur] = useState<CouleurArticle>(article?.couleur ? couleurDepuis(article.couleur) : 'orange')
   const [actif, setActif] = useState(article?.actif ?? true)
   const [erreur, setErreur] = useState<string | null>(null)
   const [champs, setChamps] = useState<{ nom?: string; prix?: string }>({})
@@ -252,7 +252,7 @@ function FormulaireArticle({ article, onFermer }: { article: Article | null; onF
     if (!Number.isInteger(prixNombre) || prixNombre <= 0) c.prix = t('auth.champRequis')
     setChamps(c)
     if (Object.keys(c).length) return
-    enregistrement.mutate({ nom: nom.trim(), prix_xof: prixNombre, categorie: categorie.trim() || null, couleur, sku: sku.trim() || null, actif })
+    enregistrement.mutate({ nom: nom.trim(), prix_xof: prixNombre, categorie: categorie.trim() || null, couleur: versHex(couleur), sku: sku.trim() || null, actif })
   }
 
   return (

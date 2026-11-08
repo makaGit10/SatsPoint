@@ -1,4 +1,4 @@
-import { Phone, Store, User } from 'lucide-react'
+import { Store, User } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
@@ -6,19 +6,25 @@ import { ErreurApi } from '@/api/client'
 import { useInscription } from '@/auth/useMoi'
 import { Bouton } from '@/composants/Bouton'
 import { Champ } from '@/composants/Champ'
-import { notifier } from '@/composants/toastStore'
 import { cheminAccueil } from '@/coquille/navigation'
 import { MiseEnPageInvite } from '@/coquille/MiseEnPageInvite'
 import { localeCourante } from '@/i18n'
 import { suiteSure } from '@/routes/navigation'
 import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
-import { ChampMotDePasse, ErreurFormulaire, TitreAuth } from './communs'
+import { HautParleur } from '@/voix/HautParleur'
+import { ChampIdentifiant } from './ChampIdentifiant'
+import { ChampMotDePasse, ErreurFormulaire, JaugeMotDePasse, TitreAuth } from './communs'
+import { SAISIE_VIDE, valeurIdentifiant, verifierIdentifiant, type SaisieIdentifiant } from './identifiant'
+import { LONGUEUR_MIN_MOT_DE_PASSE } from './motDePasse'
 import { useMessageErreur } from './useMessageErreur'
 
-const LONGUEUR_MIN = 12
+type Champs = { nom?: string; identifiant?: string; password?: string }
 
-type Champs = { nom?: string; identifiant?: string; password?: string; password_confirmation?: string }
-
+/**
+ * Inscription en un écran et trois champs (nom, téléphone ou e-mail, mot de passe), pensée pour un commerçant pressé.
+ * Pas de confirmation du mot de passe : l'œil permet de le relire ; le contrat API reste inchangé
+ * (`password_confirmation` = `password`). Ensuite : démarrage guidé (création de la boutique).
+ */
 export default function Inscription() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -29,28 +35,34 @@ export default function Inscription() {
   useSaisieEnCours()
 
   const [nom, setNom] = useState('')
-  const [identifiant, setIdentifiant] = useState('')
+  const [identifiant, setIdentifiant] = useState<SaisieIdentifiant>(SAISIE_VIDE)
   const [motDePasse, setMotDePasse] = useState('')
-  const [confirmation, setConfirmation] = useState('')
   const [erreur, setErreur] = useState<string | null>(null)
   const [erreursChamps, setErreursChamps] = useState<Champs>({})
+
+  const effacer = (champ: keyof Champs) => erreursChamps[champ] && setErreursChamps((e) => ({ ...e, [champ]: undefined }))
 
   const soumettre = (e: FormEvent) => {
     e.preventDefault()
     setErreur(null)
     const champs: Champs = {}
-    if (!nom.trim()) champs.nom = t('auth.champRequis')
-    if (!identifiant.trim()) champs.identifiant = t('auth.champRequis')
-    if (motDePasse.length < LONGUEUR_MIN) champs.password = t('auth.inscription.motDePasseCourt')
-    if (confirmation !== motDePasse) champs.password_confirmation = t('auth.inscription.confirmationErreur')
+    if (!nom.trim()) champs.nom = t('auth.inscription.nomRequis')
+    const probleme = verifierIdentifiant(identifiant)
+    if (probleme) champs.identifiant = probleme === 'vide' ? t('auth.inscription.identifiantRequis') : t(`auth.identifiant.${probleme}`)
+    if (motDePasse.length < LONGUEUR_MIN_MOT_DE_PASSE) champs.password = t('auth.inscription.motDePasseCourt')
     setErreursChamps(champs)
     if (Object.keys(champs).length) return
 
     inscription.mutate(
-      { nom: nom.trim(), identifiant: identifiant.trim(), password: motDePasse, password_confirmation: confirmation, locale: localeCourante() },
+      {
+        nom: nom.trim(),
+        identifiant: valeurIdentifiant(identifiant),
+        password: motDePasse,
+        password_confirmation: motDePasse,
+        locale: localeCourante(),
+      },
       {
         onSuccess: ({ utilisateur }) => {
-          notifier({ type: 'succes', titre: t('auth.inscription.succes'), voix: 'auth.inscription.succes' })
           navigate(suite ?? cheminAccueil(utilisateur), { replace: true })
         },
         onError: (err) => {
@@ -58,8 +70,7 @@ export default function Inscription() {
             setErreursChamps({
               nom: err.champ('nom'),
               identifiant: err.champ('identifiant'),
-              password: err.champ('password'),
-              password_confirmation: err.champ('password_confirmation'),
+              password: err.champ('password') ?? err.champ('password_confirmation'),
             })
             setErreur(t('erreurs.validation'))
           } else {
@@ -73,56 +84,60 @@ export default function Inscription() {
   return (
     <MiseEnPageInvite ecran="inscription">
       <TitreAuth titre={t('auth.inscription.titre')} sousTitre={t('auth.inscription.sousTitre')} voix="auth.inscription.titre" />
-      <form onSubmit={soumettre} noValidate className="flex flex-col gap-3">
+      <form onSubmit={soumettre} noValidate className="flex flex-col gap-3.5">
         <Champ
           libelle={t('auth.inscription.nom')}
           name="nom"
           autoComplete="name"
+          autoCapitalize="words"
           icone={<User />}
           value={nom}
-          onChange={(e) => setNom(e.target.value)}
+          onChange={(e) => {
+            setNom(e.target.value)
+            effacer('nom')
+          }}
           erreur={erreursChamps.nom}
         />
-        <Champ
+        <ChampIdentifiant
           libelle={t('auth.inscription.identifiant')}
-          name="identifiant"
-          autoComplete="username"
-          inputMode="email"
-          icone={<Phone />}
+          saisie={identifiant}
+          onChange={(s) => {
+            setIdentifiant(s)
+            effacer('identifiant')
+          }}
           aide={t('auth.inscription.identifiantAide')}
-          value={identifiant}
-          onChange={(e) => setIdentifiant(e.target.value)}
           erreur={erreursChamps.identifiant}
-          autoCapitalize="none"
-          spellCheck={false}
         />
         <ChampMotDePasse
           libelle={t('auth.inscription.motDePasse')}
           name="password"
           autoComplete="new-password"
-          aide={t('auth.inscription.motDePasseAide')}
+          aide={<JaugeMotDePasse motDePasse={motDePasse} />}
           value={motDePasse}
-          onChange={(e) => setMotDePasse(e.target.value)}
+          onChange={(e) => {
+            setMotDePasse(e.target.value)
+            effacer('password')
+          }}
           erreur={erreursChamps.password}
         />
-        <ChampMotDePasse
-          libelle={t('auth.inscription.confirmation')}
-          name="password_confirmation"
-          autoComplete="new-password"
-          value={confirmation}
-          onChange={(e) => setConfirmation(e.target.value)}
-          erreur={erreursChamps.password_confirmation}
-        />
         <ErreurFormulaire message={erreur} />
-        <Bouton type="submit" taille="lg" pleineLargeur chargement={inscription.isPending} icone={<Store />} voix="auth.inscription.valider">
+        <Bouton
+          type="submit"
+          taille="xl"
+          pleineLargeur
+          className="mt-1 md:h-12 md:text-lg"
+          chargement={inscription.isPending}
+          icone={<Store />}
+          voix="auth.inscription.valider"
+        >
           {t('auth.inscription.valider')}
         </Bouton>
       </form>
-      <p className="mt-6 text-center text-sm text-texte-2">
-        {t('auth.inscription.dejaUnCompte')}{' '}
+      <p className="mt-5 flex items-center justify-center gap-1 text-sm">
         <Link to={suite ? `/connexion?suite=${encodeURIComponent(suite)}` : '/connexion'} className="font-medium text-accent-texte hover:underline">
-          {t('auth.inscription.connexion')}
+          {t('auth.inscription.jaiUnCompte')}
         </Link>
+        <HautParleur cle="auth.inscription.jaiUnCompte" taille={14} />
       </p>
     </MiseEnPageInvite>
   )

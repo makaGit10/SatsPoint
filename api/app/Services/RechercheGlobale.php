@@ -100,7 +100,7 @@ class RechercheGlobale
         return $ventes->map(fn (Vente $v) => [
             'titre' => $v->numeroAffiche().' · '.number_format((int) $v->montant_xof, 0, ',', ' ').' FCFA',
             'sous_titre' => trim(implode(' · ', array_filter([$v->note, self::libelleStatut($v->statut), $v->created_at?->setTimezone($this->fuseau())->format('d/m/Y H:i')]))) ?: null,
-            'url' => '/ventes/'.$v->ulid,
+            'url' => '/ventes?vente='.$v->ulid,
             'score' => round($v->note !== null && (float) $v->score_note > 0 ? (float) $v->score_note : 1.0, 2),
         ])->all();
     }
@@ -159,7 +159,7 @@ class RechercheGlobale
         return $membres->map(fn ($m) => [
             'titre' => $m->nom,
             'sous_titre' => trim(implode(' · ', array_filter([self::libelleRole($m->role), $m->email ?? $m->telephone, $m->actif ? null : 'désactivé']))),
-            'url' => '/equipe?membre='.$m->ulid,
+            'url' => '/equipe',
             'score' => round((float) $m->score, 2),
         ])->all();
     }

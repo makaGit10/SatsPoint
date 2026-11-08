@@ -84,8 +84,14 @@ export default function Paiement() {
 
   const suffixeTest = test ? '?test=1' : ''
 
+  // Garde synchrone : un onglet Radix signale le changement au `mousedown` PUIS au `focus` du même clic ;
+  // `isPending` n'est pas encore à jour entre les deux → sans ce verrou, deux tentatives (deux factures) partaient.
+  const tentativeEnCours = useRef(false)
   const tentative = useMutation({
     mutationFn: ({ methode, operateur }: { methode: MethodePaiement; operateur?: Operateur }) => nouvelleTentative(vente!.ulid, methode, operateur),
+    onSettled: () => {
+      tentativeEnCours.current = false
+    },
     onSuccess: ({ paiement: nouveau }) => navigate(`/caisse/paiement/${nouveau.ulid}${suffixeTest}`, { replace: true }),
     onError: (e) => {
       notifier({ type: 'erreur', titre: messageErreur(e) })
@@ -134,7 +140,8 @@ export default function Paiement() {
   const choixCourant: ChoixMobile | null = paiement ? (paiement.methode === 'wave_manuel' ? 'wave_manuel' : paiement.operateur) : null
 
   const lancerTentative = (choix: 'lightning' | ChoixMobile) => {
-    if (!vente || tentative.isPending) return
+    if (!vente || tentative.isPending || tentativeEnCours.current) return
+    tentativeEnCours.current = true
     if (choix === 'lightning') tentative.mutate({ methode: 'lightning' })
     else if (choix === 'wave_manuel') tentative.mutate({ methode: 'wave_manuel' })
     else tentative.mutate({ methode: 'paytech', operateur: choix })

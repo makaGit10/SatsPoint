@@ -21,6 +21,8 @@ const URL_BASE = `http://127.0.0.1:${PORT}`
 const VUES = [
   { nom: 'mobile', largeur: 390, hauteur: 844, mobile: true },
   { nom: 'bureau', largeur: 1366, hauteur: 768, mobile: false },
+  // Grand écran : seulement pour les écrans qui le demandent (`uniquement: ['large']`).
+  { nom: 'large', largeur: 1920, hauteur: 880, mobile: false, seulementSiDemande: true },
 ].filter((v) => !option('--vues') || option('--vues').split(',').includes(v.nom))
 const THEMES = ['clair', 'sombre'].filter((t) => !option('--themes') || option('--themes').split(',').includes(t))
 const LOCALES = ['fr', 'en'].filter((l) => !option('--locales') || option('--locales').split(',').includes(l))
@@ -81,6 +83,29 @@ const ECRANS = [
   { nom: '01-langue', chemin: '/langue', attendre: '[data-ecran="langue"] [data-haut-parleur="langue.wo"]', langueChoisie: false, bandeau: false },
   { nom: '02-accueil', chemin: '/accueil', attendre: '[data-ecran="accueil"]' },
   { nom: '03-connexion', chemin: '/connexion', attendre: '[data-ecran="connexion"]' },
+  { nom: '30-inscription', chemin: '/inscription', attendre: '[data-ecran="inscription"] form' },
+  {
+    nom: '30b-inscription-saisie',
+    chemin: '/inscription',
+    attendre: '[data-ecran="inscription"] form',
+    action: async (page) => {
+      await page.getByLabel(/^(Votre nom|Your name)$/).fill('Awa Ndiaye')
+      await page.getByLabel(/^(Téléphone ou e-mail|Phone or email)$/).pressSequentially('771234567')
+      await page.getByLabel(/^(Mot de passe|Password)$/).fill('thiebou-dieune-2026')
+      await page.waitForSelector('[data-force="3"]')
+    },
+  },
+  {
+    nom: '30c-inscription-erreurs',
+    chemin: '/inscription',
+    attendre: '[data-ecran="inscription"] form',
+    action: async (page) => {
+      await page.getByLabel(/^(Téléphone ou e-mail|Phone or email)$/).fill('77 12')
+      await page.getByLabel(/^(Mot de passe|Password)$/).fill('court')
+      await page.getByRole('button', { name: /^(Créer mon compte|Create my account)/ }).click()
+      await page.waitForSelector('[data-ecran="inscription"] [role="alert"]')
+    },
+  },
   { nom: '04-caisse-vide', chemin: '/caisse', attendre: '[data-ecran="caisse"] [data-pave]', session: PROPRIO },
   { nom: '05-caisse-montant', chemin: '/caisse', attendre: '[data-ecran="caisse"] [data-pave]', session: PROPRIO, action: taper15000 },
   {
@@ -93,6 +118,16 @@ const ECRANS = [
       await page.getByRole('button', { name: /^(Encaisser|Charge)/ }).click()
       await page.waitForSelector('[role="dialog"] ul')
     },
+  },
+  { nom: '05b-caisse-montant', chemin: '/caisse', attendre: '[data-ecran="caisse"] [data-pave]', session: PROPRIO, action: taper15000, uniquement: ['large'] },
+  {
+    nom: '06b-caisse-aucun-moyen',
+    chemin: '/caisse',
+    attendre: '[data-ecran="caisse"] [data-bandeau="aucun-moyen"]',
+    session: PROPRIO,
+    stockage: { 'satspoint.mock.moyens': 'aucun' },
+    action: taper15000,
+    uniquement: ['mobile', 'bureau', 'large'],
   },
   { nom: '07-caisse-cours-indisponible', chemin: '/caisse', attendre: '[data-ecran="caisse"] [data-pave]', session: PROPRIO, stockage: { 'satspoint.mock.cours': 'indisponible' }, action: taper15000 },
   { nom: '08-caisse-caissier', chemin: '/caisse', attendre: '[data-ecran="caisse"] [data-pave]', session: CAISSIER, uniquement: ['mobile'] },
@@ -311,6 +346,7 @@ try {
       for (const locale of LOCALES) {
         for (const ecran of ECRANS) {
           if (ecran.uniquement && !ecran.uniquement.includes(vue.nom)) continue
+          if (vue.seulementSiDemande && !ecran.uniquement?.includes(vue.nom)) continue
           const contexte = await navigateur.newContext({
             viewport: { width: vue.largeur, height: vue.hauteur },
             deviceScaleFactor: vue.mobile ? 2 : 1,

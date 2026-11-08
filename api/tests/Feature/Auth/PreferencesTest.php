@@ -47,3 +47,16 @@ it('refuse /moi sans session', function () {
     $this->getJson('/api/v1/moi')->assertStatus(401);
     $this->patchJson('/api/v1/moi/preferences', ['locale' => 'en'])->assertStatus(401);
 });
+
+it('accepte une langue audio nulle (interface en anglais, aide vocale coupée)', function () {
+    $user = User::factory()->create();
+
+    connecte($user)->patchJson('/api/v1/moi/preferences', ['locale' => 'en', 'langue_audio' => null, 'aide_vocale' => false])
+        ->assertOk()
+        ->assertJsonPath('utilisateur.preferences.locale', 'en')
+        ->assertJsonPath('utilisateur.preferences.langue_audio', null)
+        ->assertJsonPath('utilisateur.preferences.aide_vocale', false);
+
+    $this->getJson('/api/v1/moi')->assertJsonPath('utilisateur.preferences.langue_audio', null);
+    $this->patchJson('/api/v1/moi/preferences', ['langue_audio' => 'xx'])->assertStatus(422);
+});

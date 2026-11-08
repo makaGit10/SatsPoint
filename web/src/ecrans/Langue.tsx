@@ -5,6 +5,7 @@ import { useAuth } from '@/auth/store'
 import { useEnregistrerPreferences } from '@/auth/useMoi'
 import { Marque } from '@/coquille/Marque'
 import { cheminAccueil } from '@/coquille/navigation'
+import { SqueletteApplication } from '@/coquille/SqueletteEcran'
 import { changerLocale } from '@/i18n'
 import { cn } from '@/lib/cn'
 import { CLES_STOCKAGE, ecrireStockage } from '@/lib/stockage'
@@ -35,6 +36,7 @@ export default function Langue() {
   const navigate = useNavigate()
   const langueCourante = useVoix((s) => s.langueAudio)
   const utilisateur = useAuth((s) => s.utilisateur)
+  const statut = useAuth((s) => s.statut)
   const enregistrer = useEnregistrerPreferences()
 
   const choisir = (tuile: Tuile) => {
@@ -48,6 +50,10 @@ export default function Langue() {
     if (utilisateur) enregistrer.mutate({ locale: tuile.locale, langue_audio: langueAudio, aide_vocale: aideVocale })
     navigate(utilisateur ? cheminAccueil(utilisateur) : '/accueil', { replace: true })
   }
+
+  // Session encore inconnue : un choix fait maintenant ne serait pas enregistré sur le compte, puis serait écrasé
+  // par les préférences du compte à l'arrivée de `/moi`. On attend (un seul aller-retour).
+  if (statut === 'inconnu') return <SqueletteApplication />
 
   return (
     <div className="flex min-h-dvh flex-col bg-fond" data-ecran="langue">

@@ -1,30 +1,34 @@
 # Tests de bout en bout (Playwright)
 
-Méthode : [docs/DIRECTIVES.md § 4 et annexe A.3](../../docs/DIRECTIVES.md). On cartographie **avant** d'écrire un test (`PARCOURS.md`), un fichier par parcours métier numéroté (`01-connexion.spec.ts`, `02-encaissement-lightning.spec.ts`…), vraies assertions, zéro 4xx/5xx inattendu, zéro erreur console, tous les boutons testés, captures en 1366×768 **et** 390×844, rapport final `RAPPORT.md`.
+Méthode : [docs/DIRECTIVES.md § 4 et annexe A.3](../../docs/DIRECTIVES.md). Carte de l'application et parcours : [`PARCOURS.md`](PARCOURS.md). Résultats : [`RAPPORT.md`](RAPPORT.md).
 
 ## Lancer
 
 ```bash
-# Pile de test démarrée : API http://localhost:8120, front http://localhost:5190 (ou la PWA servie par Caddy sur :8120)
+# Pile de dev démarrée : API http://localhost:8120 (docker compose), Reverb :8125, file + planificateur,
+# front Vite sans mock : cd web && npm run dev   (http://localhost:5190)
 cd tests/e2e
 npm install && npm run install-navigateurs
-E2E_MDP_DEMO=… E2E_MDP_ADMIN=… npm test            # les deux tailles
-npm run test:mobile                                  # téléphone seulement
-npm run rapport                                      # rapport HTML
+npm test                         # les deux tailles (bureau 1366×768, mobile 390×844)
+npm run test:mobile              # téléphone seulement
+npx playwright test 18-          # un parcours
+npm run rapport                  # rapport HTML
 ```
 
-Variables : `E2E_BASE_URL` (défaut `http://localhost:5190`), `E2E_API_URL` (défaut `http://localhost:8120`), `E2E_MDP_DEMO`, `E2E_MDP_ADMIN`, `E2E_ADMIN_EMAIL`. Les mots de passe viennent du `.env` racine (`DEMO_PASSWORD`, `SUPERADMIN_PASSWORD`), jamais du code.
+- Les mots de passe des comptes de démo sont lus dans le `.env` racine (`DEMO_PASSWORD`) par `outils/env.ts` s'ils ne sont pas fournis (`E2E_MDP_DEMO`). Rien n'est écrit sur disque, sauf les sessions en cache dans `.auth/` (non versionné, supprimées en fin de suite sauf celles de la démo).
+- `E2E_BASE_URL` (défaut `http://localhost:5190`) : URL du front. Pour mesurer la performance sur le build : `npm run build` puis `vite preview`, et `E2E_BASE_URL` sur le port du preview.
+- Données de test : comptes créés par `php artisan e2e:compte TEST-E2E-<date>` (local uniquement, mot de passe aléatoire), boutiques créées par l'API réelle (`POST /boutique`) reliées à un portefeuille **simulé** (`PUT /boutique/wallet { uri: 'mock://e2e-…' }`). Tout est supprimé avant et après la suite par `php artisan e2e:nettoyer TEST-E2E-` (global-setup / global-teardown), et après les tests qui publient des audios.
+- La boutique démo est branchée sur un **vrai** portefeuille : seuls des écrans en lecture et le parcours 21 (facture réelle de 100 FCFA **annulée**, sans paiement) l'utilisent.
 
 ## Règles
 - Jamais la production. Port de test fixe. On n'arrête jamais un processus qu'on n'a pas lancé.
-- Données créées avec le préfixe `TEST-E2E-<date>`, supprimées à la fin même en cas d'échec.
-- Aucun `waitForTimeout` : attendre un élément, une réponse ou un état.
+- Aucun `waitForTimeout` : attendre un élément, une réponse ou une trame WebSocket. Seuls les constats d'**absence** du parcours 18 (« aucun rechargement pendant 12 s ») utilisent une fenêtre d'observation explicite.
+- Zéro réponse 4xx/5xx inattendue et zéro erreur console : la surveillance de chaque page (fixture `ouvrir`) échoue sinon ; les réponses volontaires sont déclarées (`tolerer(page, motif, statut)`).
 - Un test qui passe à la relance est instable : corriger le test, pas l'application.
-- Ne jamais modifier l'application pour faire passer un test : décrire le défaut dans `RAPPORT.md`.
 
 ## Fichiers
-- `playwright.config.ts` — projets `bureau` (1366×768) et `mobile` (390×844), `retries: 1`, `trace: retain-on-failure`.
-- `fixtures.ts` — connexion par rôle, surveillance réseau/console, captures nommées.
-- `PARCOURS.md` — carte réelle de l'application (écrans, droits, boutons, effets attendus) et parcours métier.
-- `RAPPORT.md` — résultats, boutons OK/KO, défauts par gravité, captures conservées/supprimées.
+- `playwright.config.ts` — projets `bureau` et `mobile`, `retries: 1`, `trace: retain-on-failure`, nettoyage global.
+- `fixtures.ts` — client API avec session (CSRF Sanctum), sessions par rôle, boutique de test, membres par invitation, surveillance réseau/console, captures.
+- `outils/` — saisie au pavé, attentes d'API, toasts (`ui.ts`) ; super-admin de test avec 2FA (TOTP calculé), dépôt / publication d'audios (`admin.ts`) ; lecture du `.env` (`env.ts`) ; nettoyage (`global-setup.ts`, `global-teardown.ts`).
+- `01-…` à `21-…` — un fichier par parcours métier ; `22-audits-…` — accessibilité (axe-core), performance (web-vitals, CPU ×4, Slow 4G), en-têtes / CORS / cookies, délai règlement → écran vert.
 - `../../captures/<date>/` — captures de référence et preuves de défauts.

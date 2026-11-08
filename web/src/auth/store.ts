@@ -50,8 +50,19 @@ export function peut(u: Utilisateur | null | undefined, roles: readonly RoleBout
   return role !== null && roles.includes(role)
 }
 
+/** Déconnexion volontaire en cours : les 401 des requêtes encore en vol ne doivent pas renvoyer vers `/connexion?suite=`. */
+let deconnexionVolontaire: string | null = null
+/** `destination` pendant une déconnexion volontaire (lue par la garde de session), `null` ensuite. */
+export function signalerDeconnexionVolontaire(destination: string | null) {
+  deconnexionVolontaire = destination
+}
+export function destinationDeconnexion(): string | null {
+  return deconnexionVolontaire
+}
+
 // Un 401 sur une route privée : la session est tombée → on nettoie et on renvoie vers la connexion.
 definirGestionnaireNonAuthentifie(() => {
+  if (deconnexionVolontaire) return
   const etat = useAuth.getState()
   if (etat.statut !== 'anonyme') etat.effacer()
   queryClient.setQueryData(CLE_MOI, null)

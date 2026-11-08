@@ -9,7 +9,7 @@ export type TailleBoutonIcone = 'sm' | 'md' | 'lg'
 const VARIANTES: Record<VarianteBoutonIcone, string> = {
   fantome: 'text-texte-2 hover:bg-surface-2 hover:text-texte',
   secondaire: 'border border-bordure bg-surface text-texte-2 shadow-xs hover:bg-surface-2 hover:text-texte',
-  primaire: 'bg-accent text-sur-accent shadow-xs hover:bg-accent-fort',
+  primaire: 'fond-or text-sur-accent',
   danger: 'text-danger-texte hover:bg-danger-doux',
 }
 

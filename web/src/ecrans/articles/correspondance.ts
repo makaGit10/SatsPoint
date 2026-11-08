@@ -1,5 +1,4 @@
 import type { ChampImport, Correspondance } from '@/api/types'
-import { COULEURS_ARTICLES } from '@/lib/couleursArticles'
 import { distance, normaliser } from '@/lib/texte'
 
 /** Champs SatsPoint importables (CONTRAT_API § V3.7), dans l'ordre d'affichage. */
@@ -149,9 +148,8 @@ export function transformerLigne(ligne: readonly string[], colonnes: readonly st
         break
       case 'couleur': {
         if (!brut) break
-        const c = normaliser(brut)
-        const connue = COULEURS_ARTICLES.find((x) => x === c)
-        if (connue) valeurs.couleur = connue
+        // Le serveur n'accepte que `#RRGGBB` (ou `RRGGBB`) : l'aperçu applique la même règle.
+        if (/^#?[0-9a-f]{6}$/i.test(brut)) valeurs.couleur = (brut.startsWith('#') ? brut : `#${brut}`).toUpperCase()
         else erreurs.push('couleurInconnue')
         break
       }

@@ -34,8 +34,8 @@ function invaliderTout() {
 export function FormulaireConnexionWallet({ onConnecte, className }: { onConnecte?: () => void; className?: string }) {
   const { t } = useTranslation()
   const messageErreur = useMessageErreur()
-  useSaisieEnCours()
   const [uri, setUri] = useState('')
+  useSaisieEnCours(uri !== '')
   const [aideOuverte, setAideOuverte] = useState(false)
   const [erreur, setErreur] = useState<string | null>(null)
 
@@ -105,7 +105,12 @@ export function ConnexionWallet({ wallet, proprietaire, compact, onConnecte }: P
     onSuccess: () => {
       setRevocationOuverte(false)
       notifier({ type: 'info', titre: t('portefeuille.revoque'), voix: 'portefeuille.revoque' })
-      invaliderTout()
+      // Plus de portefeuille : l'historique n'a plus de sens et sa relecture renverrait 409 WALLET_NON_CONNECTE.
+      queryClient.setQueryData<Wallet>(CLE_WALLET, (w) => (w ? { ...w, connecte: false, solde: null } : w))
+      queryClient.removeQueries({ queryKey: CLE_TRANSACTIONS })
+      void queryClient.invalidateQueries({ queryKey: CLE_WALLET })
+      void queryClient.invalidateQueries({ queryKey: CLE_BOUTIQUE })
+      void queryClient.invalidateQueries({ queryKey: CLE_MOI })
     },
     onError: (e) => notifier({ type: 'erreur', titre: messageErreur(e) }),
   })

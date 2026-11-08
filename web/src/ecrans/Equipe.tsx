@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { Mail, ShieldCheck, UserCheck, UserPlus, Users, UserX, X } from 'lucide-react'
+import { Copy, Mail, MessageCircle, ShieldCheck, UserCheck, UserPlus, Users, UserX, X } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ErreurApi } from '@/api/client'
@@ -20,6 +20,7 @@ import { Avatar } from '@/coquille/MenuUtilisateur'
 import { ErreurFormulaire } from '@/ecrans/auth/communs'
 import { useMessageErreur } from '@/ecrans/auth/useMessageErreur'
 import { cn } from '@/lib/cn'
+import { copier, lienWhatsApp } from '@/lib/retours'
 import { queryClient } from '@/lib/queryClient'
 import { tempsRelatif } from '@/lib/temps'
 import { useDonneesEnDirect } from '@/temps-reel/useDonneesEnDirect'
@@ -252,16 +253,24 @@ function DialogueInviter({ ouvert, onFermer, proprietaire }: { ouvert: boolean; 
   const [role, setRole] = useState<RoleBoutique>('caissier')
   const [erreur, setErreur] = useState<string | null>(null)
   const [erreurContact, setErreurContact] = useState<string | undefined>()
+  // Invitation par téléphone : aucun SMS n'est envoyé, le lien est affiché pour être transmis (WhatsApp, copie).
+  const [lien, setLien] = useState<string | null>(null)
   const roles = proprietaire ? ROLES : ROLES.filter((r) => r !== 'proprietaire')
+
+  const fermer = () => {
+    setLien(null)
+    onFermer()
+  }
 
   const invitation = useMutation({
     mutationFn: () => inviter(contact.trim(), role),
-    onSuccess: () => {
+    onSuccess: ({ invitation: creee }) => {
       notifier({ type: 'succes', titre: t('equipe.invitationEnvoyee'), voix: 'equipe.invitationEnvoyee' })
       void queryClient.invalidateQueries({ queryKey: CLE_EQUIPE })
       setContact('')
       setRole('caissier')
-      onFermer()
+      if (creee.lien) setLien(creee.lien)
+      else onFermer()
     },
     onError: (e) => {
       if (e instanceof ErreurApi && e.estValidation && e.champ('contact')) setErreurContact(e.champ('contact'))
@@ -278,6 +287,42 @@ function DialogueInviter({ ouvert, onFermer, proprietaire }: { ouvert: boolean; 
       return
     }
     invitation.mutate()
+  }
+
+  if (lien) {
+    return (
+      <Dialogue
+        ouvert={ouvert}
+        onOuvertChange={(o) => !o && fermer()}
+        titre={t('equipe.lienTitre')}
+        description={t('equipe.lienTexte')}
+        taille="sm"
+        pied={
+          <Bouton voix="commun.fermer" onClick={fermer}>
+            {t('commun.fermer')}
+          </Bouton>
+        }
+      >
+        <div className="flex flex-col gap-3 pb-1">
+          <Champ libelle={t('equipe.lienInvitation')} value={lien} readOnly onFocus={(e) => e.currentTarget.select()} data-lien-invitation="" />
+          <div className="flex flex-wrap gap-2">
+            <Bouton
+              variante="secondaire"
+              icone={<Copy />}
+              voix="equipe.copierLien"
+              onClick={() => {
+                void copier(lien).then((ok) => ok && notifier({ type: 'succes', titre: t('equipe.lienCopie'), voix: 'equipe.lienCopie' }))
+              }}
+            >
+              {t('equipe.copierLien')}
+            </Bouton>
+            <Bouton variante="secondaire" icone={<MessageCircle />} voix="equipe.envoyerWhatsApp" onClick={() => window.open(lienWhatsApp(lien), '_blank', 'noopener,noreferrer')}>
+              {t('equipe.envoyerWhatsApp')}
+            </Bouton>
+          </div>
+        </div>
+      </Dialogue>
+    )
   }
 
   return (

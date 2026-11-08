@@ -26,51 +26,58 @@
   --duree: 150ms;
 }
 
-/* ---------- Thème clair ---------- */
+/* ---------- Thème clair (par défaut) : blanc et or ---------- */
+/* Fond blanc cassé très léger, surfaces blanches, bordures gris chaud, texte encre ; l'or est réservé à l'action principale
+   et aux détails. Contrastes vérifiés (WCAG AA) : voir les ratios en commentaire. */
 :root {
   color-scheme: light;
 
-  --fond: #ffffff;
-  --fond-2: #f6f6f8;
+  --fond: #faf9f6;
+  --fond-2: #f4f2ec;
   --surface: #ffffff;
-  --surface-2: #f3f4f6;
-  --surface-3: #e9eaee;
-  --bordure: #e5e6ea;
-  --bordure-forte: #cfd1d8;
-  --texte: #16171b;
-  --texte-2: #4f525c;
-  --texte-3: #767a86;
-  --inverse: #16171b;
+  --surface-2: #f6f4ef;
+  --surface-3: #ece9e2;
+  --bordure: #e8e4db;
+  --bordure-forte: #d5cfc3;
+  --texte: #1a1814; /* 16,8:1 sur le fond */
+  --texte-2: #57524a; /* 7,4:1 */
+  --texte-3: #6e685d; /* 5,3:1 sur le fond, 4,5:1 sur surface-3 */
+  --inverse: #1a1814;
   --inverse-texte: #ffffff;
 
-  /* Orange Bitcoin : fond de bouton avec texte sombre (contraste ≥ 7:1) ; en texte sur blanc, variante foncée (AA). */
-  --accent: #f7931a;
-  --accent-fort: #e4820c;
-  --accent-texte: #a85a00;
-  --accent-doux: rgba(247, 147, 26, 0.14);
-  --sur-accent: #1b1206;
+  /* Or : surfaces d'accent avec texte encre (7,6:1) ; en texte ou lien sur blanc, or foncé (6,0:1). */
+  --accent: #c9a227;
+  --accent-fort: #b8902a; /* survol : 6,2:1 avec --sur-accent */
+  --accent-texte: #7d5e0e; /* 6,0:1 sur blanc, 5,4:1 sur --accent-doux */
+  --accent-doux: rgba(201, 162, 39, 0.14);
+  --accent-trait: #a07c17; /* traits, courbes, icônes, interrupteur : 3,9:1 sur blanc (éléments graphiques ≥ 3:1) */
+  --sur-accent: #1a1408;
+  --degrade-accent: linear-gradient(180deg, #d9b443 0%, #c29b2c 100%); /* texte encre : 9,2:1 en haut, 6,9:1 en bas */
+  --degrade-accent-survol: linear-gradient(180deg, #cfa935 0%, #b48d25 100%);
+  --ombre-accent: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 1px 2px rgba(122, 92, 16, 0.28);
 
-  /* Mobile money : bleu (Wave) distinct de l'orange. */
+  /* Mobile money : bleu (Wave) distinct de l'or. */
   --mm: #1fa8e0;
   --mm-texte: #0b6f99;
   --mm-doux: rgba(31, 168, 224, 0.14);
 
+  /* Statuts sémantiques : vert payé, ambre en attente (plus chaud et plus soutenu que l'or), rouge problème, gris annulé. */
   --succes: #19a34a;
   --succes-texte: #137a38;
   --succes-doux: rgba(25, 163, 74, 0.13);
-  --attente: #e0a10a;
-  --attente-texte: #8a5f00;
-  --attente-doux: rgba(224, 161, 10, 0.16);
+  --attente: #d97706;
+  --attente-texte: #a24a07; /* 6,0:1 sur blanc, 5,3:1 sur --attente-doux */
+  --attente-doux: rgba(217, 119, 6, 0.12);
   --danger: #dc2f2f;
   --danger-texte: #b31f1f;
   --danger-doux: rgba(220, 47, 47, 0.12);
-  --neutre: #8b8f9b;
-  --neutre-texte: #5c606b;
-  --neutre-doux: rgba(139, 143, 155, 0.16);
+  --neutre: #8e887d;
+  --neutre-texte: #5e594f;
+  --neutre-doux: rgba(142, 136, 125, 0.16);
 
-  --anneau: #f7931a;
+  --anneau: #a07c17; /* focus : 3,9:1 sur blanc */
 
-  /* Tuiles d'articles (caisse) : fonds doux + texte lisible (AA). */
+  /* Tuiles d'articles (caisse) : couleurs choisies par le commerçant, fonds doux + texte lisible (AA). */
   --tuile-orange: #fde7cf; --tuile-orange-texte: #8a4b00;
   --tuile-rouge: #fbdcdc; --tuile-rouge-texte: #9b1c1c;
   --tuile-jaune: #fbefc3; --tuile-jaune-texte: #7a5a00;
@@ -78,36 +85,40 @@
   --tuile-bleu: #d6ecf8; --tuile-bleu-texte: #0b5f85;
   --tuile-violet: #e6dcf8; --tuile-violet-texte: #5b2ea6;
   --tuile-brun: #ebdfd3; --tuile-brun-texte: #6b4423;
-  --tuile-gris: #e6e7eb; --tuile-gris-texte: #474b55;
+  --tuile-gris: #e9e7e2; --tuile-gris-texte: #4a463f;
 
-  --ombre-xs: 0 1px 2px rgba(16, 17, 20, 0.06);
-  --ombre-sm: 0 1px 3px rgba(16, 17, 20, 0.08), 0 1px 2px rgba(16, 17, 20, 0.04);
-  --ombre-md: 0 4px 12px rgba(16, 17, 20, 0.1), 0 1px 3px rgba(16, 17, 20, 0.06);
-  --ombre-lg: 0 12px 32px rgba(16, 17, 20, 0.16), 0 2px 6px rgba(16, 17, 20, 0.08);
+  --ombre-xs: 0 1px 2px rgba(26, 24, 20, 0.05);
+  --ombre-sm: 0 1px 3px rgba(26, 24, 20, 0.07), 0 1px 2px rgba(26, 24, 20, 0.04);
+  --ombre-md: 0 4px 14px rgba(26, 24, 20, 0.08), 0 1px 3px rgba(26, 24, 20, 0.05);
+  --ombre-lg: 0 14px 36px rgba(26, 24, 20, 0.14), 0 2px 6px rgba(26, 24, 20, 0.06);
 }
 
-/* ---------- Thème sombre ---------- */
+/* ---------- Thème sombre (option) : anthracite chaud, or en accent, texte ivoire ---------- */
 :root[data-theme='sombre'] {
   color-scheme: dark;
 
-  --fond: #0f1115;
-  --fond-2: #13161b;
-  --surface: #171a20;
-  --surface-2: #1e222a;
-  --surface-3: #272c36;
-  --bordure: #262b34;
-  --bordure-forte: #353b47;
-  --texte: #f2f3f5;
-  --texte-2: #a6aab4;
-  --texte-3: #7d8290;
-  --inverse: #f2f3f5;
-  --inverse-texte: #0f1115;
+  --fond: #141311;
+  --fond-2: #181715;
+  --surface: #1c1a17;
+  --surface-2: #24221e;
+  --surface-3: #2e2b26;
+  --bordure: #2c2924;
+  --bordure-forte: #3d3932;
+  --texte: #f3eee3; /* ivoire : 16,1:1 sur le fond */
+  --texte-2: #b8b0a2; /* 8,1:1 sur la surface */
+  --texte-3: #968e81; /* 5,4:1 sur la surface, 4,9:1 sur surface-2 */
+  --inverse: #f3eee3;
+  --inverse-texte: #141311;
 
-  --accent: #f7931a;
-  --accent-fort: #ffa53a;
-  --accent-texte: #ffb152;
-  --accent-doux: rgba(247, 147, 26, 0.18);
-  --sur-accent: #1b1206;
+  --accent: #d4af37;
+  --accent-fort: #e0be52;
+  --accent-texte: #ddb84e; /* 9,1:1 sur la surface, 6,7:1 sur --accent-doux */
+  --accent-doux: rgba(212, 175, 55, 0.16);
+  --accent-trait: #d4af37;
+  --sur-accent: #1a1408; /* 8,7:1 sur l'or */
+  --degrade-accent: linear-gradient(180deg, #e2c25c 0%, #cfa834 100%);
+  --degrade-accent-survol: linear-gradient(180deg, #e8ca68 0%, #d6b040 100%);
+  --ombre-accent: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 1px 2px rgba(0, 0, 0, 0.5);
 
   --mm: #35b8ea;
   --mm-texte: #6fd0f6;
@@ -116,26 +127,26 @@
   --succes: #2fc064;
   --succes-texte: #62d98b;
   --succes-doux: rgba(47, 192, 100, 0.16);
-  --attente: #f0b429;
-  --attente-texte: #f6c95d;
-  --attente-doux: rgba(240, 180, 41, 0.16);
+  --attente: #f59e0b;
+  --attente-texte: #fcc27a; /* 10,9:1 sur la surface */
+  --attente-doux: rgba(245, 158, 11, 0.16);
   --danger: #f05252;
   --danger-texte: #ff7b7b;
   --danger-doux: rgba(240, 82, 82, 0.16);
-  --neutre: #7d8290;
-  --neutre-texte: #a6aab4;
-  --neutre-doux: rgba(125, 130, 144, 0.2);
+  --neutre: #8e887d;
+  --neutre-texte: #b8b0a2;
+  --neutre-doux: rgba(142, 136, 125, 0.2);
 
-  --anneau: #ffa53a;
+  --anneau: #d4af37; /* 8,8:1 sur le fond */
 
-    --tuile-orange: #4a2e0f; --tuile-orange-texte: #ffc27a;
-    --tuile-rouge: #4a1f1f; --tuile-rouge-texte: #ff9b9b;
-    --tuile-jaune: #46380d; --tuile-jaune-texte: #f7d774;
-    --tuile-vert: #163d26; --tuile-vert-texte: #7fe0a4;
-    --tuile-bleu: #11384a; --tuile-bleu-texte: #86d4f7;
-    --tuile-violet: #2e1f4f; --tuile-violet-texte: #c9aefc;
-    --tuile-brun: #3e2c1f; --tuile-brun-texte: #e0b996;
-    --tuile-gris: #2a2e37; --tuile-gris-texte: #c0c4cd;
+  --tuile-orange: #4a2e0f; --tuile-orange-texte: #ffc27a;
+  --tuile-rouge: #4a1f1f; --tuile-rouge-texte: #ff9b9b;
+  --tuile-jaune: #46380d; --tuile-jaune-texte: #f7d774;
+  --tuile-vert: #163d26; --tuile-vert-texte: #7fe0a4;
+  --tuile-bleu: #11384a; --tuile-bleu-texte: #86d4f7;
+  --tuile-violet: #2e1f4f; --tuile-violet-texte: #c9aefc;
+  --tuile-brun: #3e2c1f; --tuile-brun-texte: #e0b996;
+  --tuile-gris: #2e2b26; --tuile-gris-texte: #c9c1b3;
 
   --ombre-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
   --ombre-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -143,29 +154,33 @@
   --ombre-lg: 0 12px 32px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
-/* Thème « auto » : suit le système quand aucun thème explicite n'est posé. */
+/* Thème « auto » : suit le système quand aucun thème explicite n'est posé (le thème par défaut est « clair »). */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme='clair']) {
+  :root:not([data-theme]) {
     color-scheme: dark;
 
-    --fond: #0f1115;
-    --fond-2: #13161b;
-    --surface: #171a20;
-    --surface-2: #1e222a;
-    --surface-3: #272c36;
-    --bordure: #262b34;
-    --bordure-forte: #353b47;
-    --texte: #f2f3f5;
-    --texte-2: #a6aab4;
-    --texte-3: #7d8290;
-    --inverse: #f2f3f5;
-    --inverse-texte: #0f1115;
+    --fond: #141311;
+    --fond-2: #181715;
+    --surface: #1c1a17;
+    --surface-2: #24221e;
+    --surface-3: #2e2b26;
+    --bordure: #2c2924;
+    --bordure-forte: #3d3932;
+    --texte: #f3eee3; /* ivoire : 16,1:1 sur le fond */
+    --texte-2: #b8b0a2; /* 8,1:1 sur la surface */
+    --texte-3: #968e81; /* 5,4:1 sur la surface, 4,9:1 sur surface-2 */
+    --inverse: #f3eee3;
+    --inverse-texte: #141311;
 
-    --accent: #f7931a;
-    --accent-fort: #ffa53a;
-    --accent-texte: #ffb152;
-    --accent-doux: rgba(247, 147, 26, 0.18);
-    --sur-accent: #1b1206;
+    --accent: #d4af37;
+    --accent-fort: #e0be52;
+    --accent-texte: #ddb84e; /* 9,1:1 sur la surface, 6,7:1 sur --accent-doux */
+    --accent-doux: rgba(212, 175, 55, 0.16);
+    --accent-trait: #d4af37;
+    --sur-accent: #1a1408; /* 8,7:1 sur l'or */
+    --degrade-accent: linear-gradient(180deg, #e2c25c 0%, #cfa834 100%);
+    --degrade-accent-survol: linear-gradient(180deg, #e8ca68 0%, #d6b040 100%);
+    --ombre-accent: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 1px 2px rgba(0, 0, 0, 0.5);
 
     --mm: #35b8ea;
     --mm-texte: #6fd0f6;
@@ -174,17 +189,17 @@
     --succes: #2fc064;
     --succes-texte: #62d98b;
     --succes-doux: rgba(47, 192, 100, 0.16);
-    --attente: #f0b429;
-    --attente-texte: #f6c95d;
-    --attente-doux: rgba(240, 180, 41, 0.16);
+    --attente: #f59e0b;
+    --attente-texte: #fcc27a; /* 10,9:1 sur la surface */
+    --attente-doux: rgba(245, 158, 11, 0.16);
     --danger: #f05252;
     --danger-texte: #ff7b7b;
     --danger-doux: rgba(240, 82, 82, 0.16);
-    --neutre: #7d8290;
-    --neutre-texte: #a6aab4;
-    --neutre-doux: rgba(125, 130, 144, 0.2);
+    --neutre: #8e887d;
+    --neutre-texte: #b8b0a2;
+    --neutre-doux: rgba(142, 136, 125, 0.2);
 
-    --anneau: #ffa53a;
+    --anneau: #d4af37; /* 8,8:1 sur le fond */
 
     --tuile-orange: #4a2e0f; --tuile-orange-texte: #ffc27a;
     --tuile-rouge: #4a1f1f; --tuile-rouge-texte: #ff9b9b;
@@ -193,7 +208,7 @@
     --tuile-bleu: #11384a; --tuile-bleu-texte: #86d4f7;
     --tuile-violet: #2e1f4f; --tuile-violet-texte: #c9aefc;
     --tuile-brun: #3e2c1f; --tuile-brun-texte: #e0b996;
-    --tuile-gris: #2a2e37; --tuile-gris-texte: #c0c4cd;
+    --tuile-gris: #2e2b26; --tuile-gris-texte: #c9c1b3;
 
     --ombre-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
     --ombre-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);

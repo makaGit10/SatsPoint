@@ -45,15 +45,21 @@ export default function DeuxFacteurs() {
 function Activation({ requise, onActive }: { requise: boolean; onActive: (codes: string[]) => void }) {
   const { t } = useTranslation()
   const messageErreur = useMessageErreur()
-  useSaisieEnCours()
   const [code, setCode] = useState('')
+  useSaisieEnCours(code !== '')
   const [erreur, setErreur] = useState<string | null>(null)
   const [copie, setCopie] = useState(false)
   const entree = useRef<HTMLInputElement>(null)
 
   const initialisation = useMutation({ mutationFn: initialiserDeuxFa })
   const { mutate: initialiser } = initialisation
+  // Une seule initialisation par écran : chaque appel génère un NOUVEAU secret côté serveur. Deux appels concurrents
+  // (double montage de React en développement, retour rapide sur l'écran) pouvaient afficher un secret qui n'était
+  // plus celui du serveur → tous les codes refusés.
+  const initialise = useRef(false)
   useEffect(() => {
+    if (initialise.current) return
+    initialise.current = true
     initialiser()
   }, [initialiser])
   const donnees = initialisation.data
@@ -229,7 +235,7 @@ function CodesSecours({ codes }: { codes: string[] }) {
         </Bouton>
       </div>
       <label className="flex cursor-pointer items-center gap-2 text-sm text-texte-2">
-        <input type="checkbox" checked={range} onChange={(e) => setRange(e.target.checked)} className="size-4 rounded-xs accent-[var(--accent)]" />
+        <input type="checkbox" checked={range} onChange={(e) => setRange(e.target.checked)} className="size-4 rounded-xs accent-[var(--accent-trait)]" />
         {t('deuxFa.codes.confirmation')}
       </label>
       <Bouton icone={<Check />} voix="deuxFa.codes.terminer" disabled={!range} onClick={() => navigate(suiteSure(params.get('suite')) ?? cheminAccueil(utilisateur), { replace: true })}>
@@ -242,8 +248,8 @@ function CodesSecours({ codes }: { codes: string[] }) {
 function Desactivation({ requise }: { requise: boolean }) {
   const { t } = useTranslation()
   const messageErreur = useMessageErreur()
-  useSaisieEnCours()
   const [ouvert, setOuvert] = useState(false)
+  useSaisieEnCours(ouvert)
   const [motDePasse, setMotDePasse] = useState('')
   const [erreur, setErreur] = useState<string | null>(null)
 

@@ -17,7 +17,8 @@ class PreferencesRequest extends FormRequest
 
         return [
             'locale' => ['sometimes', 'string', 'in:'.implode(',', config('satspoint.locales'))],
-            'langue_audio' => ['sometimes', 'string', 'in:'.implode(',', $languesAudio)],
+            // null = aucune langue audio (interface en anglais : l'aide vocale est coupée).
+            'langue_audio' => ['sometimes', 'nullable', 'string', 'in:'.implode(',', $languesAudio)],
             'theme' => ['sometimes', 'string', 'in:'.implode(',', config('satspoint.themes'))],
             'aide_vocale' => ['sometimes', 'boolean'],
         ];

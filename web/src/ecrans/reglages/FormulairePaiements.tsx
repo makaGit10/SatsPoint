@@ -23,7 +23,6 @@ const MESSAGE_MAX = 160
 export function FormulairePaiements({ boutique }: { boutique: BoutiqueDetail }) {
   const { t } = useTranslation()
   const messageErreur = useMessageErreur()
-  useSaisieEnCours()
   const idExpiration = useId()
   const idMessage = useId()
   const r = boutique.reglages
@@ -33,6 +32,14 @@ export function FormulairePaiements({ boutique }: { boutique: BoutiqueDetail }) 
   const [moyens, setMoyens] = useState(r.moyens)
   const [waveLien, setWaveLien] = useState(r.wave_lien ?? '')
   const [message, setMessage] = useState(r.message_recu ?? '')
+  // Saisie en cours seulement si le formulaire a été modifié : un formulaire intact ne bloque pas le temps réel.
+  useSaisieEnCours(
+    expiration !== r.expiration_facture_min ||
+      montantMax !== String(r.montant_max_xof) ||
+      JSON.stringify(moyens) !== JSON.stringify(r.moyens) ||
+      waveLien !== (r.wave_lien ?? '') ||
+      message !== (r.message_recu ?? ''),
+  )
   const [erreur, setErreur] = useState<string | null>(null)
   const [erreursChamps, setErreursChamps] = useState<Record<string, string | undefined>>({})
 
@@ -53,7 +60,8 @@ export function FormulairePaiements({ boutique }: { boutique: BoutiqueDetail }) 
           expiration: e.champ('reglages.expiration_facture_min'),
         }
         setErreursChamps(champs)
-        setErreur(Object.values(champs).some(Boolean) ? null : messageErreur(e))
+        if (e.champ('reglages.moyens')) setErreur(t('reglages.unMoyenRequis'))
+        else setErreur(Object.values(champs).some(Boolean) ? null : messageErreur(e))
       } else setErreur(messageErreur(e))
     },
   })
@@ -66,6 +74,11 @@ export function FormulairePaiements({ boutique }: { boutique: BoutiqueDetail }) 
     if (moyens.wave_manuel && !waveLien.trim()) champs.wave_lien = t('auth.champRequis')
     setErreursChamps(champs)
     if (Object.values(champs).some(Boolean)) return
+    // Au moins un moyen actif (le serveur refuse aussi) : message clair plutôt qu'un aller-retour.
+    if (!moyens.lightning && !moyens.paytech && !moyens.wave_manuel) {
+      setErreur(t('reglages.unMoyenRequis'))
+      return
+    }
     mutation.mutate({
       reglages: {
         expiration_facture_min: expiration,
@@ -94,7 +107,7 @@ export function FormulairePaiements({ boutique }: { boutique: BoutiqueDetail }) 
             step={1}
             value={expiration}
             onChange={(e) => setExpiration(Number(e.target.value))}
-            className="h-11 w-full accent-[var(--accent)] md:h-8"
+            className="h-11 w-full accent-[var(--accent-trait)] md:h-8"
             aria-describedby={`${idExpiration}-aide`}
           />
           <p id={`${idExpiration}-aide`} className={cn('text-xs', erreursChamps.expiration ? 'text-danger-texte' : 'text-texte-3')}>

@@ -1,6 +1,7 @@
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { Wallet } from '@/api/types'
 import { CLE_TRANSACTIONS, CLE_WALLET, useTransactionsWallet, useWallet } from '@/api/wallet'
 import { peut, useAuth } from '@/auth/store'
 import { Bouton } from '@/composants/Bouton'
@@ -31,7 +32,8 @@ export default function Portefeuille() {
 
   useDonneesEnDirect(['wallet', 'parametres'], () => {
     void queryClient.invalidateQueries({ queryKey: CLE_WALLET })
-    void queryClient.invalidateQueries({ queryKey: CLE_TRANSACTIONS })
+    // L'historique n'existe que si un portefeuille est connecté (sinon 409 WALLET_NON_CONNECTE).
+    if (queryClient.getQueryData<Wallet>(CLE_WALLET)?.connecte) void queryClient.invalidateQueries({ queryKey: CLE_TRANSACTIONS })
   })
 
   const [recevoirOuvert, setRecevoirOuvert] = useState(false)

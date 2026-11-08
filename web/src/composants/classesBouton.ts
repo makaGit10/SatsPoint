@@ -4,7 +4,7 @@ export type VarianteBouton = 'primaire' | 'secondaire' | 'fantome' | 'danger' | 
 export type TailleBouton = 'sm' | 'md' | 'lg' | 'xl'
 
 const VARIANTES: Record<VarianteBouton, string> = {
-  primaire: 'bg-accent text-sur-accent shadow-xs hover:bg-accent-fort',
+  primaire: 'fond-or text-sur-accent',
   secondaire: 'border border-bordure bg-surface text-texte shadow-xs hover:bg-surface-2',
   fantome: 'text-texte-2 hover:bg-surface-2 hover:text-texte',
   danger: 'bg-danger text-white shadow-xs hover:brightness-105',

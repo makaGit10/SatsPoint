@@ -27,8 +27,9 @@ export function MiseEnPageInvite({
         {sansMarque ? (
           <span />
         ) : (
-          <Link to="/accueil" aria-label={t('entete.accueil')}>
+          <Link to="/accueil">
             <Marque taille="sm" />
+            <span className="sr-only">{` — ${t('entete.accueil')}`}</span>
           </Link>
         )}
         <div className="flex items-center gap-0.5">

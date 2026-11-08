@@ -39,7 +39,7 @@ it('groupe les résultats par rubrique (5 max), tolère accents et fautes, et re
         ->and($groupes['articles']['resultats'][0]['sous_titre'])->toContain('15 000 FCFA')->toContain('Tissus')->toContain('TIS-BAZ-01')
         ->and($groupes['ventes']['resultats'][0]['titre'])->toBe('V-000001 · 30 000 FCFA')
         ->and($groupes['ventes']['resultats'][0]['sous_titre'])->toContain('2 m de bazin')
-        ->and($groupes['ventes']['resultats'][0]['url'])->toBe('/ventes/'.$this->venteNote->ulid);
+        ->and($groupes['ventes']['resultats'][0]['url'])->toBe('/ventes?vente='.$this->venteNote->ulid);
 
     // Faute de frappe et accents ignorés.
     expect(collect($this->getJson('/api/v1/recherche?q=bazim')->assertOk()->json('groupes'))->keyBy('rubrique')->get('articles')['resultats'][0]['titre'])->toBe('Bazin riche');
@@ -53,7 +53,7 @@ it('groupe les résultats par rubrique (5 max), tolère accents et fautes, et re
 
     // Ventes par numéro et par montant.
     $parNumero = collect($this->getJson('/api/v1/recherche?q=V-000002')->assertOk()->json('groupes'))->keyBy('rubrique');
-    expect($parNumero['ventes']['resultats'][0]['url'])->toBe('/ventes/'.$this->venteProprio->ulid);
+    expect($parNumero['ventes']['resultats'][0]['url'])->toBe('/ventes?vente='.$this->venteProprio->ulid);
     $parMontant = collect($this->getJson('/api/v1/recherche?q=1500')->assertOk()->json('groupes'))->keyBy('rubrique');
     expect(count($parMontant['ventes']['resultats']))->toBe(1)->and($parMontant['articles']['resultats'][0]['titre'])->toBe('Thiéboudienne'); // article au prix exact
 });
@@ -73,7 +73,7 @@ it('trouve l\'équipe et les pages pour le propriétaire, jamais pour le caissie
     $pages = collect($this->getJson('/api/v1/recherche?q=paytech')->assertOk()->json('groupes'))->keyBy('rubrique');
     expect($pages['pages']['resultats'][0]['url'])->toBe('/reglages#paytech');
     $pages = collect($this->getJson('/api/v1/recherche?q=thème')->assertOk()->json('groupes'))->keyBy('rubrique');
-    expect($pages['pages']['resultats'][0]['url'])->toBe('/reglages#theme');
+    expect($pages['pages']['resultats'][0]['url'])->toBe('/reglages#preferences');
     $pages = collect($this->getJson('/api/v1/recherche?q=réglages')->assertOk()->json('groupes'))->keyBy('rubrique');
     expect(collect($pages['pages']['resultats'])->pluck('url')->all())->toContain('/reglages');
 

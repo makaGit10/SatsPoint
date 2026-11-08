@@ -33,7 +33,7 @@ export function Interrupteur({ coche, onChange, libelle, description, voix, desa
         disabled={desactive}
         className={cn(
           'zone-tactile relative h-6 w-10 shrink-0 rounded-full border border-transparent bg-bordure-forte transition-colors duration-150',
-          'data-[state=checked]:bg-accent disabled:opacity-50',
+          'data-[state=checked]:bg-accent-trait disabled:opacity-50',
         )}
       >
         <Switch.Thumb className="block size-5 translate-x-0.5 rounded-full bg-white shadow-sm transition-transform duration-150 data-[state=checked]:translate-x-[18px]" />

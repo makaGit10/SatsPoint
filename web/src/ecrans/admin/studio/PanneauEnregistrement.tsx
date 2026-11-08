@@ -201,7 +201,7 @@ export function PanneauEnregistrement({ cle, langue, nomLangue, rafale, onValide
               {t(`studio.statuts.${cellule.statut}`)}
             </Pastille>
             {cle.essentielle && (
-              <Pastille ton="attente" icone={<Star className="fill-current" />}>
+              <Pastille ton="accent" icone={<Star className="fill-current" />}>
                 {t('studio.essentielle')}
               </Pastille>
             )}

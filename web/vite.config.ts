@@ -33,8 +33,8 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#0f1115',
-        theme_color: '#F7931A',
+        background_color: '#ffffff',
+        theme_color: '#faf9f6',
         categories: ['finance', 'business'],
         icons: [
           { src: '/icones/icone-192.png', sizes: '192x192', type: 'image/png' },
@@ -52,6 +52,12 @@ export default defineConfig({
         skipWaiting: true,
         runtimeCaching: [
           {
+            // Manifeste `clé → URL` (avant la règle /api/ : la première règle qui correspond l'emporte) : toujours frais si possible, sinon la dernière version connue (hors ligne).
+            urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith('/api/v1/audio/manifeste/'),
+            handler: 'NetworkFirst',
+            options: { cacheName: 'satspoint-manifeste-audio', networkTimeoutSeconds: 3, expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 30 } },
+          },
+          {
             urlPattern: ({ url, sameOrigin }) =>
               sameOrigin &&
               (url.pathname.startsWith('/api/') ||
@@ -60,14 +66,8 @@ export default defineConfig({
             handler: 'NetworkOnly',
           },
           {
-            // Manifeste `clé → URL` : toujours frais si possible, sinon la dernière version connue (hors ligne).
-            urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith('/audio/manifeste/'),
-            handler: 'NetworkFirst',
-            options: { cacheName: 'satspoint-manifeste-audio', networkTimeoutSeconds: 3, expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 30 } },
-          },
-          {
             // Fichiers audio : URL immuables (empreinte dans le nom) → cache un an.
-            urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith('/audio/') && !url.pathname.startsWith('/audio/manifeste/'),
+            urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith('/audio/'),
             handler: 'CacheFirst',
             options: {
               cacheName: 'satspoint-audio',
@@ -92,7 +92,8 @@ export default defineConfig({
       '/broadcasting': { target: API, changeOrigin: false },
       '/webhooks': { target: API, changeOrigin: false },
       '/audio': { target: API, changeOrigin: false },
-      '/r': { target: API, changeOrigin: false, bypass: laisserPasserHtml },
+      // Reçu public : seulement /r/… (une clé « /r » capterait aussi /reglages, /robots.txt…).
+      '^/r/': { target: API, changeOrigin: false, bypass: laisserPasserHtml },
     },
   },
   build: {

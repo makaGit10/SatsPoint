@@ -50,7 +50,7 @@ export function PastilleAlerte({ alerte, className }: { alerte: AlerteVente; cla
   )
 }
 
-/** Icône du moyen de paiement : éclair orange (bitcoin) ou téléphone bleu (mobile money). */
+/** Icône du moyen de paiement : éclair or (bitcoin) ou téléphone bleu (mobile money). */
 export function IconeMethode({ methode, taille = 16, className, pleine }: { methode: MethodePaiement | null; taille?: number; className?: string; pleine?: boolean }) {
   const { t } = useTranslation()
   // Gabarit vide de la même taille : les lignes restent alignées sans moyen (vente expirée / annulée sans tentative).
@@ -63,7 +63,7 @@ export function IconeMethode({ methode, taille = 16, className, pleine }: { meth
       aria-label={t(`methodes.${methode}`)}
       className={cn(
         'inline-flex shrink-0 items-center justify-center rounded-md',
-        pleine ? (lightning ? 'bg-accent-doux text-accent-texte' : 'bg-mm-doux text-mm-texte') : lightning ? 'text-accent' : 'text-mm',
+        pleine ? (lightning ? 'bg-accent-doux text-accent-texte' : 'bg-mm-doux text-mm-texte') : lightning ? 'text-accent-trait' : 'text-mm-texte',
         className,
       )}
       style={pleine ? { width: taille * 2, height: taille * 2 } : undefined}

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Boutique\CreerBoutiqueRequest;
 use App\Http\Requests\Boutique\ModifierBoutiqueRequest;
 use App\Http\Resources\BoutiqueResource;
+use App\Http\Resources\UtilisateurResource;
 use App\Models\Boutique;
 use App\Models\Membre;
 use App\Services\BoutiqueCourante;
@@ -52,7 +53,11 @@ class BoutiqueController extends Controller
 
         $boutique->load(['connexionWallet', 'comptePaytech']);
 
-        return (new BoutiqueResource($boutique, $membre))->response()->setStatusCode(201);
+        // CONTRAT_API § 8 : `{ boutique, utilisateur }` — l'utilisateur (forme de GET /moi) évite un aller-retour au front.
+        return response()->json([
+            'boutique' => (new BoutiqueResource($boutique, $membre))->resolve($request),
+            'utilisateur' => (new UtilisateurResource($utilisateur->refresh(), $membre))->resolve($request),
+        ], 201);
     }
 
     /** GET /boutique */

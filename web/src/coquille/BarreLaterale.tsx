@@ -48,6 +48,8 @@ export function BarreLaterale() {
               key={e.chemin}
               to={e.chemin}
               aria-current={actif ? 'page' : undefined}
+              // Repliée, le texte disparaît : le nom accessible reste porté par l'étiquette (lecteurs d'écran, tests).
+              aria-label={repliee ? t(e.cle) : undefined}
               className={cn(
                 'group relative flex h-10 items-center gap-2.5 rounded-md px-2.5 text-sm font-medium transition-colors duration-150',
                 actif ? 'bg-accent-doux text-texte' : 'text-texte-2 hover:bg-surface-2 hover:text-texte',

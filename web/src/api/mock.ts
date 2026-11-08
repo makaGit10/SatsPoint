@@ -12,6 +12,7 @@
  * - `satspoint.mock.session.preferences` : préférences imposées ;
  * - `satspoint.mock.cours` = `indisponible` : le cours n'est plus disponible (Lightning bloqué) ;
  * - `satspoint.mock.wallet` = `deconnecte` : aucun portefeuille connecté ;
+ * - `satspoint.mock.moyens` = `aucun` : ni portefeuille, ni PayTech, ni lien Wave (aucun moyen de paiement branché) ;
  * - `satspoint.mock.vide` = `1` : boutique sans aucune vente.
  */
 import { emettreSignal } from '@/temps-reel/signaux'
@@ -484,6 +485,12 @@ if (sessionStorage.getItem('satspoint.mock.wallet') === 'deconnecte') {
   etat.wallet.connecte = false
   etat.boutique.configuration.wallet = false
 }
+if (sessionStorage.getItem('satspoint.mock.moyens') === 'aucun') {
+  etat.wallet.connecte = false
+  etat.boutique.configuration = { ...etat.boutique.configuration, wallet: false, paytech: false }
+  etat.boutique.paytech = { configure: false, environnement: 'test' }
+  etat.boutique.reglages = { ...etat.boutique.reglages, wave_lien: null }
+}
 const coursIndisponible = () => sessionStorage.getItem('satspoint.mock.cours') === 'indisponible'
 
 // ---------------------------------------------------------------------------
@@ -797,7 +804,7 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
     return json(204)
   }
 
-  if (chemin.startsWith('/audio/manifeste/')) {
+  if (chemin.startsWith('/api/v1/audio/manifeste/')) {
     const langue = chemin.split('/').pop() as LangueAudio
     if (!(langue in FREQUENCES)) return json(404, { message: 'Langue inconnue' })
     return json(200, manifeste(langue))

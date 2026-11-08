@@ -118,7 +118,7 @@ it('accepte une invitation valide dont le contact correspond au compte connecté
     expect(Membre::toutesBoutiques()->where('user_id', $moussa->id)->where('boutique_id', $boutique->id)->exists())->toBeTrue();
 
     // Usage unique.
-    connecte($moussa)->postJson("/api/v1/invitations/{$jeton}/accepter")->assertStatus(410);
+    connecte($moussa)->postJson("/api/v1/invitations/{$jeton}/accepter")->assertStatus(410)->assertJsonPath('code', 'INVITATION_EXPIREE');
 });
 
 it('refuse une invitation périmée, inconnue ou destinée à un autre contact', function () {
@@ -138,7 +138,7 @@ it('refuse une invitation périmée, inconnue ou destinée à un autre contact',
 
     $moussa = User::factory()->create(['email' => 'moussa@example.com']);
 
-    connecte($moussa)->postJson("/api/v1/invitations/{$perime}/accepter")->assertStatus(410);
+    connecte($moussa)->postJson("/api/v1/invitations/{$perime}/accepter")->assertStatus(410)->assertJsonPath('code', 'INVITATION_EXPIREE');
     connecte($moussa)->postJson('/api/v1/invitations/'.str_repeat('z', 48).'/accepter')->assertNotFound();
     connecte($moussa)->postJson("/api/v1/invitations/{$autre}/accepter")->assertForbidden();
 });
@@ -162,9 +162,9 @@ it('change le rôle d\'un membre ; un gérant ne touche pas aux propriétaires n
 it('empêche le dernier propriétaire de se rétrograder, de se désactiver ou de partir', function () {
     ['user' => $proprio, 'membre' => $membre] = boutiqueAvec('proprietaire');
 
-    connecte($proprio)->patchJson("/api/v1/equipe/{$membre->ulid}", ['role' => 'gerant'])->assertStatus(409);
-    connecte($proprio)->patchJson("/api/v1/equipe/{$membre->ulid}", ['actif' => false])->assertStatus(409);
-    connecte($proprio)->deleteJson("/api/v1/equipe/{$membre->ulid}")->assertStatus(409);
+    connecte($proprio)->patchJson("/api/v1/equipe/{$membre->ulid}", ['role' => 'gerant'])->assertStatus(422)->assertJsonPath('code', 'DERNIER_PROPRIETAIRE');
+    connecte($proprio)->patchJson("/api/v1/equipe/{$membre->ulid}", ['actif' => false])->assertStatus(422)->assertJsonPath('code', 'DERNIER_PROPRIETAIRE');
+    connecte($proprio)->deleteJson("/api/v1/equipe/{$membre->ulid}")->assertStatus(422)->assertJsonPath('code', 'DERNIER_PROPRIETAIRE');
 
     expect($membre->fresh()->role)->toBe('proprietaire')->and($membre->fresh()->actif)->toBeTrue();
 });
@@ -194,4 +194,24 @@ it('retire un membre (204) et révoque ses sessions', function () {
     expect(Membre::toutesBoutiques()->whereKey($membreGerant->id)->exists())->toBeFalse()
         ->and($gerant->fresh()->sessions_revoquees_at)->not->toBeNull()
         ->and(JournalAudit::query()->where('action', 'equipe.membre_retire')->exists())->toBeTrue();
+});
+
+it('renvoie des codes stables : membre déjà dans l\'équipe (409 DEJA_DANS_EQUIPE), compte déjà membre ailleurs (422 DEJA_MEMBRE)', function () {
+    Notification::fake();
+    ['user' => $proprio, 'boutique' => $boutique] = boutiqueAvec('proprietaire');
+    ['user' => $caissier] = boutiqueAvec('caissier', $boutique);
+
+    connecte($proprio)->postJson('/api/v1/equipe/invitations', ['contact' => $caissier->email, 'role' => 'caissier'])
+        ->assertStatus(409)->assertJsonPath('code', 'DEJA_DANS_EQUIPE');
+
+    // Une personne qui a déjà sa propre boutique ne peut pas en rejoindre une seconde.
+    ['user' => $autreProprio] = boutiqueAvec('proprietaire');
+    $jeton = str_repeat('d', 48);
+    avecBoutique($boutique, function () use ($jeton, $proprio, $autreProprio) {
+        (new Invitation(['contact' => $autreProprio->email, 'role' => 'caissier', 'expire_at' => now()->addHour()]))
+            ->forceFill(['jeton_hash' => Invitation::hacher($jeton), 'invite_par' => $proprio->id])->save();
+    });
+
+    connecte($autreProprio)->postJson("/api/v1/invitations/{$jeton}/accepter")
+        ->assertStatus(422)->assertJsonPath('code', 'DEJA_MEMBRE');
 });

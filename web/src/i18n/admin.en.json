@@ -102,25 +102,27 @@
         "equipe": "Team",
         "wallet": "Wallets",
         "paytech": "Mobile money",
-        "vente": "Sales"
+        "vente": "Sales",
+        "paiement": "Payments",
+        "plateforme": "Platform (suspensions)"
       },
       "actions": {
         "auth_connexion": "Sign-in",
-        "auth_echec_connexion": "Sign-in refused",
+        "auth_echec": "Sign-in refused",
         "auth_2fa_verifiee": "Two-factor verified",
         "auth_2fa_activee": "Two-factor turned on",
         "auth_2fa_desactivee": "Two-factor turned off",
         "auth_2fa_echec": "Two-factor code refused",
         "audio_publie": "Audio published",
         "boutique_creee": "Shop created",
-        "boutique_suspendue": "Shop suspended",
-        "boutique_reactivee": "Shop reactivated",
+        "plateforme_boutique_suspendue": "Shop suspended",
+        "plateforme_boutique_reactivee": "Shop reactivated",
         "wallet_connecte": "Wallet connected",
-        "wallet_envoi": "Sats sent",
+        "wallet_envoi_reussi": "Sats sent",
         "paytech_ipn_refusee": "PayTech notification refused",
         "paytech_configure": "Mobile money set up",
-        "equipe_invitation": "Invitation sent",
-        "vente_confirmee_manuellement": "Payment confirmed manually"
+        "equipe_invitation_creee": "Invitation sent",
+        "paiement_confirme_manuellement": "Payment confirmed manually"
       }
     }
   },
@@ -342,7 +344,7 @@
       "nomTropLong": "name too long (120 characters maximum)",
       "prixInvalide": "unreadable price",
       "skuInvalide": "invalid reference (letters, digits, . _ -)",
-      "couleurInconnue": "unknown colour",
+      "couleurInconnue": "colour must be #RRGGBB",
       "actifInvalide": "“on sale” must be yes or no"
     },
     "modes": {

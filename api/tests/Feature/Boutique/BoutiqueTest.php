@@ -19,7 +19,11 @@ it('crée une boutique et rend l\'utilisateur propriétaire', function () {
         ->assertJsonPath('boutique.reglages', ['expiration_facture_min' => 5, 'montant_max_xof' => 2000000, 'moyens' => ['lightning' => true, 'paytech' => false, 'wave_manuel' => false], 'message_recu' => null, 'wave_lien' => null])
         ->assertJsonPath('boutique.configuration', ['wallet' => false, 'paytech' => false, 'paiement_test' => false])
         ->assertJsonPath('boutique.paytech', ['configure' => false, 'environnement' => 'test'])
-        ->assertJsonMissingPath('boutique.reglages.paiement_test');
+        ->assertJsonMissingPath('boutique.reglages.paiement_test')
+        // CONTRAT_API § 8 : la nouvelle forme de GET /moi est renvoyée avec la boutique.
+        ->assertJsonPath('utilisateur.ulid', $user->ulid)
+        ->assertJsonPath('utilisateur.boutique.role', 'proprietaire')
+        ->assertJsonPath('utilisateur.boutique.nom', 'Chez Awa');
 
     expect(Membre::toutesBoutiques()->where('user_id', $user->id)->where('role', 'proprietaire')->exists())->toBeTrue();
     expect(JournalAudit::query()->where('action', 'boutique.creee')->exists())->toBeTrue();

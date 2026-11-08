@@ -76,19 +76,19 @@
     },
     "inscription": {
       "titre": "Create my shop",
-      "sousTitre": "An account in under a minute. You will set up your shop right after.",
+      "sousTitre": "Three details and you're set. Your shop comes right after.",
       "nom": "Your name",
       "identifiant": "Phone or email",
       "identifiantAide": "You will use it to sign in.",
       "motDePasse": "Password",
       "motDePasseAide": "At least 12 characters.",
-      "confirmation": "Confirm password",
       "confirmationErreur": "The two passwords do not match.",
-      "motDePasseCourt": "The password must be at least 12 characters long.",
+      "motDePasseCourt": "The password must be at least 12 characters long. Add a few words or numbers.",
       "valider": "Create my account",
-      "dejaUnCompte": "Already have an account?",
-      "connexion": "Sign in",
-      "succes": "Your account is ready. Welcome!"
+      "succes": "Your account is ready. Welcome!",
+      "nomRequis": "This field is required. Type your first and last name.",
+      "identifiantRequis": "This field is required. Type your phone number or email.",
+      "jaiUnCompte": "I already have an account"
     },
     "oubli": {
       "titre": "Forgot password",
@@ -109,7 +109,22 @@
       "succes": "Password changed. You can sign in.",
       "lienInvalide": "This link is no longer valid. Request a new one."
     },
-    "champRequis": "This field is required."
+    "champRequis": "This field is required.",
+    "identifiant": {
+      "indicatif": "Country code",
+      "exemple": "e.g. 77 123 45 67 or awa@example.com",
+      "telephoneSenegal": "This number is incomplete. A Senegal number has 9 digits, for example 77 123 45 67.",
+      "telephoneInvalide": "This number doesn't look right. Check the country code and the number of digits.",
+      "emailInvalide": "This email address is not valid. Check that it looks like name@example.com.",
+      "invalide": "This is neither a phone number nor an email. Type your phone number or email address."
+    },
+    "motDePasse": {
+      "minimum": "At least {{count}} characters.",
+      "encore_one": "{{count}} more character to reach 12.",
+      "encore_other": "{{count}} more characters to reach 12.",
+      "correct": "Good. Longer is even safer.",
+      "solide": "Strong password."
+    }
   },
   "nav": {
     "caisse": "Checkout",
@@ -248,14 +263,16 @@
     "montantLibre": "Custom amount",
     "aucunMoyen": "No payment method is active.",
     "aucunMoyenAction": "Enable one in the settings.",
-    "ouvrirReglages": "Open settings",
     "walletInjoignable": "Your wallet is not responding.",
     "walletNonConnecte": "No wallet connected: bitcoin is unavailable.",
     "connecterWallet": "Connect my wallet",
     "vide": {
       "titre": "Your checkout is on its way",
       "texte": "Type an amount, charge in bitcoin or mobile money, and watch the payment land live."
-    }
+    },
+    "brancherMoyen": "Connect a payment method",
+    "aucunMoyenGestion": "Connect your bitcoin wallet or mobile money to start taking payments.",
+    "aucunMoyenCaissier": "Ask the shop owner to connect one."
   },
   "paiement": {
     "titre": "Payment request",
@@ -476,6 +493,7 @@
     "supprimerTitre": "Delete the PayTech keys?",
     "supprimerTexte": "Mobile money will be disabled until new keys are entered.",
     "enregistre": "Settings saved",
+    "unMoyenRequis": "At least one payment method must stay active.",
     "vide": {
       "titre": "Shop settings",
       "texte": "Name, city, payment request duration, maximum amount and receipt message: everything is set here."

@@ -17,7 +17,7 @@ const POINTS: Record<TonPastille, string> = {
   attente: 'bg-attente',
   neutre: 'bg-neutre',
   danger: 'bg-danger',
-  accent: 'bg-accent',
+  accent: 'bg-accent-trait',
   mm: 'bg-mm',
 }
 

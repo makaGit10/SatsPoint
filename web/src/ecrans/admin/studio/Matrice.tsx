@@ -66,7 +66,7 @@ export function MatriceBureau({ cles, langues, langue, selection, onChoisir }: P
                     <button type="button" onClick={() => onChoisir(c.cle, langue)} className="block w-full min-w-0 text-left">
                       <span className="flex items-center gap-1">
                         <span className="truncate font-medium text-texte">{c.texte_fr}</span>
-                        {c.essentielle && <Star size={11} className="shrink-0 fill-current text-attente" aria-label={t('studio.essentielle')} />}
+                        {c.essentielle && <Star size={11} className="shrink-0 fill-current text-accent-trait" aria-label={t('studio.essentielle')} />}
                       </span>
                       <span className="block truncate font-mono text-2xs text-texte-3" data-technique>
                         {c.cle}
@@ -129,7 +129,7 @@ export function MatriceMobile({ cles, langues, langue, selection, onChoisir }: P
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-1">
                         <span className="truncate text-sm font-medium text-texte">{c.texte_fr}</span>
-                        {c.essentielle && <Star size={11} className="shrink-0 fill-current text-attente" aria-hidden="true" />}
+                        {c.essentielle && <Star size={11} className="shrink-0 fill-current text-accent-trait" aria-hidden="true" />}
                       </span>
                       <span className="block truncate text-xs text-texte-3">{c.texte_en}</span>
                     </span>

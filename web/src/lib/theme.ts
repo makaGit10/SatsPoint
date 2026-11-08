@@ -8,9 +8,12 @@ export function estTheme(valeur: unknown): valeur is Theme {
   return valeur === 'clair' || valeur === 'sombre' || valeur === 'auto'
 }
 
+/** Thème au premier lancement : clair (identité « blanc et or ») ; « automatique » reste un choix possible. */
+export const THEME_PAR_DEFAUT: Theme = 'clair'
+
 function lireThemeMemorise(): Theme {
   const v = lireStockage(CLES_STOCKAGE.theme)
-  return estTheme(v) ? v : 'auto'
+  return estTheme(v) ? v : THEME_PAR_DEFAUT
 }
 
 /** Thème réellement affiché (résout « auto » selon le système). */
@@ -19,7 +22,8 @@ export function themeEffectif(theme: Theme): 'clair' | 'sombre' {
   return typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'sombre' : 'clair'
 }
 
-const COULEURS_BARRE = { clair: '#ffffff', sombre: '#0f1115' } as const
+/** Couleur de la barre d'état : alignée sur --fond (jetons.css). */
+const COULEURS_BARRE = { clair: '#faf9f6', sombre: '#141311' } as const
 
 export function appliquerTheme(theme: Theme) {
   if (typeof document === 'undefined') return
@@ -47,7 +51,8 @@ export const useTheme = create<EtatTheme>((set) => ({
   theme: lireThemeMemorise(),
   definir: (theme) => {
     appliquerTheme(theme)
-    ecrireStockage(CLES_STOCKAGE.theme, theme === 'auto' ? null : theme)
+    // « auto » est mémorisé explicitement : sans valeur, on retombe sur le thème par défaut (clair).
+    ecrireStockage(CLES_STOCKAGE.theme, theme)
     set({ theme })
   },
 }))

@@ -1,12 +1,13 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, useLocation, useSearchParams } from 'react-router-dom'
 import type { RoleBoutique } from '@/api/types'
-import { deuxFaAActiver, deuxFaAValider, estSuperAdmin, peut, useAuth } from '@/auth/store'
+import { destinationDeconnexion, deuxFaAActiver, deuxFaAValider, estSuperAdmin, peut, useAuth } from '@/auth/store'
 import { notifier } from '@/composants/toastStore'
 import { cheminAccueil } from '@/coquille/navigation'
 import { SqueletteApplication } from '@/coquille/SqueletteEcran'
 import { langueChoisie } from '@/lib/stockage'
+import { suiteSure } from './navigation'
 
 /** `/` : aiguille vers la langue, l'accueil ou l'espace de la personne. */
 export function Aiguillage() {
@@ -19,9 +20,16 @@ export function Aiguillage() {
 /** Écrans réservés aux personnes non connectées (connexion, inscription…). */
 export function RequiertInvite() {
   const { statut, utilisateur } = useAuth()
+  const [params] = useSearchParams()
   if (!langueChoisie()) return <Navigate to="/langue" replace />
   if (statut === 'inconnu') return <SqueletteApplication />
-  if (statut === 'connecte') return <Navigate to={cheminAccueil(utilisateur)} replace />
+  if (statut === 'connecte') {
+    // Connexion ou inscription réussie : la session est appliquée avant que l'écran ne navigue lui-même,
+    // c'est donc cette garde qui honore `?suite=` (chemin interne uniquement) et la double authentification.
+    const vers = suiteSure(params.get('suite')) ?? cheminAccueil(utilisateur)
+    if (utilisateur?.deux_fa?.active && !utilisateur.deux_fa.validee) return <Navigate to={`/verification-2fa?suite=${encodeURIComponent(vers)}`} replace />
+    return <Navigate to={vers} replace />
+  }
   return <Outlet />
 }
 
@@ -31,7 +39,7 @@ export function RequiertSession() {
   const { pathname, search } = useLocation()
   if (statut === 'inconnu') return <SqueletteApplication />
   const suite = encodeURIComponent(`${pathname}${search}`)
-  if (statut === 'anonyme') return <Navigate to={`/connexion?suite=${suite}`} replace />
+  if (statut === 'anonyme') return <Navigate to={destinationDeconnexion() ?? `/connexion?suite=${suite}`} replace />
   if (deuxFaAValider(utilisateur) && pathname !== '/verification-2fa') return <Navigate to={`/verification-2fa?suite=${suite}`} replace />
   return <Outlet />
 }
@@ -59,6 +67,13 @@ function AccesRefuse({ vers }: { vers: string }) {
 export function RequiertRole({ roles }: { roles: readonly RoleBoutique[] }) {
   const utilisateur = useAuth((s) => s.utilisateur)
   if (!peut(utilisateur, roles)) return <AccesRefuse vers={cheminAccueil(utilisateur)} />
+  return <Outlet />
+}
+
+/** `/demarrage` : la personne sans boutique (création) ou le propriétaire ; gérant et caissier n'y ont rien à faire. */
+export function RequiertDemarrage() {
+  const utilisateur = useAuth((s) => s.utilisateur)
+  if (utilisateur?.boutique && !peut(utilisateur, ['proprietaire'])) return <AccesRefuse vers={cheminAccueil(utilisateur)} />
   return <Outlet />
 }
 

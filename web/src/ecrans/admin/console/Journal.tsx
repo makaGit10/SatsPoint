@@ -11,7 +11,7 @@ import { SqueletteListe } from '@/composants/Squelette'
 import { cn } from '@/lib/cn'
 import { formaterDateHeure, type Locale } from '@/lib/format'
 
-const FAMILLES = ['auth', 'audio', 'boutique', 'equipe', 'wallet', 'paytech', 'vente'] as const
+const FAMILLES = ['auth', 'audio', 'boutique', 'plateforme', 'equipe', 'wallet', 'paytech', 'vente', 'paiement'] as const
 
 const ICONES: Record<string, ReactNode> = {
   auth: <KeyRound />,
@@ -21,6 +21,8 @@ const ICONES: Record<string, ReactNode> = {
   wallet: <Wallet />,
   paytech: <Zap />,
   vente: <ScrollText />,
+  paiement: <ScrollText />,
+  plateforme: <Store />,
 }
 
 /** Actions qui méritent l'œil (refus, échecs, suspensions). */

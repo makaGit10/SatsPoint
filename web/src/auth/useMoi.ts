@@ -3,11 +3,12 @@ import { useEffect } from 'react'
 import { connecter, deconnecter, demanderReinitialisation, inscrire, reinitialiserMotDePasse } from '@/api/auth'
 import { CLE_MOI, chargerMoi, enregistrerPreferences } from '@/api/moi'
 import type { DonneesConnexion, DonneesInscription, DonneesReinitialisation, Preferences, Utilisateur } from '@/api/types'
-import { changerLocale } from '@/i18n'
+import i18n, { changerLocale } from '@/i18n'
+import { notifier } from '@/composants/toastStore'
 import { queryClient } from '@/lib/queryClient'
 import { useTheme } from '@/lib/theme'
 import { useVoix } from '@/voix/store'
-import { useAuth } from './store'
+import { signalerDeconnexionVolontaire, useAuth } from './store'
 
 /** Session courante : `data` = utilisateur, `null` si anonyme, `undefined` tant que c'est inconnu. */
 export function useMoi() {
@@ -67,20 +68,35 @@ export function useInscription() {
   const appliquer = useAppliquerSession()
   return useMutation({
     mutationFn: (donnees: DonneesInscription) => inscrire(donnees),
-    onSuccess: ({ utilisateur }) => appliquer(utilisateur),
+    onSuccess: ({ utilisateur }) => {
+      // Le message part avant d'appliquer la session : l'écran d'inscription est aussitôt démonté par la garde.
+      notifier({ type: 'succes', titre: i18n.t('auth.inscription.succes'), voix: 'auth.inscription.succes' })
+      // Le nouveau compte garde le thème déjà affiché sur l'appareil (clair par défaut) plutôt que celui par défaut du serveur.
+      const themeAppareil = useTheme.getState().theme
+      if (utilisateur.preferences.theme !== themeAppareil) {
+        appliquer({ ...utilisateur, preferences: { ...utilisateur.preferences, theme: themeAppareil } })
+        enregistrerPreferences({ theme: themeAppareil }).catch(() => undefined)
+      } else {
+        appliquer(utilisateur)
+      }
+    },
   })
 }
 
-export function useDeconnexion() {
+export function useDeconnexion(destination: '/accueil' | '/connexion' = '/accueil') {
   const client = useQueryClient()
   const effacer = useAuth((s) => s.effacer)
   return useMutation({
     mutationFn: deconnecter,
+    // La garde de session lit la destination : sans cela, la page quittée renvoie vers `/connexion?suite=<page>`
+    // (session effacée avant que l'écran ne navigue lui-même, et 401 des requêtes encore en vol).
+    onMutate: () => signalerDeconnexionVolontaire(destination),
     onSettled: () => {
       effacer()
       client.setQueryData(CLE_MOI, null)
       // On vide les données métier mais on garde la config publique et les manifestes audio.
       client.removeQueries({ predicate: (q) => !['config', 'audio'].includes(String(q.queryKey[0])) })
+      setTimeout(() => signalerDeconnexionVolontaire(null), 1000)
     },
   })
 }

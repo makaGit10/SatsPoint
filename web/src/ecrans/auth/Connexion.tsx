@@ -1,16 +1,17 @@
-import { LogIn, Phone } from 'lucide-react'
+import { LogIn } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ErreurApi } from '@/api/client'
 import { useConnexion } from '@/auth/useMoi'
 import { Bouton } from '@/composants/Bouton'
-import { Champ } from '@/composants/Champ'
 import { cheminAccueil } from '@/coquille/navigation'
 import { MiseEnPageInvite } from '@/coquille/MiseEnPageInvite'
 import { suiteSure } from '@/routes/navigation'
 import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
+import { ChampIdentifiant } from './ChampIdentifiant'
 import { ChampMotDePasse, ErreurFormulaire, TitreAuth } from './communs'
+import { SAISIE_VIDE, valeurIdentifiant, type SaisieIdentifiant } from './identifiant'
 import { useMessageErreur } from './useMessageErreur'
 
 export default function Connexion() {
@@ -21,7 +22,7 @@ export default function Connexion() {
   const messageErreur = useMessageErreur()
   useSaisieEnCours()
 
-  const [identifiant, setIdentifiant] = useState('')
+  const [identifiant, setIdentifiant] = useState<SaisieIdentifiant>(SAISIE_VIDE)
   const [motDePasse, setMotDePasse] = useState('')
   const [seSouvenir, setSeSouvenir] = useState(true)
   const [erreur, setErreur] = useState<string | null>(null)
@@ -31,13 +32,13 @@ export default function Connexion() {
     e.preventDefault()
     setErreur(null)
     const champs: typeof erreursChamps = {}
-    if (!identifiant.trim()) champs.identifiant = t('auth.champRequis')
+    if (!valeurIdentifiant(identifiant)) champs.identifiant = t('auth.champRequis')
     if (!motDePasse) champs.password = t('auth.champRequis')
     setErreursChamps(champs)
     if (Object.keys(champs).length) return
 
     connexion.mutate(
-      { identifiant: identifiant.trim(), password: motDePasse, se_souvenir: seSouvenir },
+      { identifiant: valeurIdentifiant(identifiant), password: motDePasse, se_souvenir: seSouvenir },
       {
         onSuccess: ({ utilisateur }) => {
           const suite = suiteSure(params.get('suite'))
@@ -57,19 +58,8 @@ export default function Connexion() {
   return (
     <MiseEnPageInvite ecran="connexion">
       <TitreAuth titre={t('auth.connexion.titre')} sousTitre={t('auth.connexion.sousTitre')} voix="auth.connexion.titre" />
-      <form onSubmit={soumettre} noValidate className="flex flex-col gap-3">
-        <Champ
-          libelle={t('auth.connexion.identifiant')}
-          name="identifiant"
-          autoComplete="username"
-          inputMode="email"
-          icone={<Phone />}
-          value={identifiant}
-          onChange={(e) => setIdentifiant(e.target.value)}
-          erreur={erreursChamps.identifiant}
-          autoCapitalize="none"
-          spellCheck={false}
-        />
+      <form onSubmit={soumettre} noValidate className="flex flex-col gap-3.5">
+        <ChampIdentifiant libelle={t('auth.connexion.identifiant')} saisie={identifiant} onChange={setIdentifiant} erreur={erreursChamps.identifiant} />
         <ChampMotDePasse
           libelle={t('auth.connexion.motDePasse')}
           name="password"
@@ -83,7 +73,7 @@ export default function Connexion() {
               type="checkbox"
               checked={seSouvenir}
               onChange={(e) => setSeSouvenir(e.target.checked)}
-              className="size-4 rounded-xs border-bordure-forte accent-[var(--accent)]"
+              className="size-4 rounded-xs border-bordure-forte accent-[var(--accent-trait)]"
             />
             {t('auth.connexion.seSouvenir')}
           </label>
@@ -92,7 +82,7 @@ export default function Connexion() {
           </Link>
         </div>
         <ErreurFormulaire message={erreur} />
-        <Bouton type="submit" taille="lg" pleineLargeur chargement={connexion.isPending} icone={<LogIn />} voix="auth.connexion.valider">
+        <Bouton type="submit" taille="xl" pleineLargeur className="mt-1 md:h-12 md:text-lg" chargement={connexion.isPending} icone={<LogIn />} voix="auth.connexion.valider">
           {t('auth.connexion.valider')}
         </Bouton>
       </form>
