@@ -2,7 +2,7 @@
 
 use App\Models\JournalAudit;
 use App\Models\User;
-use Illuminate\Support\Facades\Http;
+use Tests\TestCase;
 
 it('inscrit un utilisateur par e-mail, le connecte et renvoie la forme attendue', function () {
     $reponse = $this->postJson('/api/v1/auth/inscription', [
@@ -47,7 +47,7 @@ it('refuse un mot de passe trop court', function () {
 it('refuse un mot de passe compromis (HIBP)', function () {
     $mdp = 'password-compromis-2026';
     $hash = strtoupper(sha1($mdp));
-    Tests\TestCase::$corpsHibp = substr($hash, 5).':1234';
+    TestCase::$corpsHibp = substr($hash, 5).':1234';
 
     $this->postJson('/api/v1/auth/inscription', [
         'nom' => 'Awa',

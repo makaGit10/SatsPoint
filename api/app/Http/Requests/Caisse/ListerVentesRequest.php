@@ -28,7 +28,7 @@ class ListerVentesRequest extends FormRequest
             'q' => ['sometimes', 'nullable', 'string', 'max:40'],
             'curseur' => ['sometimes', 'nullable', 'string', 'max:500'],
             'limite' => ['sometimes', 'integer', 'min:1', 'max:100'],
-            'format' => ['sometimes', 'string', 'in:csv'],
+            'format' => ['sometimes', 'string', 'in:csv,xlsx,pdf'],
         ];
     }
 

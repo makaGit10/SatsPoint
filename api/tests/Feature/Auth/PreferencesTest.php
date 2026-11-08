@@ -15,6 +15,7 @@ it('renvoie /moi avec la forme exacte attendue et la boutique courante', functio
                 'telephone' => null,
                 'role_plateforme' => null,
                 'preferences' => ['locale' => 'fr', 'langue_audio' => 'wo', 'theme' => 'auto', 'aide_vocale' => true],
+                'deux_fa' => ['active' => false, 'requise' => false, 'validee' => false],
                 'boutique' => [
                     'ulid' => $boutique->ulid,
                     'nom' => $boutique->nom,

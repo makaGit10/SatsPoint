@@ -4,47 +4,52 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Audio;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * GET /api/v1/audio/manifeste/{langue} → { langue, version, audios: { cle: url } }
- * Lit les audios PUBLIÉS ; cache 60 s ; ETag (304 si inchangé).
+ *
+ * Lit les audios PUBLIÉS ; URL versionnées immuables (/audio/{langue}/{cle}.{empreinte8}.mp3) ;
+ * `version` = empreinte du contenu du manifeste ; cache (invalidé à chaque publication) ; ETag / 304.
  */
 class ManifesteAudioController extends Controller
 {
     public const CLE_CACHE = 'audio.manifeste.';
 
+    /** Durée du cache applicatif : la publication l'invalide, c'est une simple sécurité. */
+    private const CACHE_S = 3600;
+
     public function __invoke(Request $request, string $langue): Response
     {
-        $langues = array_column(config('satspoint.langues_audio'), 'code');
+        abort_unless(in_array($langue, self::langues(), true), 404);
 
-        abort_unless(in_array($langue, $langues, true), 404);
-
-        $manifeste = Cache::remember(self::CLE_CACHE.$langue, 60, fn () => $this->construire($langue));
-
-        $etag = '"'.hash('sha256', $manifeste['version'].'|'.$langue).'"';
+        $manifeste = Cache::remember(self::CLE_CACHE.$langue, self::CACHE_S, fn () => $this->construire($langue));
 
         $reponse = response()->json($manifeste)
-            ->setEtag($etag)
+            ->setEtag('"'.$manifeste['version'].'"')
             ->setPublic()
             ->setMaxAge(60)
             ->header('Vary', 'Accept-Encoding');
 
-        if ($reponse->isNotModified($request)) {
-            return $reponse; // 304, corps vide
-        }
+        // 304 (corps vide) si le client possède déjà cette version.
+        $reponse->isNotModified($request);
 
         return $reponse;
     }
 
     public static function invaliderCache(): void
     {
-        foreach (array_column(config('satspoint.langues_audio'), 'code') as $langue) {
+        foreach (self::langues() as $langue) {
             Cache::forget(self::CLE_CACHE.$langue);
         }
+    }
+
+    /** @return list<string> */
+    public static function langues(): array
+    {
+        return array_column(config('satspoint.langues_audio'), 'code');
     }
 
     private function construire(string $langue): array
@@ -54,19 +59,18 @@ class ManifesteAudioController extends Controller
             ->where('audios.langue', $langue)
             ->where('audios.statut', Audio::STATUT_PUBLIE)
             ->orderBy('cles_audio.cle')
-            ->get(['cles_audio.cle', 'audios.empreinte', 'audios.publie_at']);
+            ->get(['cles_audio.cle', 'audios.chemin']);
 
         $liste = [];
-        $dernier = null;
 
         foreach ($audios as $audio) {
-            $liste[$audio->cle] = url(sprintf('/audio/%s/%s.%s.mp3', $langue, $audio->cle, substr($audio->empreinte, 0, 16)));
-            $dernier = max($dernier ?? '', (string) $audio->publie_at);
+            $liste[$audio->cle] = url('/'.ltrim($audio->chemin, '/'));
         }
 
         return [
             'langue' => $langue,
-            'version' => substr(hash('sha256', $langue.'|'.count($liste).'|'.($dernier ?? '0').'|'.implode(',', array_keys($liste))), 0, 16),
+            // Empreinte du contenu : change dès qu'une clé est ajoutée, retirée ou remplacée (URL différente).
+            'version' => substr(hash('sha256', $langue.'|'.json_encode($liste)), 0, 16),
             'audios' => (object) $liste,
         ];
     }

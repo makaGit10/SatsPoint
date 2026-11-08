@@ -14,7 +14,6 @@
 		X-Content-Type-Options nosniff
 		X-Frame-Options DENY
 		Referrer-Policy strict-origin-when-cross-origin
-		Permissions-Policy "camera=(self), microphone=(self), geolocation=(), payment=()"
 		-Server
 		-X-Powered-By
 	}
@@ -22,6 +21,8 @@
 	# API Laravel, reçus publics, webhooks, fichiers audio
 	@backend path /api/* /broadcasting/* /sanctum/* /r/* /webhooks/* /audio/* /internal/* /sante /up
 	handle @backend {
+		# L'API pose sa propre Permissions-Policy (tout interdit) ; repli si une réponse n'en a pas.
+		header ?Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
 		root * /app/api/public
 		php_server
 	}
@@ -34,6 +35,8 @@
 
 	# Front (PWA compilée). En développement le front tourne sur Vite (hôte), ce bloc ne sert pas.
 	handle {
+		# Micro (studio audio : MediaRecorder) et caméra (scan de QR) : même origine seulement, front uniquement.
+		header Permissions-Policy "camera=(self), microphone=(self), geolocation=(), payment=(), usb=()"
 		root * /app/web-dist
 		@immutable path /assets/*
 		header @immutable Cache-Control "public, max-age=31536000, immutable"

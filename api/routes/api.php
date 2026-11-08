@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\AudioStudioController;
+use App\Http\Controllers\Api\V1\Admin\ConsoleController;
 use App\Http\Controllers\Api\V1\ArticleController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BoutiqueController;
@@ -7,12 +9,16 @@ use App\Http\Controllers\Api\V1\BoutiquePaytechController;
 use App\Http\Controllers\Api\V1\BoutiqueWalletController;
 use App\Http\Controllers\Api\V1\ConfigController;
 use App\Http\Controllers\Api\V1\CoursController;
+use App\Http\Controllers\Api\V1\DeuxFacteursController;
 use App\Http\Controllers\Api\V1\EquipeController;
+use App\Http\Controllers\Api\V1\ExportController;
+use App\Http\Controllers\Api\V1\ImportController;
 use App\Http\Controllers\Api\V1\InvitationController;
 use App\Http\Controllers\Api\V1\ManifesteAudioController;
 use App\Http\Controllers\Api\V1\MoiController;
 use App\Http\Controllers\Api\V1\MotDePasseController;
 use App\Http\Controllers\Api\V1\PaiementController;
+use App\Http\Controllers\Api\V1\RechercheController;
 use App\Http\Controllers\Api\V1\TableauDeBordController;
 use App\Http\Controllers\Api\V1\VenteController;
 use App\Http\Controllers\Api\V1\WalletController;
@@ -30,6 +36,9 @@ Route::pattern('invitation', Membre::ULID_REGEX);
 Route::pattern('vente', Membre::ULID_REGEX);
 Route::pattern('paiement', Membre::ULID_REGEX);
 Route::pattern('article', Membre::ULID_REGEX);
+Route::pattern('import', Membre::ULID_REGEX);
+Route::pattern('boutique', Membre::ULID_REGEX);
+Route::pattern('audio', '[0-9]{1,12}');
 Route::pattern('jeton', '[A-Za-z0-9]{40,64}');
 Route::pattern('langue', '[a-z]{2,3}');
 
@@ -38,6 +47,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     // ---- Public --------------------------------------------------------
     Route::get('config', ConfigController::class)->middleware('throttle:public')->name('config');
     Route::get('audio/manifeste/{langue}', ManifesteAudioController::class)->middleware('throttle:public')->name('audio.manifeste');
+    // Invitation : aperçu public (contact masqué), CONTRAT_API V3.8.
+    Route::get('invitations/{jeton}', [InvitationController::class, 'show'])->middleware('throttle:invitation-publique')->name('invitations.show');
 
     // ---- Authentification ---------------------------------------------
     Route::prefix('auth')->name('auth.')->group(function () {
@@ -50,10 +61,18 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('deconnexion', [AuthController::class, 'deconnexion'])->name('deconnexion');
             Route::post('deconnexion-partout', [AuthController::class, 'deconnexionPartout'])->name('deconnexion-partout');
         });
+
+        // ---- 2FA TOTP (CONTRAT_API vague 3 § 2) : 5 / min, jamais soumis à « 2fa.obligatoire ».
+        Route::middleware(['auth:sanctum', 'session.valide', 'throttle:deux-fa'])->prefix('2fa')->name('2fa.')->group(function () {
+            Route::post('initialiser', [DeuxFacteursController::class, 'initialiser'])->name('initialiser');
+            Route::post('activer', [DeuxFacteursController::class, 'activer'])->name('activer');
+            Route::post('verifier', [DeuxFacteursController::class, 'verifier'])->name('verifier');
+            Route::delete('/', [DeuxFacteursController::class, 'desactiver'])->name('desactiver');
+        });
     });
 
     // ---- Espace connecté ----------------------------------------------
-    Route::middleware(['auth:sanctum', 'session.valide', 'throttle:api'])->group(function () {
+    Route::middleware(['auth:sanctum', 'session.valide', 'boutique.active', 'throttle:api'])->group(function () {
         Route::get('moi', [MoiController::class, 'show'])->name('moi');
         Route::patch('moi/preferences', [MoiController::class, 'preferences'])->name('moi.preferences');
 
@@ -78,15 +97,33 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('ventes/{vente}', [VenteController::class, 'show'])->name('ventes.show');
         Route::post('ventes/{vente}/paiements', [VenteController::class, 'nouvelleTentative'])->middleware('throttle:ventes')->name('ventes.paiements.store');
         Route::post('ventes/{vente}/annuler', [VenteController::class, 'annuler'])->name('ventes.annuler');
-        Route::get('exports/ventes', [VenteController::class, 'exporter'])->middleware('throttle:exports')->name('exports.ventes');
 
         Route::get('paiements/{paiement}', [PaiementController::class, 'show'])->name('paiements.show');
         Route::post('paiements/{paiement}/verifier', [PaiementController::class, 'verifier'])->middleware('throttle:verification-paiement')->name('paiements.verifier');
         Route::post('paiements/{paiement}/simuler', [PaiementController::class, 'simuler'])->middleware('throttle:verification-paiement')->name('paiements.simuler');
         Route::post('paiements/{paiement}/confirmer-manuellement', [PaiementController::class, 'confirmerManuellement'])->name('paiements.confirmer-manuellement');
 
+        // ---- Exports (CONTRAT_API vague 3 § 6) : propriétaire / gérant, 6 / min
+        Route::middleware('throttle:exports')->prefix('exports')->name('exports.')->group(function () {
+            Route::get('ventes', [ExportController::class, 'ventes'])->name('ventes');
+            Route::get('articles', [ExportController::class, 'articles'])->name('articles');
+            Route::get('paiements', [ExportController::class, 'paiements'])->name('paiements');
+        });
+
+        // ---- Import d'articles (CONTRAT_API vague 3 § 5) : propriétaire / gérant
+        Route::post('imports/analyser', [ImportController::class, 'analyser'])->middleware('throttle:imports')->name('imports.analyser');
+        Route::post('imports/{import}/executer', [ImportController::class, 'executer'])->middleware('throttle:imports')->name('imports.executer');
+        Route::get('imports/{import}', [ImportController::class, 'show'])->name('imports.show');
+        Route::get('imports/{import}/rapport', [ImportController::class, 'rapport'])->name('imports.rapport');
+
         // ---- Tableau de bord --------------------------------------------
         Route::get('tableau-de-bord', TableauDeBordController::class)->name('tableau-de-bord');
+
+        // ---- Recherche globale (CONTRAT_API vague 3 § 4) : 60 / min
+        Route::get('recherche', [RechercheController::class, 'chercher'])->middleware('throttle:recherche')->name('recherche');
+        Route::get('recherche/recentes', [RechercheController::class, 'recentes'])->name('recherche.recentes');
+        Route::post('recherche/recentes', [RechercheController::class, 'memoriser'])->middleware('throttle:recherche')->name('recherche.recentes.store');
+        Route::delete('recherche/recentes', [RechercheController::class, 'effacer'])->name('recherche.recentes.destroy');
 
         // ---- Portefeuille (CONTRAT_API § 7) ------------------------------
         Route::get('wallet', [WalletController::class, 'show'])->name('wallet.show');
@@ -108,5 +145,21 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('articles/ordre', [ArticleController::class, 'ordre'])->name('articles.ordre');
         Route::patch('articles/{article}', [ArticleController::class, 'update'])->name('articles.update');
         Route::delete('articles/{article}', [ArticleController::class, 'destroy'])->name('articles.destroy');
+    });
+
+    // ---- Console plateforme (CONTRAT_API vague 3 § 1 et 3) : super-admin + 2FA vérifiée ----
+    Route::middleware(['auth:sanctum', 'session.valide', 'super.admin', '2fa.obligatoire', 'throttle:api'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('audio/matrice', [AudioStudioController::class, 'matrice'])->name('audio.matrice');
+        Route::post('audio', [AudioStudioController::class, 'store'])->middleware('throttle:upload-audio')->name('audio.store');
+        Route::post('audio/publier', [AudioStudioController::class, 'publier'])->name('audio.publier');
+        Route::get('audio/{audio}', [AudioStudioController::class, 'show'])->name('audio.show');
+        Route::get('audio/{audio}/ecouter', [AudioStudioController::class, 'ecouter'])->name('audio.ecouter');
+        Route::delete('audio/{audio}', [AudioStudioController::class, 'destroy'])->name('audio.destroy');
+
+        Route::get('boutiques', [ConsoleController::class, 'boutiques'])->name('boutiques');
+        Route::patch('boutiques/{boutique}', [ConsoleController::class, 'statutBoutique'])->name('boutiques.statut');
+        Route::get('sante', [ConsoleController::class, 'sante'])->name('sante');
+        Route::get('journal', [ConsoleController::class, 'journal'])->name('journal');
+        Route::get('statistiques', [ConsoleController::class, 'statistiques'])->name('statistiques');
     });
 });

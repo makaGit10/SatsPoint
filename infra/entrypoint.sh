@@ -39,8 +39,17 @@ done
 ROLE="${SATSPOINT_ROLE:-web}"
 
 if [ "$ROLE" = "web" ] || [ "$ROLE" = "all" ]; then
-  php artisan storage:link --force >/dev/null 2>&1 || true
+  # Pas de `storage:link` : storage/app/public (audios, brouillons compris) n'est JAMAIS servi directement ;
+  # les fichiers publiés passent par GET /audio/{langue}/{fichier}, qui vérifie le statut en base.
+  rm -f public/storage 2>/dev/null || true
   php artisan migrate --force --no-interaction
+  # Registre des clés vocales (CAHIER § 6.12) : fichier du front (/app/cles-i18n/cles-vocales.json) s'il existe,
+  # sinon jeu essentiel du parcours d'encaissement. Jamais de suppression ; non bloquant.
+  if [ -f "${AUDIO_FICHIER_CLES:-/app/cles-i18n/cles-vocales.json}" ]; then
+    php artisan audio:synchroniser --sans-signal --no-interaction || echo "[satspoint] synchronisation des clés vocales impossible (non bloquant)."
+  else
+    php artisan db:seed --class=CleAudioSeeder --force --no-interaction || true
+  fi
   if [ "${DEMO_SEED:-true}" = "true" ]; then
     php artisan db:seed --class=DemoSeeder --force --no-interaction
   fi

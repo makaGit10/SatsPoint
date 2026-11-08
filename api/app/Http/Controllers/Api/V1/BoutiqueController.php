@@ -9,7 +9,6 @@ use App\Http\Requests\Boutique\ModifierBoutiqueRequest;
 use App\Http\Resources\BoutiqueResource;
 use App\Models\Boutique;
 use App\Models\Membre;
-use App\Models\Scopes\BoutiqueScope;
 use App\Services\BoutiqueCourante;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

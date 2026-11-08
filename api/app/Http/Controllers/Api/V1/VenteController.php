@@ -13,12 +13,9 @@ use App\Models\Boutique;
 use App\Models\Vente;
 use App\Services\BoutiqueCourante;
 use App\Services\Caisse;
-use App\Services\ExportVentes;
 use App\Services\MachineEtatPaiement;
 use App\Services\RequeteVentes;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Str;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class VenteController extends Controller
 {
@@ -87,19 +84,6 @@ class VenteController extends Controller
         $vente = $this->machine->annulerVente($vente, request()->user());
 
         return new VenteResource($this->charger($vente));
-    }
-
-    /** GET /exports/ventes?format=csv (propriétaire / gérant) */
-    public function exporter(ListerVentesRequest $request, ExportVentes $export): StreamedResponse
-    {
-        $boutique = $this->courante->exiger(Boutique::class);
-        $this->authorize('exporter', Vente::class);
-
-        $fuseau = $this->fuseau($boutique);
-        $requete = RequeteVentes::construire($this->courante->membre(), $request->user(), $fuseau, $request->filtres());
-        $nom = sprintf('ventes-%s-%s.csv', Str::slug($boutique->nom) ?: 'boutique', now($fuseau)->format('Ymd-Hi'));
-
-        return $export->csv($requete, $fuseau, $nom);
     }
 
     private function charger(Vente $vente): Vente

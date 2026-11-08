@@ -1,5 +1,9 @@
 <?php
 
+use App\Models\Article;
+use App\Models\Audio;
+use App\Models\CleAudio;
+use App\Models\Import;
 use App\Models\Invitation;
 use App\Models\Membre;
 use Illuminate\Routing\Route as RouteInstance;
@@ -42,8 +46,13 @@ it('refuse l\'accès inter-boutiques sur chaque route paramétrée', function ()
     });
 
     // Vague 2 : vente, tentative de paiement et article de la boutique A.
-    $articleA = avecBoutique($boutiqueA, fn () => \App\Models\Article::create(['nom' => 'Café', 'prix_xof' => 200]));
+    $articleA = avecBoutique($boutiqueA, fn () => Article::create(['nom' => 'Café', 'prix_xof' => 200]));
     ['vente' => $venteA, 'paiement' => $paiementA] = venteAvecTentative($boutiqueA, $proprioA, 'wave_manuel');
+
+    // Vague 3 : import de la boutique A, audio de la plateforme (console réservée au super-admin + 2FA).
+    $importA = avecBoutique($boutiqueA, fn () => Import::create(['user_id' => $proprioA->id, 'type' => 'articles', 'fichier' => 'imports/x.csv', 'statut' => 'analyse', 'analyse' => ['colonnes' => ['Nom', 'Prix'], 'format' => 'csv', 'total' => 1]]));
+    $cle = CleAudio::create(['cle' => 'caisse.encaisser', 'ecran' => 'caisse', 'texte_fr' => 'Encaisser', 'texte_en' => 'Charge']);
+    $audio = Audio::create(['cle_audio_id' => $cle->id, 'langue' => 'wo', 'chemin' => 'audio/wo/caisse.encaisser.aaaaaaaa.mp3', 'empreinte' => str_repeat('a', 64), 'statut' => 'brouillon']);
 
     // Utilisateur de la boutique B (propriétaire : le rôle le plus puissant), boutique prête à encaisser.
     ['user' => $proprioB] = boutiquePrete();
@@ -55,6 +64,9 @@ it('refuse l\'accès inter-boutiques sur chaque route paramétrée', function ()
         'vente' => $venteA->ulid,
         'paiement' => $paiementA->ulid,
         'article' => $articleA->ulid,
+        'import' => $importA->ulid,
+        'boutique' => $boutiqueA->ulid,
+        'audio' => (string) $audio->id,
     ];
 
     $resultats = [];
@@ -74,6 +86,8 @@ it('refuse l\'accès inter-boutiques sur chaque route paramétrée', function ()
             str_contains($uri, 'paiements') && str_ends_with($route->uri(), '{vente}/paiements') => ['methode' => 'wave_manuel'],
             str_ends_with($route->uri(), 'confirmer-manuellement') => ['confirmation' => true],
             str_contains($route->uri(), 'articles/') => ['nom' => 'Pirate', 'prix_xof' => 1],
+            str_ends_with($route->uri(), '{import}/executer') => ['correspondance' => ['Nom' => 'nom', 'Prix' => 'prix_xof'], 'mode' => 'creer'],
+            str_contains($route->uri(), 'admin/boutiques/') => ['statut' => 'suspendue'],
             in_array($methode, ['patch', 'put'], true) => ['role' => 'gerant', 'actif' => true],
             default => [],
         };
@@ -87,7 +101,10 @@ it('refuse l\'accès inter-boutiques sur chaque route paramétrée', function ()
     // Les ressources de A existent toujours (aucune modification parasite).
     expect($venteA->fresh()->statut)->toBe('en_attente')
         ->and($paiementA->fresh()->statut)->toBe('en_attente')
-        ->and($articleA->fresh()->nom)->toBe('Café');
+        ->and($articleA->fresh()->nom)->toBe('Café')
+        ->and($boutiqueA->fresh()->statut)->toBe('active')
+        ->and(Import::toutesBoutiques()->whereKey($importA->id)->value('statut'))->toBe('analyse')
+        ->and($audio->fresh()->statut)->toBe('brouillon');
     expect(Membre::toutesBoutiques()->whereKey($membreA->id)->first()->role)->toBe('caissier');
     expect(Invitation::toutesBoutiques()->whereKey($invitationA->id)->first()?->acceptee_at)->toBeNull();
     expect(Invitation::toutesBoutiques()->whereKey($invitationA->id)->exists())->toBeTrue();

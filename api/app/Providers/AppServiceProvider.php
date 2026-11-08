@@ -4,16 +4,21 @@ namespace App\Providers;
 
 use App\Models\Article;
 use App\Models\Boutique;
+use App\Models\Import;
 use App\Models\Invitation;
 use App\Models\Membre;
 use App\Models\Paiement;
+use App\Models\User;
 use App\Models\Vente;
 use App\Policies\ArticlePolicy;
 use App\Policies\BoutiquePolicy;
+use App\Policies\ImportPolicy;
 use App\Policies\InvitationPolicy;
 use App\Policies\MembrePolicy;
 use App\Policies\PaiementPolicy;
 use App\Policies\VentePolicy;
+use App\Services\Audio\InspecteurAudio;
+use App\Services\Audio\TraitementAudio;
 use App\Services\BoutiqueCourante;
 use App\Services\ChiffrementDonnees;
 use App\Services\PasserelleLightning;
@@ -43,6 +48,14 @@ class AppServiceProvider extends ServiceProvider
             $app->make(SignatureHmac::class),
             (int) config('satspoint.passerelle.delai_s', 15),
         ));
+
+        // Vague 3 : outils audio (binaires et paramètres figés par la configuration, jamais par l'utilisateur).
+        $this->app->singleton(InspecteurAudio::class, fn () => new InspecteurAudio((string) config('satspoint.audio.ffprobe', 'ffprobe'), 15));
+        $this->app->singleton(TraitementAudio::class, fn () => new TraitementAudio(
+            (string) config('satspoint.audio.ffmpeg', 'ffmpeg'),
+            (int) config('satspoint.audio.delai_s', 30),
+            (string) config('satspoint.audio.debit', '48k'),
+        ));
     }
 
     public function boot(): void
@@ -63,6 +76,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Vente::class, VentePolicy::class);
         Gate::policy(Paiement::class, PaiementPolicy::class);
         Gate::policy(Article::class, ArticlePolicy::class);
+        Gate::policy(Import::class, ImportPolicy::class);
+
+        // Console plateforme : super-admin seulement (la 2FA est exigée en plus par le middleware « 2fa.obligatoire »).
+        Gate::define('plateforme', fn (User $user) => $user->estSuperAdmin());
 
         $this->definirLimitesDeDebit();
     }
@@ -133,5 +150,13 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('wallet-envoi', fn (Request $request) => Limit::perMinute(10)->by('u:'.($request->user()?->id ?? $request->ip())));
         RateLimiter::for('configuration', fn (Request $request) => Limit::perMinute(10)->by('u:'.($request->user()?->id ?? $request->ip())));
         RateLimiter::for('exports', fn (Request $request) => Limit::perMinute(6)->by('u:'.($request->user()?->id ?? $request->ip())));
+
+        // Vague 3 : 2FA (5 / min par utilisateur ET par IP : force brute impossible sur un code à 6 chiffres), imports.
+        RateLimiter::for('deux-fa', fn (Request $request) => [
+            Limit::perMinute(5)->by('u:'.($request->user()?->id ?? $request->ip())),
+            Limit::perMinute(15)->by('ip:'.$request->ip()),
+        ]);
+        RateLimiter::for('invitation-publique', fn (Request $request) => Limit::perMinute(20)->by('ip:'.$request->ip()));
+        RateLimiter::for('imports', fn (Request $request) => Limit::perMinute(10)->by('u:'.($request->user()?->id ?? $request->ip())));
     }
 }

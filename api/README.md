@@ -1,6 +1,6 @@
 # SatsPoint — API (Laravel 12, PHP 8.3)
 
-Back-end de SatsPoint : comptes, boutiques, équipe, caisse, paiements Lightning (via la passerelle NWC) et mobile money (PayTech, Wave direct), reçus publics, tableau de bord, portefeuille, articles, exports, temps réel (Reverb).
+Back-end de SatsPoint : comptes, boutiques, équipe, caisse, paiements Lightning (via la passerelle NWC) et mobile money (PayTech, Wave direct), reçus publics, tableau de bord, portefeuille, articles, temps réel (Reverb) ; vague 3 : aide vocale (registre des clés, studio audio, manifeste), double authentification, console plateforme, recherche globale, import / export.
 
 Références : [`docs/CAHIER_DES_CHARGES.md`](../docs/CAHIER_DES_CHARGES.md), [`docs/DIRECTIVES.md`](../docs/DIRECTIVES.md) (12 règles de sécurité), [`docs/CONTRAT_API.md`](../docs/CONTRAT_API.md) (formes JSON front ↔ back), [`docs/CONTRAT_PASSERELLE.md`](../docs/CONTRAT_PASSERELLE.md) (API ↔ passerelle Lightning).
 
@@ -9,7 +9,9 @@ Références : [`docs/CAHIER_DES_CHARGES.md`](../docs/CAHIER_DES_CHARGES.md), [`
 ```bash
 docker compose up -d                          # api :8120, reverb :8125, pg :5440, redis, queue, scheduler, lightning-gateway
 docker compose exec api php artisan test      # suite Pest (base satspoint_test, garde-fou dans tests/bootstrap.php)
-docker compose exec api composer audit        # dépendances
+docker compose exec -u root api composer audit   # dépendances
+docker compose exec api vendor/bin/pint          # style (PSR-12 / Laravel)
+docker compose exec api php artisan audio:synchroniser   # registre des clés vocales (lancé au démarrage)
 curl -s http://localhost:8120/sante           # { base, redis, reverb, passerelle, cours: { age_s, disponible } }
 ```
 
@@ -31,7 +33,15 @@ En développement (`COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml`), le
 | Tableau de bord | `Services/TableauDeBord` | Agrégats SQL (CA, nombre, panier moyen, répartition Lightning / mobile money, série par jour local, comparaison période précédente), fuseau boutique, caissier = ses chiffres du jour. |
 | Portefeuille | `Services/Portefeuille`, `WalletController`, `BoutiqueWalletController` | Solde (cache 15 s) + conversion, historique, recevoir, aperçu/envoi (propriétaire, mot de passe revérifié, `PAIEMENT_INCERTAIN` sur `DELAI_DEPASSE`, audit), connexion NWC (vérifiée par la passerelle, URI chiffrée, jamais renvoyée), révocation. |
 | Articles | `ArticleController`, `Policies/ArticlePolicy` | CRUD + `POST /articles/ordre` ; caissier lecture seule ; SKU unique par boutique. |
-| Export | `Services/ExportVentes` | CSV UTF-8 avec BOM, séparateur `;`, flux par paquets, filtres de la liste, injection de formule neutralisée. |
+| Exports | `ExportController`, `Services/ExportVentes`, `Services/ExportTableaux`, `resources/views/exports/ventes-pdf.blade.php` | Ventes CSV / XLSX (OpenSpout, flux) / PDF (dompdf, rapport : totaux, répartition, 1 000 lignes max), articles CSV / XLSX, paiements CSV (hash abrégé). UTF-8 avec BOM, `;`, filtres de la liste, injection de formule (`= + - @`) neutralisée, propriétaire / gérant, 6 / min, audit. |
+| Clés vocales | `Console/Commands/AudioSynchroniser`, `database/seeders/CleAudioSeeder` | `audio:synchroniser {chemin?}` lit `cles-vocales.json` du front (`/app/cles-i18n/`, monté en dev, copié dans l'image) : upsert de `cles_audio` dans l'ordre du fichier, `presente_dans_code`, jamais de suppression, forme de clé validée, fichier vide refusé. Sans fichier : 37 clés essentielles du parcours d'encaissement (seeder idempotent). |
+| Audio | `FichierAudioController` (`GET /audio/{langue}/{cle}.{empreinte8}.mp3`), `ManifesteAudioController` | Fichier servi seulement s'il est publié (ou archivé) en base, nom contraint par regex (aucune traversée), `immutable` 1 an, `nosniff`. Manifeste `{ langue, version, audios }` des publiés, `version` = empreinte du contenu, ETag / 304, cache invalidé à chaque publication. |
+| Studio audio | `Admin/AudioStudioController`, `Services/Audio/{StudioAudio,InspecteurAudio,TraitementAudio}`, `Jobs/TraiterAudio` | Matrice clés × langues (essentielles d'abord, ordre d'apparition, couverture). Dépôt : ≤ 2 Mo, type réel par signature + `ffprobe` (piste audio, pas de vidéo, ≤ 15 s), nom généré, source hors racine web, 120 / h. Job (file `audio`) : ffmpeg à paramètres figés, délai 30 s (`silenceremove` début / fin, `loudnorm=I=-16:TP=-1.5:LRA=11`, mono 48 kHz, MP3 48 kb/s), durée, SHA-256 → `storage/app/public/audio/{langue}/{cle}.{empreinte8}.mp3`, statut `brouillon` ou `erreur` (message générique). Publication : ancien publié → `archive`, signal `audios` sur `plateforme` ; studio prévenu par `audio` sur `private-admin`. |
+| 2FA | `Services/DeuxFacteurs`, `DeuxFacteursController`, `Middleware/ExigerDeuxFacteurs` | TOTP `pragmarx/google2fa` (± 30 s, anti-rejeu), QR SVG `bacon/bacon-qr-code`, secret chiffré (cast `Chiffre`), 8 codes de secours hachés à usage unique, session marquée validée (remise à zéro à chaque connexion), 5 / min, audit (initialisée, activée, vérifiée, échec, désactivée). `/admin/*` → 403 `DEUX_FA_REQUISE` sans 2FA vérifiée. |
+| Console plateforme | `Admin/ConsoleController`, `Services/ConsolePlateforme`, `Services/EtatSysteme`, `Middleware/ExigerSuperAdmin`, `Middleware/VerifierBoutiqueActive` | Super-admin + 2FA, vérifiés **avant** la résolution des paramètres de route. Boutiques (compteurs et booléens uniquement : aucune vente, aucun portefeuille, aucune clé PayTech), suspension / réactivation (sessions des membres révoquées, `403 BOUTIQUE_SUSPENDUE` partout sauf `/moi`, audit, signal), santé détaillée (files, espace audio), journal filtrable par curseur, statistiques du pitch sur les paiements réussis. |
+| Recherche | `Services/RechercheGlobale`, `RechercheController` | `pg_trgm` + `unaccent` (fonction immuable `f_unaccent`, index GIN trigramme sur `ventes.note`, `articles.nom`, `articles.sku`, `users.nom`), ventes (numéro, montant, note), articles (nom, référence, catégorie, prix), équipe (propriétaire / gérant), pages FR / EN selon le rôle (`config/satspoint.php`), 5 par rubrique, 4 récentes par utilisateur, 60 / min. |
+| Import | `ImportController`, `Services/Import/{ImportArticles,LecteurTableau,SuggestionsColonnes}`, `Jobs/ExecuterImport` | CSV (encodage UTF-8 / BOM / Windows-1252, séparateur `; , tab \|`) ou XLSX (OpenSpout), type réel par signature, ≤ 2 Mo, 5 000 lignes ; suggestions par synonymes FR / EN + similarité, correspondance mémorisée par boutique ; exécution en file `imports` (boutique courante fixée), modes `creer` / `creer_et_mettre_a_jour` (tout ou rien) / `ignorer_erreurs`, ≤ 100 erreurs détaillées, rapport CSV, fichier source supprimé après traitement. |
+| Invitation | `InvitationController::show` | `GET /invitations/{jeton}` public (20 / min / IP) : nom de la boutique, rôle, contact masqué, expiration. |
 
 ## Commandes artisan
 
@@ -39,7 +49,8 @@ En développement (`COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml`), le
 |---|---|---|
 | `cours:rafraichir [--purger]` | chaque minute (purge > 30 j à 03:15) | Récupère le cours, calcule la médiane, met en cache. |
 | `paiements:expirer` | chaque minute | Factures échues → `expire` ; ventes sans tentative depuis 30 min → `expiree` ; signaux `paiements` / `ventes`. |
-| `queue:work` | conteneur `queue` | File `paiements` (événements de la passerelle). |
+| `queue:work --queue=paiements,audio,imports,default` | conteneur `queue` | Événements de la passerelle, traitement ffmpeg des audios, imports d'articles. |
+| `audio:synchroniser {chemin?} [--sans-signal]` | au démarrage du conteneur `api` (si le fichier existe ; sinon `CleAudioSeeder`) | Registre des clés vocales depuis `web/src/voix/cles-vocales.json`. |
 | `schedule:work` | conteneur `scheduler` | Exécute la planification ci-dessus (`schedule:run` pour un passage manuel). |
 | `db:seed --class=DemoSeeder` | au démarrage du conteneur `api` si `DEMO_SEED=true` | Super-admin, Boutique Démo (propriétaire + caissier, 8 articles), portefeuille (`DEMO_NWC_URI` ou `mock://demo`), PayTech si clés. |
 
@@ -57,6 +68,7 @@ En développement (`COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml`), le
 | `DEMO_SEED`, `DEMO_PASSWORD`, `DEMO_NWC_URI`, `PAYTECH_ENV`, `PAYTECH_API_KEY`, `PAYTECH_API_SECRET` | Données de démonstration (portefeuille Coinos et compte PayTech **de la boutique démo** uniquement). |
 | `SUPERADMIN_EMAIL`, `SUPERADMIN_PASSWORD` | Compte plateforme. |
 | `ALLOW_MOCK_WALLET` | En production seulement : autorise `mock://` (et `POST /paiements/{ulid}/simuler`). |
+| `AUDIO_FICHIER_CLES`, `AUDIO_FFMPEG`, `AUDIO_FFPROBE` | Facultatifs : registre des clés vocales (défaut `/app/cles-i18n/cles-vocales.json`), binaires ffmpeg / ffprobe (défaut : ceux de l'image). |
 
 ## Paiements : règles appliquées
 

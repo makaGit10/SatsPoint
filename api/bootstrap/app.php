@@ -2,8 +2,12 @@
 
 use App\Exceptions\BoutiqueCouranteAbsente;
 use App\Exceptions\ErreurMetier;
+use App\Http\Controllers\SanteController;
 use App\Http\Middleware\DiffuserEcritures;
 use App\Http\Middleware\EnTetesSecurite;
+use App\Http\Middleware\ExigerDeuxFacteurs;
+use App\Http\Middleware\ExigerSuperAdmin;
+use App\Http\Middleware\VerifierBoutiqueActive;
 use App\Http\Middleware\VerifierSessionRevoquee;
 use App\Http\Middleware\VerifierSignaturePasserelle;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -14,6 +18,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -35,7 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/internal.php'));
 
             Route::middleware(['api', 'throttle:sante'])
-                ->get('/sante', \App\Http\Controllers\SanteController::class)
+                ->get('/sante', SanteController::class)
                 ->name('sante');
 
             // Reçu public, page de paiement simulé, webhooks PayTech : groupe « api » (sans CSRF), throttles dédiés.
@@ -58,7 +63,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'hmac.passerelle' => VerifierSignaturePasserelle::class,
             'session.valide' => VerifierSessionRevoquee::class,
+            'boutique.active' => VerifierBoutiqueActive::class,
+            '2fa.obligatoire' => ExigerDeuxFacteurs::class,
+            'super.admin' => ExigerSuperAdmin::class,
         ]);
+
+        // Console plateforme : rôle et 2FA vérifiés AVANT la résolution des paramètres de route
+        // (pas de 404 « existe / n'existe pas » pour qui n'a pas le droit d'entrer).
+        $middleware->prependToPriorityList(SubstituteBindings::class, ExigerSuperAdmin::class);
+        $middleware->prependToPriorityList(SubstituteBindings::class, ExigerDeuxFacteurs::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(function (Request $request) {

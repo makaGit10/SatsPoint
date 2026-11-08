@@ -11,7 +11,9 @@ WORKDIR /web
 COPY web/package.json web/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY web/ ./
-RUN npm run build
+RUN npm run build \
+ && mkdir -p /cles-i18n \
+ && (cp src/voix/cles-vocales.json /cles-i18n/ 2>/dev/null || echo "cles-vocales.json absent : jeu essentiel seedé au démarrage")
 
 # ---------- Base PHP ----------
 FROM dunglas/frankenphp:1-php8.3-alpine AS base
@@ -44,5 +46,7 @@ RUN composer dump-autoload --optimize --no-dev --classmap-authoritative \
  && mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache \
  && chown -R www-data:www-data storage bootstrap/cache
 COPY --from=web /web/dist /app/web-dist
+# Registre des clés vocales produit par le build du front (lu par `audio:synchroniser` au démarrage).
+COPY --from=web /cles-i18n/ /app/cles-i18n/
 ENV APP_ENV=production
 CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]

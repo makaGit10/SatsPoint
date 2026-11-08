@@ -15,7 +15,7 @@ final class Identifiant
     public const TELEPHONE = 'telephone';
 
     /**
-     * @return array{type: string, valeur: string}|null  null si l'identifiant est invalide
+     * @return array{type: string, valeur: string}|null null si l'identifiant est invalide
      */
     public static function normaliser(?string $brut): ?array
     {

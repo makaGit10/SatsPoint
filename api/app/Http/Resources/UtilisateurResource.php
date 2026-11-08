@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Models\Membre;
 use App\Models\User;
+use App\Services\DeuxFacteurs;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -30,6 +31,7 @@ class UtilisateurResource extends JsonResource
             'telephone' => $this->telephone,
             'role_plateforme' => $this->role_plateforme,
             'preferences' => $this->preferencesCompletes(),
+            'deux_fa' => DeuxFacteurs::etat($this->resource, $request),
             'boutique' => $boutique === null ? null : [
                 'ulid' => $boutique->ulid,
                 'nom' => $boutique->nom,

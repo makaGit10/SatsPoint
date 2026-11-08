@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\ErreurMetier;
 use App\Facades\Audit;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Equipe\InviterRequest;
@@ -17,6 +18,7 @@ use App\Services\BoutiqueCourante;
 use App\Support\Identifiant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
@@ -50,7 +52,7 @@ class InvitationController extends Controller
 
         $jeton = Str::random(48);
 
-        $invitation = DB::transaction(function () use ($boutique, $contact, $role, $jeton, $request) {
+        $invitation = DB::transaction(function () use ($contact, $role, $jeton, $request) {
             // Une seule invitation en attente par contact : on remplace la précédente.
             Invitation::query()->where('contact', $contact['valeur'])->whereNull('acceptee_at')->delete();
 
@@ -84,7 +86,7 @@ class InvitationController extends Controller
     }
 
     /** DELETE /equipe/invitations/{invitation} → 204 : annule une invitation en attente. */
-    public function destroy(Request $request, Invitation $invitation): \Illuminate\Http\Response
+    public function destroy(Request $request, Invitation $invitation): Response
     {
         $this->authorize('delete', $invitation);
 
@@ -96,6 +98,36 @@ class InvitationController extends Controller
         ]);
 
         return response()->noContent();
+    }
+
+    /**
+     * GET /invitations/{jeton} (public, 20 / min / IP) → { invitation: { boutique: { nom }, role, contact_masque, expire_le } }
+     *
+     * Écran d'accueil d'une personne invitée (CONTRAT_API V3.8) : rien d'autre que le nom de la boutique, le rôle
+     *
+     * proposé et le contact MASQUÉ (« am***@exemple.sn »). Jeton inconnu → 404 ; périmé, consommé ou boutique
+     * suspendue → 410 INVITATION_EXPIREE (sans dire laquelle des trois).
+     */
+    public function show(string $jeton): JsonResponse
+    {
+        $invitation = Invitation::query()
+            ->withoutGlobalScope(BoutiqueScope::class)
+            ->with('boutique:id,nom,statut')
+            ->where('jeton_hash', Invitation::hacher($jeton))
+            ->first();
+
+        abort_if($invitation === null, 404);
+
+        if (! $invitation->estValide() || $invitation->boutique === null || ! $invitation->boutique->estActive()) {
+            throw new ErreurMetier('INVITATION_EXPIREE', 'Cette invitation a expiré ou a déjà été utilisée. Demandez-en une nouvelle.', 410);
+        }
+
+        return response()->json(['invitation' => [
+            'boutique' => ['nom' => $invitation->boutique->nom],
+            'role' => $invitation->role,
+            'contact_masque' => Identifiant::masquer($invitation->contact),
+            'expire_le' => $invitation->expire_at->toIso8601String(),
+        ]])->header('Cache-Control', 'no-store, private');
     }
 
     /** POST /invitations/{jeton}/accepter → 200 { utilisateur } */

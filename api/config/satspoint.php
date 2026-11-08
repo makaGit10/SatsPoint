@@ -122,8 +122,64 @@ return [
             'comptes_paytech' => ['rubrique' => 'parametres', 'canal' => 'boutique'],
             'imports' => ['rubrique' => 'imports', 'canal' => 'boutique'],
             'users' => ['rubrique' => 'preferences', 'canal' => 'utilisateur'],
-            'audios' => ['rubrique' => 'audios', 'canal' => 'plateforme'],
+            // Les écritures sur `audios` (dépôts, traitements) ne concernent que le studio : rubrique « audio », canal admin.
+            // La PUBLICATION émet en plus « audios » sur le canal public « plateforme » (Diffuseur, AudioStudioController).
+            'audios' => ['rubrique' => 'audio', 'canal' => 'admin'],
             'cles_audio' => ['rubrique' => 'audio', 'canal' => 'admin'],
         ],
+    ],
+
+    /*
+    | Aide vocale (CAHIER § 6.12, 6.13) : registre des clés, dépôt et traitement des fichiers.
+    */
+    'audio' => [
+        // Fichier produit par le front (web/src/voix/cles-vocales.json), monté / copié dans l'image.
+        'fichier_cles' => env('AUDIO_FICHIER_CLES', '/app/cles-i18n/cles-vocales.json'),
+        'langues' => ['wo', 'srr', 'ff', 'dyo', 'fr'],
+        'extensions' => ['mp3', 'wav', 'm4a', 'ogg', 'webm'],
+        'taille_max_ko' => 2048,          // 2 Mo
+        'duree_max_ms' => 15_000,         // 15 s
+        'ffmpeg' => env('AUDIO_FFMPEG', 'ffmpeg'),
+        'ffprobe' => env('AUDIO_FFPROBE', 'ffprobe'),
+        'delai_s' => 30,                  // délai maximal d'un traitement
+        'debit' => '48k',                 // MP3 48 kb/s mono 48 kHz
+        'dossier_public' => 'audio',      // storage/app/public/audio/{langue}/{cle}.{empreinte8}.mp3
+        'dossier_sources' => 'audio-sources', // storage/app/private/audio-sources/{id}.{ext}
+    ],
+
+    /*
+    | Import d'articles (CAHIER § 6.15).
+    */
+    'import' => [
+        'taille_max_ko' => 2048,
+        'extensions' => ['csv', 'txt', 'xlsx'],
+        'lignes_max' => 5000,
+        'erreurs_max' => 100,
+        'champs' => ['nom', 'prix_xof', 'categorie', 'sku', 'couleur', 'actif'],
+        'modes' => ['creer', 'creer_et_mettre_a_jour', 'ignorer_erreurs'],
+        'dossier' => 'imports',           // storage/app/private/imports/{ulid}.{ext}
+    ],
+
+    /*
+    | Recherche globale (CAHIER § 6.14) : pages statiques trouvables, avec les rôles autorisés.
+    | url = route du front ; mots = synonymes FR/EN (sans accent, minuscules) en plus des titres.
+    */
+    'recherche' => [
+        'pages' => [
+            ['cle' => 'caisse', 'url' => '/caisse', 'fr' => 'Caisse', 'en' => 'Checkout', 'mots' => ['encaisser', 'vente', 'charge', 'pos', 'paiement', 'payment'], 'roles' => ['proprietaire', 'gerant', 'caissier']],
+            ['cle' => 'ventes', 'url' => '/ventes', 'fr' => 'Ventes', 'en' => 'Sales', 'mots' => ['historique', 'history', 'recus', 'receipts', 'export'], 'roles' => ['proprietaire', 'gerant', 'caissier']],
+            ['cle' => 'tableau_de_bord', 'url' => '/tableau-de-bord', 'fr' => 'Tableau de bord', 'en' => 'Dashboard', 'mots' => ['statistiques', 'chiffre d affaires', 'revenue', 'stats'], 'roles' => ['proprietaire', 'gerant', 'caissier']],
+            ['cle' => 'portefeuille', 'url' => '/portefeuille', 'fr' => 'Portefeuille', 'en' => 'Wallet', 'mots' => ['solde', 'balance', 'sats', 'bitcoin', 'lightning', 'envoyer', 'send', 'recevoir', 'receive', 'nwc'], 'roles' => ['proprietaire', 'gerant']],
+            ['cle' => 'articles', 'url' => '/articles', 'fr' => 'Articles', 'en' => 'Items', 'mots' => ['produits', 'products', 'catalogue', 'prix', 'price', 'import'], 'roles' => ['proprietaire', 'gerant', 'caissier']],
+            ['cle' => 'equipe', 'url' => '/equipe', 'fr' => 'Équipe', 'en' => 'Team', 'mots' => ['membres', 'members', 'caissier', 'cashier', 'gerant', 'manager', 'invitation'], 'roles' => ['proprietaire', 'gerant']],
+            ['cle' => 'reglages', 'url' => '/reglages', 'fr' => 'Réglages', 'en' => 'Settings', 'mots' => ['parametres', 'preferences', 'boutique', 'shop', 'configuration'], 'roles' => ['proprietaire', 'gerant']],
+            ['cle' => 'paytech', 'url' => '/reglages#paytech', 'fr' => 'PayTech (mobile money)', 'en' => 'PayTech (mobile money)', 'mots' => ['wave', 'orange money', 'free money', 'mobile money', 'cles api', 'api keys'], 'roles' => ['proprietaire']],
+            ['cle' => 'wallet_connexion', 'url' => '/reglages#wallet', 'fr' => 'Connexion du portefeuille (NWC)', 'en' => 'Wallet connection (NWC)', 'mots' => ['nostr', 'wallet connect', 'coinos', 'alby'], 'roles' => ['proprietaire']],
+            ['cle' => 'theme', 'url' => '/reglages#theme', 'fr' => 'Thème (clair / sombre)', 'en' => 'Theme (light / dark)', 'mots' => ['apparence', 'appearance', 'sombre', 'dark', 'clair', 'light'], 'roles' => ['proprietaire', 'gerant']],
+            ['cle' => 'langue', 'url' => '/langue', 'fr' => 'Langue et aide vocale', 'en' => 'Language and voice help', 'mots' => ['wolof', 'pulaar', 'seereer', 'joola', 'francais', 'english', 'voix', 'voice', 'audio'], 'roles' => ['proprietaire', 'gerant', 'caissier']],
+            ['cle' => 'demarrage', 'url' => '/demarrage', 'fr' => 'Démarrage guidé', 'en' => 'Guided setup', 'mots' => ['configuration', 'onboarding', 'premiers pas', 'getting started'], 'roles' => ['proprietaire', 'gerant']],
+        ],
+        'recentes_max' => 4,
+        'par_rubrique' => 5,
     ],
 ];

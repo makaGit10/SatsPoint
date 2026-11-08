@@ -7,7 +7,6 @@ use App\Models\Boutique;
 use App\Models\ComptePaytech;
 use App\Models\ConnexionWallet;
 use App\Models\Membre;
-use App\Models\Scopes\BoutiqueScope;
 use App\Models\User;
 use App\Services\BoutiqueCourante;
 use Illuminate\Database\Seeder;
@@ -78,7 +77,7 @@ class DemoSeeder extends Seeder
     }
 
     /**
-     * @return array{valeur: ?string, forcer: bool}  forcer = réécrire le hash (mot de passe venu de l'env ou généré)
+     * @return array{valeur: ?string, forcer: bool} forcer = réécrire le hash (mot de passe venu de l'env ou généré)
      */
     private function motDePasse(?string $depuisEnv, string $libelle, bool $compteExiste = false): array
     {

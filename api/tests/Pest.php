@@ -9,11 +9,15 @@ use App\Models\User;
 use App\Models\Vente;
 use App\Services\BoutiqueCourante;
 use App\Services\CoursChange;
+use App\Services\DeuxFacteurs;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Factory;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
 /*
@@ -182,4 +186,51 @@ function venteAvecTentative(Boutique $boutique, User $caissier, string $methode 
 
         return ['vente' => $v, 'paiement' => $p];
     });
+}
+
+/*
+|--------------------------------------------------------------------------
+| Vague 3 : console plateforme (super-admin + 2FA), studio audio
+|--------------------------------------------------------------------------
+*/
+
+/** Super-admin avec 2FA active et vérifiée dans la session. */
+function superAdminPret(): User
+{
+    $admin = User::factory()->superAdmin()->create();
+    $admin->forceFill(['two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()])->save();
+
+    connecte($admin);
+    session()->put(DeuxFacteurs::CLE_SESSION, now()->toIso8601String());
+
+    return $admin;
+}
+
+/** Génère avec ffmpeg un WAV de ~2 s de silence suivi d'un ton de 1 s (ou de la durée demandée). */
+function wavGenere(float $silenceS = 2.0, float $tonS = 1.0, string $nom = 'son.wav'): UploadedFile
+{
+    Storage::disk('local')->makeDirectory('tests');
+    $chemin = Storage::disk('local')->path('tests/'.bin2hex(random_bytes(4)).'.wav');
+
+    $p = new Process([
+        'ffmpeg', '-nostdin', '-hide_banner', '-loglevel', 'error', '-y',
+        '-f', 'lavfi', '-i', "aevalsrc=0:d={$silenceS}",
+        '-f', 'lavfi', '-i', "sine=frequency=440:duration={$tonS}",
+        '-filter_complex', '[0][1]concat=n=2:v=0:a=1', '-ar', '44100', '-ac', '1', $chemin,
+    ]);
+    $p->setTimeout(30)->run();
+    expect($p->isSuccessful())->toBeTrue($p->getErrorOutput());
+
+    return new UploadedFile($chemin, $nom, 'audio/wav', null, true);
+}
+
+/** Super-admin de la console (2FA active et vérifiée). */
+function adminConsole(): User
+{
+    $admin = User::factory()->superAdmin()->create();
+    $admin->forceFill(['two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()])->save();
+    connecte($admin);
+    session()->put(DeuxFacteurs::CLE_SESSION, now()->toIso8601String());
+
+    return $admin;
 }

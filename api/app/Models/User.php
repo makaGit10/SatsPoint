@@ -33,6 +33,8 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
     ];
 
     protected function casts(): array
@@ -41,6 +43,8 @@ class User extends Authenticatable
             'password' => 'hashed',
             'preferences' => 'array',
             'two_factor_secret' => Chiffre::class,
+            'two_factor_recovery_codes' => Chiffre::class,
+            'two_factor_confirmed_at' => 'datetime',
             'derniere_connexion_at' => 'datetime',
             'sessions_revoquees_at' => 'datetime',
         ];
@@ -64,6 +68,18 @@ class User extends Authenticatable
     public function estSuperAdmin(): bool
     {
         return $this->role_plateforme === self::ROLE_SUPER_ADMIN;
+    }
+
+    /** 2FA activée (secret confirmé par un premier code valide). */
+    public function deuxFaActive(): bool
+    {
+        return $this->two_factor_confirmed_at !== null && filled($this->two_factor_secret);
+    }
+
+    /** La 2FA est exigée pour la console plateforme (super-admin). */
+    public function deuxFaRequise(): bool
+    {
+        return $this->estSuperAdmin();
     }
 
     /** Préférences complétées par les valeurs par défaut. */

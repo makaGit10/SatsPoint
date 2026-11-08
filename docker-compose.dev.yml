@@ -13,6 +13,7 @@ services:
     volumes:
       - ./api:/app/api
       - api-vendor:/app/api/vendor   # vendor dans un volume Docker : I/O rapides (le montage Windows est très lent)
+      - ./web/src/voix:/app/cles-i18n:ro   # registre des clés vocales produit par le front (npm run cles-vocales)
 
   reverb:
     build:
@@ -27,6 +28,7 @@ services:
     volumes:
       - ./api:/app/api
       - api-vendor:/app/api/vendor   # vendor dans un volume Docker : I/O rapides (le montage Windows est très lent)
+      - ./web/src/voix:/app/cles-i18n:ro
 
   scheduler:
     build:

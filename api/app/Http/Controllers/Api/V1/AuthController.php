@@ -10,6 +10,7 @@ use App\Http\Requests\Auth\InscriptionRequest;
 use App\Http\Resources\UtilisateurResource;
 use App\Models\User;
 use App\Services\BoutiqueCourante;
+use App\Services\DeuxFacteurs;
 use App\Support\Identifiant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -148,6 +149,8 @@ class AuthController extends Controller
 
         if ($request->hasSession()) {
             $request->session()->regenerate();
+            // Chaque nouvelle connexion exige une nouvelle vérification 2FA (console plateforme).
+            $request->session()->forget(DeuxFacteurs::CLE_SESSION);
         }
 
         VerifierSessionRevoquee::marquerOuverture($request, $utilisateur);

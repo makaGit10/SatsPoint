@@ -137,7 +137,8 @@ services:
 
   queue:
     <<: *api-base
-    command: ["php", "artisan", "queue:work", "--tries=3", "--timeout=120", "--sleep=1"]
+    # Toutes les files : paiements (passerelle), audio (ffmpeg), imports, default.
+    command: ["php", "artisan", "queue:work", "--queue=paiements,audio,imports,default", "--tries=3", "--timeout=120", "--sleep=1"]
     environment:
       <<: *api-env
       SATSPOINT_ROLE: queue
