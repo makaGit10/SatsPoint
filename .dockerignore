@@ -1,0 +1,17 @@
+# Contexte de build Docker : exclure ce qui est volumineux ou secret.
+.git
+.env
+.env.*
+!.env.example
+**/node_modules
+api/vendor
+api/storage/logs
+api/storage/framework
+api/bootstrap/cache/*.php
+web/dist
+lightning-gateway/dist
+tests/
+captures/
+docs/
+tools/
+*.md

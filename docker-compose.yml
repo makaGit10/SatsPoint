@@ -127,6 +127,13 @@ services:
         condition: service_healthy
     ports:
       - "${REVERB_PUBLIC_PORT_BIND:-8125}:8080"
+    # L'image FrankenPHP embarque un healthcheck Caddy (port 2019) inadapté ici : on le remplace.
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/up >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   queue:
     <<: *api-base
@@ -139,6 +146,12 @@ services:
         condition: service_healthy
     volumes:
       - app-storage:/app/api/storage/app
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'artisan queue:work' >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   scheduler:
     <<: *api-base
@@ -149,6 +162,12 @@ services:
     depends_on:
       api:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'artisan schedule:work' >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   # Passerelle Lightning (NWC). Réseau interne uniquement : aucun port publié.
   lightning-gateway:

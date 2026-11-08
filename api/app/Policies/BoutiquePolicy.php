@@ -1,0 +1,72 @@
+<?php
+
+namespace App\Policies;
+
+use App\Models\Boutique;
+use App\Models\Membre;
+use App\Models\User;
+use App\Services\BoutiqueCourante;
+
+/**
+ * Refus par défaut. Le super-admin n'a AUCUN accès aux données des boutiques (moindre privilège).
+ */
+class BoutiquePolicy
+{
+    public function __construct(private readonly BoutiqueCourante $courante) {}
+
+    /** Créer une boutique : utilisateur sans adhésion active (il en devient propriétaire). */
+    public function create(User $user): bool
+    {
+        if ($user->estSuperAdmin()) {
+            return false;
+        }
+
+        return $this->membreActif($user) === null;
+    }
+
+    /** Lire la boutique : tout membre actif. */
+    public function view(User $user, Boutique $boutique): bool
+    {
+        $membre = $this->membreActif($user);
+
+        return $membre !== null && $membre->boutique_id === $boutique->id;
+    }
+
+    /** Modifier les réglages : propriétaire ou gérant. */
+    public function update(User $user, Boutique $boutique): bool
+    {
+        $membre = $this->membreActif($user);
+
+        return $membre !== null && $membre->boutique_id === $boutique->id && $membre->peutAdministrer();
+    }
+
+    /** Portefeuille, PayTech, suppression : propriétaire uniquement. */
+    public function gererPaiements(User $user, Boutique $boutique): bool
+    {
+        $membre = $this->membreActif($user);
+
+        return $membre !== null && $membre->boutique_id === $boutique->id && $membre->estProprietaire();
+    }
+
+    public function delete(User $user, Boutique $boutique): bool
+    {
+        return $this->gererPaiements($user, $boutique);
+    }
+
+    /** Voir / gérer l'équipe : propriétaire ou gérant. */
+    public function gererEquipe(User $user, Boutique $boutique): bool
+    {
+        return $this->update($user, $boutique);
+    }
+
+    private function membreActif(User $user): ?Membre
+    {
+        $membre = $this->courante->membre();
+
+        if ($membre !== null && $membre->user_id === $user->id && $membre->actif) {
+            return $membre;
+        }
+
+        return null;
+    }
+}

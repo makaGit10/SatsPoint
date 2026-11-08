@@ -12,24 +12,28 @@ services:
       LOG_LEVEL: debug
     volumes:
       - ./api:/app/api
+      - api-vendor:/app/api/vendor   # vendor dans un volume Docker : I/O rapides (le montage Windows est très lent)
 
   reverb:
     build:
       target: dev
     volumes:
       - ./api:/app/api
+      - api-vendor:/app/api/vendor   # vendor dans un volume Docker : I/O rapides (le montage Windows est très lent)
 
   queue:
     build:
       target: dev
     volumes:
       - ./api:/app/api
+      - api-vendor:/app/api/vendor   # vendor dans un volume Docker : I/O rapides (le montage Windows est très lent)
 
   scheduler:
     build:
       target: dev
     volumes:
       - ./api:/app/api
+      - api-vendor:/app/api/vendor   # vendor dans un volume Docker : I/O rapides (le montage Windows est très lent)
 
   lightning-gateway:
     build:
@@ -41,3 +45,6 @@ services:
       - ./lightning-gateway/src:/app/src
     ports:
       - "127.0.0.1:3011:3011"   # local uniquement, pour les tests de la passerelle
+
+volumes:
+  api-vendor:

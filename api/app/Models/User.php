@@ -2,48 +2,99 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Casts\Chiffre;
+use App\Models\Concerns\AUlid;
+use App\Models\Scopes\BoutiqueScope;
+use App\Notifications\ReinitialisationMotDePasse;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use AUlid, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    public const ROLE_SUPER_ADMIN = 'super_admin';
+
+    /** Assignation en masse strictement limitée : rôle plateforme, ulid et 2FA se posent explicitement. */
     protected $fillable = [
-        'name',
+        'nom',
         'email',
+        'telephone',
         'password',
+        'preferences',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'preferences' => 'array',
+            'two_factor_secret' => Chiffre::class,
+            'derniere_connexion_at' => 'datetime',
+            'sessions_revoquees_at' => 'datetime',
         ];
+    }
+
+    // ------------------------------------------------------------ relations
+
+    /** Toutes les adhésions (sans le scope : un utilisateur peut lire ses propres adhésions). */
+    public function membres(): HasMany
+    {
+        return $this->hasMany(Membre::class)->withoutGlobalScope(BoutiqueScope::class);
+    }
+
+    public function journalAudit(): HasMany
+    {
+        return $this->hasMany(JournalAudit::class);
+    }
+
+    // ------------------------------------------------------------- méthodes
+
+    public function estSuperAdmin(): bool
+    {
+        return $this->role_plateforme === self::ROLE_SUPER_ADMIN;
+    }
+
+    /** Préférences complétées par les valeurs par défaut. */
+    public function preferencesCompletes(): array
+    {
+        $defaut = config('satspoint.preferences_defaut');
+
+        return array_intersect_key(array_merge($defaut, (array) $this->preferences), $defaut);
+    }
+
+    public function identifiantPrincipal(): ?string
+    {
+        return $this->email ?? $this->telephone;
+    }
+
+    /** Révoque toutes les sessions (cookie « se souvenir » compris). */
+    public function revoquerSessions(): void
+    {
+        $this->forceFill([
+            'sessions_revoquees_at' => now(),
+            'remember_token' => Str::random(60),
+        ])->save();
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ReinitialisationMotDePasse($token));
+    }
+
+    public function routeNotificationForMail(): ?string
+    {
+        return $this->email;
     }
 }
