@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" width="1200" height="640" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="15">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8b8f98"/>
+    </marker>
+    <style>
+      .box { fill: #ffffff; stroke: #c9ccd3; stroke-width: 1.5; rx: 12; }
+      .zone { fill: #f4f5f8; stroke: #d7dae1; stroke-width: 1.5; stroke-dasharray: 6 5; rx: 16; }
+      .t { fill: #1b1b1f; font-weight: 600; }
+      .s { fill: #5b606b; font-size: 13px; }
+      .z { fill: #6b7080; font-size: 13px; font-weight: 600; letter-spacing: .04em; }
+      .l { stroke: #8b8f98; stroke-width: 1.8; fill: none; marker-end: url(#a); }
+      .ll { fill: #5b606b; font-size: 12.5px; }
+      .orange { stroke: #F7931A; }
+      .green { stroke: #16a34a; }
+    </style>
+  </defs>
+
+  <!-- Zones -->
+  <rect class="zone" x="20" y="20" width="1160" height="150"/>
+  <text class="z" x="36" y="44">UNTRUSTED · INTERNET</text>
+  <rect class="zone" x="20" y="200" width="760" height="420"/>
+  <text class="z" x="36" y="224">TRUSTED · OUR CONTAINERS (one image, docker compose up)</text>
+  <rect class="zone" x="810" y="200" width="370" height="420"/>
+  <text class="z" x="826" y="224">MERCHANT'S OWN WALLET · NON-CUSTODIAL</text>
+
+  <!-- Internet actors -->
+  <rect class="box" x="50" y="64" width="220" height="86"/>
+  <text class="t" x="66" y="92">Merchant PWA</text>
+  <text class="s" x="66" y="112">React · installable · FR/EN</text>
+  <text class="s" x="66" y="130">voice help wo · srr · ff · dyo</text>
+
+  <rect class="box" x="320" y="64" width="200" height="86"/>
+  <text class="t" x="336" y="92">Customer wallet</text>
+  <text class="s" x="336" y="112">Phoenix, WoS, Blink…</text>
+  <text class="s" x="336" y="130">scans the QR, pays</text>
+
+  <rect class="box" x="570" y="64" width="200" height="86"/>
+  <text class="t" x="586" y="92">PayTech</text>
+  <text class="s" x="586" y="112">Wave · Orange Money · Free</text>
+  <text class="s" x="586" y="130">IPN callbacks (verified)</text>
+
+  <rect class="box" x="840" y="64" width="310" height="86"/>
+  <text class="t" x="856" y="92">Nostr relay</text>
+  <text class="s" x="856" y="112">carries encrypted NIP-47 messages</text>
+  <text class="s" x="856" y="130">cannot read payloads · untrusted for availability</text>
+
+  <!-- Containers -->
+  <rect class="box" x="50" y="250" width="700" height="60"/>
+  <text class="t" x="66" y="276">Caddy (FrankenPHP)</text>
+  <text class="s" x="66" y="296">TLS · security headers · compression · serves the PWA · proxies /app to Reverb</text>
+
+  <rect class="box" x="50" y="340" width="330" height="110"/>
+  <text class="t" x="66" y="368">Laravel API · PHP 8.3</text>
+  <text class="s" x="66" y="388">Sanctum cookies · Policies · shop scope</text>
+  <text class="s" x="66" y="406">payment state machine (server-side truth)</text>
+  <text class="s" x="66" y="424">encrypted secrets · audit log · rate limits</text>
+
+  <rect class="box" x="420" y="340" width="330" height="110"/>
+  <text class="t" x="436" y="368">Lightning gateway · Node</text>
+  <text class="s" x="436" y="388">@getalby/sdk · NWC (NIP-47)</text>
+  <text class="s" x="436" y="406">internal network only · HMAC + nonce</text>
+  <text class="s" x="436" y="424">mock wallet for demo mode</text>
+
+  <rect class="box" x="50" y="480" width="210" height="110"/>
+  <text class="t" x="66" y="508">PostgreSQL 16</text>
+  <text class="s" x="66" y="528">ULIDs · pg_trgm · unaccent</text>
+  <text class="s" x="66" y="546">encrypted backups</text>
+
+  <rect class="box" x="290" y="480" width="200" height="110"/>
+  <text class="t" x="306" y="508">Redis 7</text>
+  <text class="s" x="306" y="528">cache · queues</text>
+  <text class="s" x="306" y="546">rate limiting · nonces</text>
+
+  <rect class="box" x="520" y="480" width="230" height="110"/>
+  <text class="t" x="536" y="508">Reverb · WebSocket</text>
+  <text class="s" x="536" y="528">signals only: {rubrique, auteur, time}</text>
+  <text class="s" x="536" y="546">screens reload via the API</text>
+  <text class="s" x="536" y="564">+ queue worker · scheduler</text>
+
+  <!-- Wallet -->
+  <rect class="box" x="840" y="250" width="310" height="110"/>
+  <text class="t" x="856" y="278">Merchant wallet</text>
+  <text class="s" x="856" y="298">Coinos, Alby Hub, … (NWC service)</text>
+  <text class="s" x="856" y="316">make_invoice · lookup_invoice · get_balance</text>
+  <text class="s" x="856" y="334">pay_invoice only within a budget · revocable</text>
+
+  <rect class="box" x="840" y="400" width="310" height="80"/>
+  <text class="t" x="856" y="428">Lightning Network (mainnet)</text>
+  <text class="s" x="856" y="448">settlement in seconds · funds never touch SatsPoint</text>
+
+  <!-- Arrows -->
+  <path class="l" d="M160 150 L160 250"/>
+  <text class="ll" x="168" y="200">HTTPS · cookies · CSRF</text>
+  <path class="l" d="M520 107 L535 107 Q555 107 555 125 L555 250"/>
+  <text class="ll" x="565" y="200">pays the invoice</text>
+  <path class="l" d="M670 150 L670 250"/>
+  <text class="ll" x="678" y="200">POST /webhooks/paytech</text>
+  <path class="l" d="M400 310 L400 340"/>
+  <path class="l" d="M380 395 L420 395"/>
+  <text class="ll" x="384" y="383">HMAC</text>
+  <path class="l" d="M155 450 L155 480"/>
+  <path class="l" d="M390 450 L390 480"/>
+  <path class="l" d="M635 450 L635 480"/>
+  <path class="l orange" d="M750 395 L810 395 Q825 395 835 380 L995 150"/>
+  <text class="ll" x="760" y="376">NIP-47, encrypted</text>
+  <path class="l orange" d="M995 150 L995 250"/>
+  <path class="l green" d="M995 360 L995 400"/>
+  <path class="l" d="M660 310 L660 480"/>
+  <text class="ll" x="668" y="470">/app</text>
+</svg>

@@ -74,6 +74,10 @@ Without any configuration the stack starts in **demo mode** (a banner says so): 
 
 ## 🏗 Architecture
 
+<p align="center"><img src="docs/images/architecture.svg" alt="SatsPoint architecture: PWA and customer wallet on the internet, Caddy + Laravel API + Lightning gateway + PostgreSQL + Redis + Reverb in our containers, merchant's own wallet reached through a Nostr relay (non-custodial)" width="100%"/></p>
+
+<details><summary>Text version</summary>
+
 ```
                       Internet (HTTPS only)
                                │
@@ -95,6 +99,8 @@ Without any configuration the stack starts in **demo mode** (a banner says so): 
         │ queue worker (ffmpeg audio, imports, exports) · scheduler (rates, expiries)
                                          PayTech ──IPN──► /webhooks/paytech/{shop}
 ```
+
+</details>
 
 | Layer | Choice |
 |---|---|
