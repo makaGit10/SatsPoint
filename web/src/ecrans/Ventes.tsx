@@ -1,7 +1,9 @@
 import { useMutation } from '@tanstack/react-query'
-import { ChevronDown, Download, ListFilter, Receipt, Search } from 'lucide-react'
+import { ChevronDown, Download, FileSpreadsheet, FileText, ListFilter, Receipt, Search, Sheet } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
+import type { FormatExport } from '@/api/exports'
 import type { FiltresVentes as TypeFiltres, VenteCourte } from '@/api/types'
 import { CLE_VENTES, exporterVentes, useVentes } from '@/api/ventes'
 import { peut, roleBoutique, useAuth } from '@/auth/store'
@@ -10,9 +12,9 @@ import { BoutonIcone } from '@/composants/BoutonIcone'
 import { Champ } from '@/composants/Champ'
 import { EnTetePage } from '@/composants/EnTetePage'
 import { EtatVide } from '@/composants/EtatVide'
+import { Menu } from '@/composants/Menu'
 import { SqueletteListe } from '@/composants/Squelette'
 import { notifier } from '@/composants/toastStore'
-import { cn } from '@/lib/cn'
 import { formaterFCFA } from '@/lib/format'
 import { queryClient } from '@/lib/queryClient'
 import { useDonneesEnDirect } from '@/temps-reel/useDonneesEnDirect'
@@ -34,7 +36,22 @@ export default function Ventes() {
   const [filtres, setFiltres] = useState<TypeFiltres>({ ...FILTRES_DEFAUT })
   const [recherche, setRecherche] = useState('')
   const [filtresVisibles, setFiltresVisibles] = useState(false)
-  const [detail, setDetail] = useState<string | null>(null)
+  const [params, setParams] = useSearchParams()
+  const [detail, setDetail] = useState<string | null>(() => params.get('vente'))
+
+  // Lien direct (recherche globale) : `/ventes?vente=…` ouvre le détail (ajusté au rendu), puis l'adresse est nettoyée.
+  const venteDemandee = params.get('vente')
+  const [venteVue, setVenteVue] = useState(venteDemandee)
+  if (venteDemandee && venteDemandee !== venteVue) {
+    setVenteVue(venteDemandee)
+    setDetail(venteDemandee)
+  }
+  useEffect(() => {
+    if (!venteDemandee) return
+    const suivant = new URLSearchParams(params)
+    suivant.delete('vente')
+    setParams(suivant, { replace: true })
+  }, [venteDemandee, params, setParams])
 
   // Recherche avec délai : le filtre `q` ne change qu'après 300 ms sans frappe.
   useEffect(() => {
@@ -68,7 +85,7 @@ export default function Ventes() {
   const actifs = filtresActifs(filtres)
 
   const exportation = useMutation({
-    mutationFn: () => exporterVentes(filtres),
+    mutationFn: (format: FormatExport) => exporterVentes(filtres, format),
     onSuccess: () => notifier({ type: 'succes', titre: t('ventes.exportOk'), voix: 'ventes.exportOk' }),
     onError: () => notifier({ type: 'erreur', titre: t('ventes.exportErreur'), voix: 'ventes.exportErreur' }),
   })
@@ -85,13 +102,17 @@ export default function Ventes() {
           <>
             <BoutonIcone libelle={t('ventes.filtrer')} icone={<ListFilter />} voix="ventes.filtrer" actif={filtresVisibles || actifs} onClick={() => setFiltresVisibles((v) => !v)} />
             {gestion && (
-              <BoutonIcone
-                libelle={t('ventes.exporterCsv')}
-                icone={<Download className={cn(exportation.isPending && 'animate-pulse')} />}
+              <Menu
+                libelle={t('ventes.exporter')}
+                icone={<Download />}
                 voix="ventes.exporter"
-                variante="secondaire"
-                disabled={exportation.isPending}
-                onClick={() => exportation.mutate()}
+                titre={actifs ? t('export.titreFiltres') : t('export.titre')}
+                occupe={exportation.isPending}
+                elements={[
+                  { id: 'csv', libelle: t('export.csv'), detail: t('export.csvDetail'), icone: <FileText />, voix: 'export.csv', onChoisir: () => exportation.mutate('csv') },
+                  { id: 'xlsx', libelle: t('export.xlsx'), detail: t('export.xlsxDetail'), icone: <FileSpreadsheet />, voix: 'export.xlsx', onChoisir: () => exportation.mutate('xlsx') },
+                  { id: 'pdf', libelle: t('export.pdf'), detail: t('export.pdfDetail'), icone: <Sheet />, voix: 'export.pdf', onChoisir: () => exportation.mutate('pdf') },
+                ]}
               />
             )}
           </>

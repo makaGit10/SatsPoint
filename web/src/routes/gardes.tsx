@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import type { RoleBoutique } from '@/api/types'
-import { estSuperAdmin, peut, useAuth } from '@/auth/store'
+import { deuxFaAActiver, deuxFaAValider, estSuperAdmin, peut, useAuth } from '@/auth/store'
 import { notifier } from '@/composants/toastStore'
 import { cheminAccueil } from '@/coquille/navigation'
 import { SqueletteApplication } from '@/coquille/SqueletteEcran'
@@ -25,15 +25,14 @@ export function RequiertInvite() {
   return <Outlet />
 }
 
-/** Session obligatoire ; sinon connexion avec retour (`?suite=`). */
+/** Session obligatoire ; sinon connexion avec retour (`?suite=`). Double authentification active → vérification d'abord. */
 export function RequiertSession() {
-  const { statut } = useAuth()
+  const { statut, utilisateur } = useAuth()
   const { pathname, search } = useLocation()
   if (statut === 'inconnu') return <SqueletteApplication />
-  if (statut === 'anonyme') {
-    const suite = encodeURIComponent(`${pathname}${search}`)
-    return <Navigate to={`/connexion?suite=${suite}`} replace />
-  }
+  const suite = encodeURIComponent(`${pathname}${search}`)
+  if (statut === 'anonyme') return <Navigate to={`/connexion?suite=${suite}`} replace />
+  if (deuxFaAValider(utilisateur) && pathname !== '/verification-2fa') return <Navigate to={`/verification-2fa?suite=${suite}`} replace />
   return <Outlet />
 }
 
@@ -63,9 +62,12 @@ export function RequiertRole({ roles }: { roles: readonly RoleBoutique[] }) {
   return <Outlet />
 }
 
-/** `/admin/*` : super-admin uniquement. */
+/** `/admin/*` : super-admin uniquement, double authentification activée puis validée (refus par défaut). */
 export function RequiertSuperAdmin() {
   const utilisateur = useAuth((s) => s.utilisateur)
+  const { pathname } = useLocation()
   if (!estSuperAdmin(utilisateur)) return <AccesRefuse vers={cheminAccueil(utilisateur)} />
+  if (deuxFaAActiver(utilisateur) || !utilisateur?.deux_fa) return <Navigate to={`/securite/2fa?suite=${encodeURIComponent(pathname)}`} replace />
+  if (deuxFaAValider(utilisateur)) return <Navigate to={`/verification-2fa?suite=${encodeURIComponent(pathname)}`} replace />
   return <Outlet />
 }

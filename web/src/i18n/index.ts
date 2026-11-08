@@ -68,9 +68,54 @@ export async function pretLangue(): Promise<void> {
   if (i18next.resolvedLanguage !== locale) await i18next.changeLanguage(locale)
 }
 
+/**
+ * Paquets de traductions chargés à la demande (écrans d'administration, studio audio, double authentification,
+ * import) : ils ne pèsent rien dans le JavaScript du premier écran. Les clés gardent leur chemin habituel
+ * (`studio.enregistrer`…), fusionnées dans l'espace `translation`.
+ */
+const PAQUETS = {
+  admin: {
+    fr: () => import('./admin.fr.json').then((m) => m.default as Record<string, unknown>),
+    en: () => import('./admin.en.json').then((m) => m.default as Record<string, unknown>),
+  },
+  // Portefeuille et équipe (écrans de gestion).
+  gestion: {
+    fr: () => import('./gestion.fr.json').then((m) => m.default as Record<string, unknown>),
+    en: () => import('./gestion.en.json').then((m) => m.default as Record<string, unknown>),
+  },
+  // Recherche globale, invitation, menus d'export.
+  extras: {
+    fr: () => import('./extras.fr.json').then((m) => m.default as Record<string, unknown>),
+    en: () => import('./extras.en.json').then((m) => m.default as Record<string, unknown>),
+  },
+} satisfies Record<string, Record<LocaleInterface, () => Promise<Record<string, unknown>>>>
+
+export type NomPaquet = keyof typeof PAQUETS
+
+const paquetsDemandes = new Set<NomPaquet>()
+const paquetsCharges = new Set<string>()
+
+async function chargerPaquetLocale(nom: NomPaquet, locale: LocaleInterface) {
+  const cle = `${nom}:${locale}`
+  if (paquetsCharges.has(cle)) return
+  // Le paquet principal d'abord : sinon `hasResourceBundle` serait vrai et il ne serait jamais chargé.
+  await chargerLangue(locale)
+  const ressources = await PAQUETS[nom][locale]()
+  i18next.addResourceBundle(locale, 'translation', ressources, true, false)
+  paquetsCharges.add(cle)
+}
+
+/** Charge un paquet pour la langue courante (et le français, langue de repli) ; il suit ensuite les changements de langue. */
+export async function chargerPaquet(nom: NomPaquet): Promise<void> {
+  paquetsDemandes.add(nom)
+  const locale = localeCourante()
+  await Promise.all([chargerPaquetLocale(nom, locale), locale === 'fr' ? null : chargerPaquetLocale(nom, 'fr')])
+}
+
 export async function changerLocale(locale: LocaleInterface) {
   if (localeCourante() === locale && i18next.hasResourceBundle(locale, 'translation')) return
   await chargerLangue(locale)
+  await Promise.all([...paquetsDemandes].map((nom) => chargerPaquetLocale(nom, locale)))
   await i18next.changeLanguage(locale)
 }
 

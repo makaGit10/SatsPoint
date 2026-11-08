@@ -15,6 +15,7 @@
  * - `satspoint.mock.vide` = `1` : boutique sans aucune vente.
  */
 import { emettreSignal } from '@/temps-reel/signaux'
+import { audiosPublies, etatDeuxFa, reinitialiserDeuxFa, repondreV3, repondreV3Public, type ContexteMock } from './mockV3'
 import type {
   Article,
   BoutiqueDetail,
@@ -200,15 +201,24 @@ function bipDataUrl(frequence: number): string {
 
 const FREQUENCES: Record<LangueAudio, number> = { wo: 440, srr: 494, ff: 523, dyo: 587, fr: 659 }
 
+const bips = new Map<LangueAudio, string>()
+function bip(langue: LangueAudio): string {
+  if (!bips.has(langue)) bips.set(langue, bipDataUrl(FREQUENCES[langue]))
+  return bips.get(langue)!
+}
+
 function manifeste(langue: LangueAudio): ManifesteAudio {
-  const url = bipDataUrl(FREQUENCES[langue])
+  const url = bip(langue)
   const audios: Record<string, string> = {}
   // Le français couvre tout (repli) ; les langues locales couvrent un sous-ensemble pour montrer le repli.
   const cles = langue === 'fr' ? CLES_AUDIO : CLES_AUDIO.filter((c) => !c.startsWith('auth.') && c !== 'langue.en')
   for (const cle of cles) audios[cle] = url
   // Le nom de chaque langue est dit dans sa propre langue.
   if (langue !== 'fr') audios[`langue.${langue}`] = url
-  return { langue, version: 1, audios }
+  // Audios publiés depuis le studio (vague 3).
+  const publies = audiosPublies(langue)
+  Object.assign(audios, publies)
+  return { langue, version: 1 + Object.keys(publies).length, audios }
 }
 
 // ---------------------------------------------------------------------------
@@ -731,7 +741,8 @@ function lireSession(): Utilisateur | null {
     const surcharge = sessionStorage.getItem(`${CLE_SESSION}.preferences`)
     const base = surcharge ? { ...utilisateur, preferences: { ...utilisateur.preferences, ...(JSON.parse(surcharge) as Partial<Preferences>) } } : utilisateur
     // La configuration de la boutique suit l'état simulé (portefeuille connecté, PayTech, paiement test).
-    return base.boutique ? { ...base, boutique: { ...base.boutique, nom: etat.boutique.nom, ville: etat.boutique.ville, configuration: { ...etat.boutique.configuration } } } : base
+    const avec2fa = { ...base, deux_fa: etatDeuxFa(base) }
+    return avec2fa.boutique ? { ...avec2fa, boutique: { ...avec2fa.boutique, nom: etat.boutique.nom, ville: etat.boutique.ville, configuration: { ...etat.boutique.configuration } } } : avec2fa
   } catch {
     return null
   }
@@ -829,6 +840,7 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
     if (!compte || corps.password !== MOT_DE_PASSE) {
       return json(422, { message: 'Identifiants incorrects.', errors: { identifiant: ['Identifiants incorrects.'] } })
     }
+    reinitialiserDeuxFa(compte)
     ecrireSession(compte)
     return json(200, { utilisateur: lireSession() })
   }
@@ -873,6 +885,31 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
   }
 
   const session = lireSession()
+  const contexte: ContexteMock = {
+    url,
+    route,
+    methode,
+    init,
+    session,
+    ventes: () => etat.ventes,
+    articles: () => etat.articles,
+    ajouterArticle: (a) => {
+      const article: Article = { ...a, ulid: ulid('01A'), position: etat.articles.length }
+      etat.articles.push(article)
+      return article
+    },
+    membres: () =>
+      etat.membres.map((mb) => {
+        const compte = Object.values(COMPTES).find((c) => c.ulid === mb.ulid)
+        return { ulid: mb.ulid, nom: compte?.nom ?? '—', contact: compte?.email ?? compte?.telephone ?? '', role: mb.role }
+      }),
+    ecrireSession,
+    boutiqueDemo: { ulid: BOUTIQUE_DEMO.ulid, nom: etat.boutique.nom, ville: etat.boutique.ville },
+    motDePasse: MOT_DE_PASSE,
+    bip,
+  }
+  const publique = repondreV3Public(contexte)
+  if (publique) return publique
 
   if (route === '/moi' && methode === 'GET') {
     return session ? json(200, { utilisateur: session }) : json(401, { message: 'Non authentifié.' })
@@ -887,6 +924,10 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
   }
 
   if (!session) return json(401, { message: 'Non authentifié.' })
+
+  // ----- Vague 3 : 2FA, console, studio, recherche, import, invitation -----
+  const v3 = await repondreV3(contexte)
+  if (v3) return v3
 
   // ----- Cours -----
   if (route === '/cours') {
@@ -1151,10 +1192,17 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
     })
   }
 
-  if (route === '/exports/ventes') {
+  if (route === '/exports/ventes' || route === '/exports/articles') {
     if (!estGestion(session)) return interdit()
-    const liste = filtrerVentes(url.searchParams, session)
-    return new Response(csvVentes(liste), { status: 200, headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="ventes.csv"' } })
+    const format = url.searchParams.get('format') ?? 'csv'
+    const ventes = route === '/exports/ventes'
+    if (!(ventes ? ['csv', 'xlsx', 'pdf'] : ['csv', 'xlsx']).includes(format)) return json(422, { message: 'Format inconnu.', errors: { format: ['Format inconnu.'] } })
+    const csv = ventes
+      ? csvVentes(filtrerVentes(url.searchParams, session))
+      : `\uFEFFNom;Prix (FCFA);Catégorie;Référence;Actif\n${etat.articles.map((a) => [a.nom, a.prix_xof, a.categorie ?? '', a.sku ?? '', a.actif ? 'oui' : 'non'].join(';')).join('\n')}\n`
+    const types: Record<string, string> = { csv: 'text/csv; charset=utf-8', xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', pdf: 'application/pdf' }
+    // Excel / PDF simulés : le contenu reste le CSV (le vrai fichier est produit par le back).
+    return new Response(format === 'pdf' ? `%PDF-1.4\n% SatsPoint (mock)\n${csv}` : csv, { status: 200, headers: { 'Content-Type': types[format]!, 'Content-Disposition': `attachment; filename="${ventes ? 'ventes' : 'articles'}.${format}"` } })
   }
 
   m = /^\/paiements\/([^/]+)(?:\/(verifier|simuler|confirmer-manuellement))?$/.exec(route)

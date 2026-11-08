@@ -8,6 +8,7 @@ import { Bouton } from '@/composants/Bouton'
 import { Champ } from '@/composants/Champ'
 import { cheminAccueil } from '@/coquille/navigation'
 import { MiseEnPageInvite } from '@/coquille/MiseEnPageInvite'
+import { suiteSure } from '@/routes/navigation'
 import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
 import { ChampMotDePasse, ErreurFormulaire, TitreAuth } from './communs'
 import { useMessageErreur } from './useMessageErreur'
@@ -39,8 +40,11 @@ export default function Connexion() {
       { identifiant: identifiant.trim(), password: motDePasse, se_souvenir: seSouvenir },
       {
         onSuccess: ({ utilisateur }) => {
-          const suite = params.get('suite')
-          navigate(suite && suite.startsWith('/') && !suite.startsWith('//') ? suite : cheminAccueil(utilisateur), { replace: true })
+          const suite = suiteSure(params.get('suite'))
+          const vers = suite ?? cheminAccueil(utilisateur)
+          // Double authentification active : le code d'abord, puis la page demandée.
+          if (utilisateur.deux_fa?.active && !utilisateur.deux_fa.validee) navigate(`/verification-2fa?suite=${encodeURIComponent(vers)}`, { replace: true })
+          else navigate(vers, { replace: true })
         },
         onError: (err) => {
           setErreur(messageErreur(err, { identifiants: true }))
@@ -94,7 +98,7 @@ export default function Connexion() {
       </form>
       <p className="mt-6 text-center text-sm text-texte-2">
         {t('auth.connexion.pasDeCompte')}{' '}
-        <Link to="/inscription" className="font-medium text-accent-texte hover:underline">
+        <Link to={suiteSure(params.get('suite')) ? `/inscription?suite=${encodeURIComponent(suiteSure(params.get('suite'))!)}` : '/inscription'} className="font-medium text-accent-texte hover:underline">
           {t('auth.connexion.creer')}
         </Link>
       </p>

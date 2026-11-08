@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 import {
   Accueil,
   Articles,
@@ -7,9 +7,11 @@ import {
   Console,
   Coquille,
   Demarrage,
+  DeuxFacteurs,
   Equipe,
   Inscription,
   Introuvable,
+  Invitation,
   Langue,
   MotDePasseOublie,
   Paiement,
@@ -20,6 +22,7 @@ import {
   StudioAudio,
   TableauDeBord,
   Ventes,
+  VerificationDeuxFacteurs,
 } from './ecrans'
 import { Aiguillage, RequiertBoutique, RequiertInvite, RequiertRole, RequiertSession, RequiertSuperAdmin } from './gardes'
 import { ErreurRacine, Racine } from './Racine'
@@ -49,6 +52,8 @@ export const routeur = createBrowserRouter([
             element: <RequiertBoutique />,
             children: [{ path: '/caisse/paiement/:ulid', element: <Paiement /> }],
           },
+          // Code de double authentification après connexion (hors coquille).
+          { path: '/verification-2fa', element: <VerificationDeuxFacteurs /> },
           {
             element: <Coquille />,
             children: [
@@ -70,11 +75,14 @@ export const routeur = createBrowserRouter([
                   },
                 ],
               },
+              // Sécurité du compte (tous les comptes ; obligatoire pour le super-admin).
+              { path: '/securite/2fa', element: <DeuxFacteurs /> },
               {
                 element: <RequiertSuperAdmin />,
                 children: [
                   { path: '/admin', element: <Console /> },
-                  { path: '/admin/studio-audio', element: <StudioAudio /> },
+                  { path: '/admin/studio', element: <StudioAudio /> },
+                  { path: '/admin/studio-audio', element: <Navigate to="/admin/studio" replace /> },
                 ],
               },
             ],
@@ -82,6 +90,8 @@ export const routeur = createBrowserRouter([
         ],
       },
       { path: '/r/:jeton', element: <Recu /> },
+      // Invitation à rejoindre une boutique : publique, connexion ou inscription puis acceptation.
+      { path: '/invitation/:jeton', element: <Invitation /> },
       { path: '*', element: <Introuvable /> },
     ],
   },

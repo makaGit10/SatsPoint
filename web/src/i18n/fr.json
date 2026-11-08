@@ -143,14 +143,6 @@
     "sombre": "Sombre",
     "auto": "Automatique"
   },
-  "recherche": {
-    "titre": "Recherche",
-    "placeholder": "Ventes, articles, équipe, réglages…",
-    "aide": "Tapez pour chercher dans toutes les rubriques.",
-    "recentes": "Dernières recherches",
-    "aucune": "Aucun résultat pour « {{terme}} »",
-    "bientot": "La recherche arrive avec les premières ventes."
-  },
   "utilisateur": {
     "preferences": "Préférences",
     "aideVocale": "Aide vocale",
@@ -158,7 +150,9 @@
     "langueAudio": "Langue de la voix",
     "deconnexion": "Me déconnecter",
     "boutique": "Boutique",
-    "role": "Rôle"
+    "role": "Rôle",
+    "securite": "Sécurité du compte",
+    "deuxFaActive": "2FA active"
   },
   "roles": {
     "proprietaire": "Propriétaire",
@@ -410,102 +404,6 @@
       "texte": "Dès la première vente, vous verrez ici votre chiffre du jour et la répartition bitcoin / mobile money, en direct."
     }
   },
-  "portefeuille": {
-    "titre": "Portefeuille",
-    "solde": "Solde",
-    "recevoir": "Recevoir",
-    "envoyer": "Envoyer",
-    "historique": "Historique",
-    "connecter": "Connecter mon portefeuille",
-    "connexion": "Connexion du portefeuille",
-    "connecte": "Connecté",
-    "injoignable": "Injoignable",
-    "nonConnecte": "Non connecté",
-    "verifieLe": "Vérifié {{quand}}",
-    "alias": "Portefeuille",
-    "adresse": "Adresse Lightning",
-    "permissions": "Autorisations",
-    "budget": "Budget d'envoi restant",
-    "uri": "Lien Nostr Wallet Connect",
-    "uriAide": "Commence par nostr+walletconnect://",
-    "quelsPortefeuilles": "Quels portefeuilles ?",
-    "aidePortefeuilles": "Alby Hub, Coinos, Primal, Zeus… : dans votre portefeuille, créez une connexion « Nostr Wallet Connect » (avec un budget), puis collez le lien ici. SatsPoint ne voit jamais vos clés.",
-    "revoquer": "Révoquer",
-    "revoquerTitre": "Révoquer la connexion ?",
-    "revoquerTexte": "SatsPoint supprime le secret de connexion. Supprimez aussi la connexion dans votre portefeuille. Les encaissements bitcoin seront bloqués jusqu'à une nouvelle connexion.",
-    "revoque": "Connexion révoquée",
-    "connecteOk": "Portefeuille connecté",
-    "recevoirTitre": "Recevoir des sats",
-    "montantFcfa": "Montant en FCFA",
-    "montantSats": "Montant en sats",
-    "description": "Description",
-    "generer": "Créer la demande",
-    "demandeAria": "Code QR de la demande",
-    "envoyerTitre": "Envoyer des sats",
-    "destination": "Facture ou adresse Lightning",
-    "destinationAide": "Collez une facture (lnbc…), une adresse (nom@domaine) ou un LNURL.",
-    "scanner": "Scanner un code",
-    "coller": "Coller",
-    "apercu": "Aperçu",
-    "destinataire": "Destinataire",
-    "montant": "Montant",
-    "frais": "Frais estimés",
-    "motDePasse": "Votre mot de passe pour confirmer",
-    "confirmerEnvoi": "Confirmer l'envoi",
-    "envoye": "Envoi effectué",
-    "envoyeTexte": "{{sats}} envoyés · frais {{frais}} · empreinte {{hash}}",
-    "soldeInsuffisant": "Il vous manque {{sats}} pour cet envoi.",
-    "soldeInsuffisantSimple": "Solde insuffisant pour cet envoi.",
-    "modifierMontant": "Modifier le montant",
-    "budgetDepasse": "Limite d'envoi atteinte pour aujourd'hui.",
-    "budgetTexte": "Le budget d'envoi est fixé dans votre portefeuille lors de la connexion.",
-    "destinationInvalide": "Cette destination n'est pas reconnue. Vérifiez la facture ou l'adresse.",
-    "paiementIncertain": "L'envoi est incertain. Vérifiez votre portefeuille avant de réessayer.",
-    "motDePasseIncorrect": "Mot de passe incorrect.",
-    "entrante": "Reçu",
-    "sortante": "Envoyé",
-    "aucuneTransaction": "Aucun mouvement pour l'instant.",
-    "cameraIndisponible": "La caméra n'est pas disponible sur cet appareil : collez le code.",
-    "proprietaireSeulement": "Seul le propriétaire peut envoyer des sats.",
-    "vide": {
-      "titre": "Aucun portefeuille connecté",
-      "texte": "Connectez votre portefeuille Lightning pour recevoir vos paiements directement, sans intermédiaire."
-    }
-  },
-  "equipe": {
-    "titre": "Équipe",
-    "inviter": "Inviter",
-    "membres": "Membres",
-    "invitations": "Invitations en attente",
-    "contact": "Téléphone ou e-mail",
-    "role": "Rôle",
-    "actif": "Actif",
-    "inactif": "Désactivé",
-    "moi": "vous",
-    "derniereConnexion": "Connexion {{quand}}",
-    "jamaisConnecte": "Jamais connecté",
-    "changerRole": "Changer le rôle",
-    "desactiver": "Désactiver",
-    "reactiver": "Réactiver",
-    "retirer": "Retirer de l'équipe",
-    "annulerInvitation": "Annuler l'invitation",
-    "expireLe": "Expire {{quand}}",
-    "inviterTitre": "Inviter une personne",
-    "inviterTexte": "Elle recevra un lien valable 72 heures.",
-    "invitationEnvoyee": "Invitation envoyée",
-    "desactiverTitre": "Désactiver {{nom}} ?",
-    "desactiverTexte": "Son accès est coupé immédiatement, sur tous ses appareils.",
-    "retirerTitre": "Retirer {{nom}} de l'équipe ?",
-    "retirerTexte": "Ses ventes passées sont conservées.",
-    "dernierProprietaire": "La boutique doit garder au moins un propriétaire.",
-    "roleProprietaire": "Tout, y compris l'argent.",
-    "roleGerant": "Ventes, articles, équipe et réglages. Pas d'envoi de sats.",
-    "roleCaissier": "Encaisse seulement. Voit ses ventes du jour.",
-    "vide": {
-      "titre": "Vous êtes seul pour l'instant",
-      "texte": "Invitez un caissier ou un gérant : il encaisse pour vous, sans accès à votre argent."
-    }
-  },
   "articles": {
     "titre": "Articles",
     "ajouter": "Ajouter un article",
@@ -538,7 +436,8 @@
     "vide": {
       "titre": "Aucun article",
       "texte": "Créez vos articles les plus vendus pour encaisser d'un seul geste."
-    }
+    },
+    "exporter": "Exporter les articles"
   },
   "reglages": {
     "titre": "Réglages",
@@ -611,24 +510,6 @@
       "texte": "Le démarrage guidé vous accompagne jusqu'au premier paiement test."
     }
   },
-  "admin": {
-    "titre": "Console plateforme",
-    "boutiques": "Boutiques",
-    "sante": "Santé",
-    "journal": "Journal",
-    "vide": {
-      "titre": "Console plateforme",
-      "texte": "Liste des boutiques, état de santé des services et journal d'audit arriveront ici."
-    },
-    "studio": {
-      "titre": "Studio audio",
-      "sousTitre": "Enregistrez les audios de chaque bouton dans chaque langue.",
-      "vide": {
-        "titre": "Aucun audio enregistré",
-        "texte": "La matrice clés × langues s'affichera ici. Enregistrez au micro ou déposez un fichier, puis publiez."
-      }
-    }
-  },
   "erreurs": {
     "inattendue": "Un problème est survenu. Réessayez dans un instant.",
     "reseau": "Pas de connexion. Vérifiez votre réseau et réessayez.",
@@ -639,7 +520,8 @@
     "walletInjoignable": "Votre portefeuille ne répond pas.",
     "coursIndisponible": "Le prix du bitcoin n'est pas disponible pour le moment.",
     "encaisserMobileMoney": "Encaisser par mobile money",
-    "conflit": "Ces données ont changé entre-temps. L'écran a été actualisé."
+    "conflit": "Ces données ont changé entre-temps. L'écran a été actualisé.",
+    "boutiqueSuspendue": "Cette boutique est suspendue. Contactez l'équipe SatsPoint."
   },
   "introuvable": {
     "titre": "Page introuvable",

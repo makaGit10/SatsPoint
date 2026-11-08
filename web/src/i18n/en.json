@@ -143,14 +143,6 @@
     "sombre": "Dark",
     "auto": "Automatic"
   },
-  "recherche": {
-    "titre": "Search",
-    "placeholder": "Sales, items, team, settings…",
-    "aide": "Type to search across every section.",
-    "recentes": "Recent searches",
-    "aucune": "No results for “{{terme}}”",
-    "bientot": "Search arrives with your first sales."
-  },
   "utilisateur": {
     "preferences": "Preferences",
     "aideVocale": "Voice help",
@@ -158,7 +150,9 @@
     "langueAudio": "Voice language",
     "deconnexion": "Sign out",
     "boutique": "Shop",
-    "role": "Role"
+    "role": "Role",
+    "securite": "Account security",
+    "deuxFaActive": "2FA on"
   },
   "roles": {
     "proprietaire": "Owner",
@@ -410,102 +404,6 @@
       "texte": "From the first sale, you will see today's total and the bitcoin / mobile money split here, live."
     }
   },
-  "portefeuille": {
-    "titre": "Wallet",
-    "solde": "Balance",
-    "recevoir": "Receive",
-    "envoyer": "Send",
-    "historique": "History",
-    "connecter": "Connect my wallet",
-    "connexion": "Wallet connection",
-    "connecte": "Connected",
-    "injoignable": "Unreachable",
-    "nonConnecte": "Not connected",
-    "verifieLe": "Checked {{quand}}",
-    "alias": "Wallet",
-    "adresse": "Lightning address",
-    "permissions": "Permissions",
-    "budget": "Remaining send budget",
-    "uri": "Nostr Wallet Connect link",
-    "uriAide": "Starts with nostr+walletconnect://",
-    "quelsPortefeuilles": "Which wallets?",
-    "aidePortefeuilles": "Alby Hub, Coinos, Primal, Zeus…: in your wallet, create a “Nostr Wallet Connect” connection (with a budget), then paste the link here. SatsPoint never sees your keys.",
-    "revoquer": "Revoke",
-    "revoquerTitre": "Revoke the connection?",
-    "revoquerTexte": "SatsPoint deletes the connection secret. Also remove the connection in your wallet. Bitcoin payments will be blocked until a new connection is made.",
-    "revoque": "Connection revoked",
-    "connecteOk": "Wallet connected",
-    "recevoirTitre": "Receive sats",
-    "montantFcfa": "Amount in FCFA",
-    "montantSats": "Amount in sats",
-    "description": "Description",
-    "generer": "Create the request",
-    "demandeAria": "QR code of the request",
-    "envoyerTitre": "Send sats",
-    "destination": "Lightning invoice or address",
-    "destinationAide": "Paste an invoice (lnbc…), an address (name@domain) or an LNURL.",
-    "scanner": "Scan a code",
-    "coller": "Paste",
-    "apercu": "Preview",
-    "destinataire": "Recipient",
-    "montant": "Amount",
-    "frais": "Estimated fees",
-    "motDePasse": "Your password to confirm",
-    "confirmerEnvoi": "Confirm sending",
-    "envoye": "Sent",
-    "envoyeTexte": "{{sats}} sent · fees {{frais}} · hash {{hash}}",
-    "soldeInsuffisant": "You are {{sats}} short for this transfer.",
-    "soldeInsuffisantSimple": "Insufficient balance for this transfer.",
-    "modifierMontant": "Change the amount",
-    "budgetDepasse": "Sending limit reached for today.",
-    "budgetTexte": "The send budget is set in your wallet when connecting.",
-    "destinationInvalide": "This destination is not recognised. Check the invoice or the address.",
-    "paiementIncertain": "The transfer is uncertain. Check your wallet before trying again.",
-    "motDePasseIncorrect": "Incorrect password.",
-    "entrante": "Received",
-    "sortante": "Sent",
-    "aucuneTransaction": "No movement yet.",
-    "cameraIndisponible": "The camera is not available on this device: paste the code.",
-    "proprietaireSeulement": "Only the owner can send sats.",
-    "vide": {
-      "titre": "No wallet connected",
-      "texte": "Connect your Lightning wallet to receive payments directly, with no middleman."
-    }
-  },
-  "equipe": {
-    "titre": "Team",
-    "inviter": "Invite",
-    "membres": "Members",
-    "invitations": "Pending invitations",
-    "contact": "Phone or email",
-    "role": "Role",
-    "actif": "Active",
-    "inactif": "Disabled",
-    "moi": "you",
-    "derniereConnexion": "Signed in {{quand}}",
-    "jamaisConnecte": "Never signed in",
-    "changerRole": "Change role",
-    "desactiver": "Disable",
-    "reactiver": "Re-enable",
-    "retirer": "Remove from team",
-    "annulerInvitation": "Cancel invitation",
-    "expireLe": "Expires {{quand}}",
-    "inviterTitre": "Invite someone",
-    "inviterTexte": "They will receive a link valid for 72 hours.",
-    "invitationEnvoyee": "Invitation sent",
-    "desactiverTitre": "Disable {{nom}}?",
-    "desactiverTexte": "Their access is cut immediately, on every device.",
-    "retirerTitre": "Remove {{nom}} from the team?",
-    "retirerTexte": "Their past sales are kept.",
-    "dernierProprietaire": "The shop must keep at least one owner.",
-    "roleProprietaire": "Everything, including the money.",
-    "roleGerant": "Sales, items, team and settings. Cannot send sats.",
-    "roleCaissier": "Charges only. Sees their own sales of the day.",
-    "vide": {
-      "titre": "You are on your own for now",
-      "texte": "Invite a cashier or a manager: they charge for you, with no access to your money."
-    }
-  },
   "articles": {
     "titre": "Items",
     "ajouter": "Add an item",
@@ -538,7 +436,8 @@
     "vide": {
       "titre": "No items",
       "texte": "Create your best-selling items to charge in a single tap."
-    }
+    },
+    "exporter": "Export items"
   },
   "reglages": {
     "titre": "Settings",
@@ -611,24 +510,6 @@
       "texte": "The guided setup walks you through to the first test payment."
     }
   },
-  "admin": {
-    "titre": "Platform console",
-    "boutiques": "Shops",
-    "sante": "Health",
-    "journal": "Audit log",
-    "vide": {
-      "titre": "Platform console",
-      "texte": "Shop list, service health and the audit log will land here."
-    },
-    "studio": {
-      "titre": "Audio studio",
-      "sousTitre": "Record the audio for every button in every language.",
-      "vide": {
-        "titre": "No audio recorded",
-        "texte": "The keys × languages matrix will appear here. Record with the mic or drop a file, then publish."
-      }
-    }
-  },
   "erreurs": {
     "inattendue": "Something went wrong. Try again in a moment.",
     "reseau": "No connection. Check your network and try again.",
@@ -639,7 +520,8 @@
     "walletInjoignable": "Your wallet is not responding.",
     "coursIndisponible": "The bitcoin price is not available right now.",
     "encaisserMobileMoney": "Charge with mobile money",
-    "conflit": "This data changed in the meantime. The screen has been refreshed."
+    "conflit": "This data changed in the meantime. The screen has been refreshed.",
+    "boutiqueSuspendue": "This shop is suspended. Contact the SatsPoint team."
   },
   "introuvable": {
     "titre": "Page not found",

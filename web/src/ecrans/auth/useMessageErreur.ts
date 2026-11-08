@@ -15,6 +15,7 @@ const CODES: Record<string, string> = {
   VENTE_DEJA_PAYEE: 'erreurs.conflit',
   VENTE_ANNULEE: 'erreurs.conflit',
   VENTE_NON_ANNULABLE: 'erreurs.conflit',
+  BOUTIQUE_SUSPENDUE: 'erreurs.boutiqueSuspendue',
 }
 
 /** Traduit une erreur API en message utile (jamais de détail technique à l'écran). */

@@ -73,6 +73,7 @@ export function BarreLaterale() {
         <BoutonIcone
           libelle={repliee ? t('nav.deplier') : t('nav.replier')}
           icone={repliee ? <PanelLeftOpen /> : <PanelLeftClose />}
+          voix={repliee ? 'nav.deplier' : 'nav.replier'}
           onClick={basculer}
           coteInfobulle="right"
         />

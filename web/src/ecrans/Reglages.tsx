@@ -1,5 +1,6 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLocation } from 'react-router-dom'
 import { CLE_BOUTIQUE, useBoutique } from '@/api/boutique'
 import { peut, useAuth } from '@/auth/store'
 import { Carte, CarteEnTete } from '@/composants/Carte'
@@ -22,6 +23,14 @@ export default function Reglages() {
   const proprietaire = peut(utilisateur, ['proprietaire'])
   const { data: boutique, isPending } = useBoutique()
 
+  // Lien direct vers une section (recherche globale : `/reglages#paytech`).
+  const { hash } = useLocation()
+  useEffect(() => {
+    if (!hash || !boutique) return
+    const id = setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
+    return () => clearTimeout(id)
+  }, [hash, boutique])
+
   useDonneesEnDirect(['parametres'], () => void queryClient.invalidateQueries({ queryKey: CLE_BOUTIQUE }))
 
   return (
@@ -32,12 +41,18 @@ export default function Reglages() {
       ) : (
         <div className="grid gap-3 md:grid-cols-2 md:items-start">
           <div className="flex flex-col gap-3">
-            <FormulaireBoutique key={`${boutique.nom}|${boutique.telephone ?? ''}|${boutique.ville}`} boutique={boutique} />
-            <FormulairePaytech key={`${boutique.paytech.configure}|${boutique.paytech.environnement}`} boutique={boutique} proprietaire={proprietaire} />
+            <div id="boutique" className="scroll-mt-20">
+              <FormulaireBoutique key={`${boutique.nom}|${boutique.telephone ?? ''}|${boutique.ville}`} boutique={boutique} />
+            </div>
+            <div id="paytech" className="scroll-mt-20">
+              <FormulairePaytech key={`${boutique.paytech.configure}|${boutique.paytech.environnement}`} boutique={boutique} proprietaire={proprietaire} />
+            </div>
           </div>
           <div className="flex flex-col gap-3">
-            <FormulairePaiements key={`${JSON.stringify(boutique.reglages)}|${boutique.paytech.configure}`} boutique={boutique} />
-            <Carte rembourrage="sm">
+            <div id="paiements" className="scroll-mt-20">
+              <FormulairePaiements key={`${JSON.stringify(boutique.reglages)}|${boutique.paytech.configure}`} boutique={boutique} />
+            </div>
+            <Carte rembourrage="sm" id="preferences" className="scroll-mt-20">
               <CarteEnTete titre={t('reglages.preferences')} className="mb-2" />
               <Suspense fallback={<SqueletteTexte lignes={4} />}>
                 <PanneauPreferences />

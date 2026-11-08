@@ -1,0 +1,381 @@
+{
+  "admin": {
+    "titre": "Console plateforme",
+    "sousTitre": "Adoption, boutiques, santé des services et journal. Aucun montant des boutiques n'apparaît ici.",
+    "onglets": {
+      "ensemble": "Vue d'ensemble",
+      "ensembleCourt": "Résumé",
+      "boutiques": "Boutiques",
+      "sante": "Santé",
+      "journal": "Journal"
+    },
+    "ouvrirStudio": "Ouvrir le studio",
+    "stats": {
+      "actifs": "Commerçants actifs",
+      "actifsAide": "Au moins un paiement reçu cette semaine",
+      "paiements": "Paiements par commerçant",
+      "paiementsAide": "Moyenne de la semaine",
+      "delai": "Confirmation médiane",
+      "delaiAide": "Du QR affiché au paiement confirmé",
+      "secondes": "{{valeur}} s",
+      "repartition": "Bitcoin / mobile money",
+      "repartitionAria": "{{sats}} % des paiements en bitcoin, {{mm}} % en mobile money",
+      "sats": "Bitcoin {{pct}} %",
+      "mobileMoney": "Mobile money {{pct}} %",
+      "couverture": "Couverture audio par langue",
+      "confidentialite": "Chiffres agrégés sur 7 jours glissants. Les ventes, portefeuilles et comptes PayTech des boutiques ne sont jamais visibles depuis la console.",
+      "parc": "{{total}} boutiques · {{actives}} actives · {{nouvelles}} nouvelles cette semaine"
+    },
+    "boutiques": {
+      "rechercher": "Nom, ville ou propriétaire",
+      "statut": "Statut des boutiques",
+      "toutes": "Toutes",
+      "actives": "Actives",
+      "suspendues": "Suspendues",
+      "vide": "Aucune boutique ne correspond",
+      "sansProprietaire": "Sans propriétaire",
+      "wallet": "Portefeuille connecté",
+      "walletNon": "Portefeuille non connecté",
+      "paytech": "Mobile money configuré",
+      "paytechNon": "Mobile money non configuré",
+      "test": "Paiement test réussi",
+      "testNon": "Paiement test non fait",
+      "ventes7j_one": "{{count}} vente · 7 j",
+      "ventes7j_other": "{{count}} ventes · 7 j",
+      "aucuneVente": "Aucune vente",
+      "statuts": {
+        "active": "Active",
+        "suspendue": "Suspendue"
+      },
+      "suspendre": "Suspendre la boutique",
+      "reactiver": "Réactiver la boutique",
+      "suspendreTitre": "Suspendre « {{nom}} » ?",
+      "suspendreTexte": "L'équipe de la boutique ne pourra plus encaisser ni se connecter. Ses données sont conservées et vous pourrez la réactiver.",
+      "reactiverTitre": "Réactiver « {{nom}} » ?",
+      "reactiverTexte": "L'équipe pourra de nouveau se connecter et encaisser.",
+      "suspendueOk": "« {{nom}} » est suspendue",
+      "reactiveeOk": "« {{nom}} » est réactivée"
+    },
+    "sante": {
+      "base": "Base de données",
+      "baseOk": "Répond normalement",
+      "redis": "Cache et files (Redis)",
+      "redisOk": "Répond normalement",
+      "reverb": "Temps réel",
+      "reverbOk": "Les écrans se mettent à jour",
+      "reverbKo": "Les écrans ne se mettent plus à jour seuls",
+      "passerelle": "Passerelle Lightning",
+      "passerelleOk": "Joignable",
+      "passerelleKo": "Injoignable : les paiements en bitcoin sont bloqués",
+      "cours": "Cours du bitcoin",
+      "coursDetail": "Mis à jour il y a {{age}} s · {{sources}} sources",
+      "coursKo": "Indisponible : seul le mobile money fonctionne",
+      "files": "Files d'attente",
+      "filesDetail": "{{attente}} en attente · {{echouees}} en échec",
+      "audio": "Fichiers audio",
+      "audioDetail": "{{fichiers}} fichiers · {{taille}}",
+      "injoignable": "Injoignable",
+      "majLe": "Vérifié {{quand}}",
+      "version": "version {{version}}",
+      "niveaux": {
+        "ok": "OK",
+        "alerte": "À surveiller",
+        "panne": "En panne"
+      },
+      "global": {
+        "ok": "Tous les services fonctionnent",
+        "alerte": "Service dégradé",
+        "panne": "Plateforme indisponible"
+      }
+    },
+    "journal": {
+      "action": "Type d'action",
+      "toutes": "Toutes les actions",
+      "du": "Du",
+      "au": "Au",
+      "vide": "Aucune entrée pour ces filtres",
+      "systeme": "Système",
+      "familles": {
+        "auth": "Connexions et sécurité",
+        "audio": "Studio audio",
+        "boutique": "Boutiques",
+        "equipe": "Équipe",
+        "wallet": "Portefeuilles",
+        "paytech": "Mobile money",
+        "vente": "Ventes"
+      },
+      "actions": {
+        "auth_connexion": "Connexion",
+        "auth_echec_connexion": "Connexion refusée",
+        "auth_2fa_verifiee": "Double authentification validée",
+        "auth_2fa_activee": "Double authentification activée",
+        "auth_2fa_desactivee": "Double authentification désactivée",
+        "auth_2fa_echec": "Code de double authentification refusé",
+        "audio_publie": "Audios publiés",
+        "boutique_creee": "Boutique créée",
+        "boutique_suspendue": "Boutique suspendue",
+        "boutique_reactivee": "Boutique réactivée",
+        "wallet_connecte": "Portefeuille connecté",
+        "wallet_envoi": "Envoi de sats",
+        "paytech_ipn_refusee": "Notification PayTech refusée",
+        "paytech_configure": "Mobile money configuré",
+        "equipe_invitation": "Invitation envoyée",
+        "vente_confirmee_manuellement": "Paiement confirmé à la main"
+      }
+    }
+  },
+  "studio": {
+    "titre": "Studio audio",
+    "sousTitre": "Enregistrez chaque bouton dans chaque langue. Les essentielles (étoile) d'abord.",
+    "langueTravail": "Langue de travail",
+    "couvertureAria": "{{publies}} publiés et {{brouillons}} brouillons sur {{total}}",
+    "essentiellesManquantes_one": "{{count}} essentielle manquante",
+    "essentiellesManquantes_other": "{{count}} essentielles manquantes",
+    "essentiellesPretes": "Essentielles prêtes",
+    "rechercher": "Chercher une clé ou un texte",
+    "ecran": "Écran",
+    "tousEcrans": "Tous les écrans",
+    "manquantsSeulement": "Manquants seulement",
+    "rafale": "Mode rafale",
+    "rafaleAide": "Après chaque validation, passe à la case manquante suivante et relance le 3-2-1.",
+    "legende": "Légende",
+    "matrice": "Matrice des clés vocales par langue",
+    "cle": "Texte et clé",
+    "caseAria": "{{langue}} — « {{texte}} » : {{statut}}",
+    "essentielle": "Essentielle",
+    "panneau": "Enregistrement",
+    "precedent": "Clé précédente",
+    "suivant": "Case manquante suivante",
+    "publier": "Publier",
+    "publie": "Audio publié : disponible chez tout le monde",
+    "publierTout": "Publier les brouillons",
+    "publierToutAria_one": "Publier {{count}} brouillon en {{langue}}",
+    "publierToutAria_other": "Publier {{count}} brouillons en {{langue}}",
+    "publierToutTitre_one": "Publier {{count}} brouillon en {{langue}} ?",
+    "publierToutTitre_other": "Publier {{count}} brouillons en {{langue}} ?",
+    "publierToutTexte": "Ils seront lus chez tous les commerçants dès maintenant.",
+    "lotPublie_one": "{{count}} audio publié en {{langue}}",
+    "lotPublie_other": "{{count}} audios publiés en {{langue}}",
+    "supprimer": "Supprimer le brouillon",
+    "supprime": "Brouillon supprimé",
+    "ecouterBrouillon": "Écouter le brouillon",
+    "ecouterPublie": "Écouter la version publiée",
+    "envoye": "Enregistrement envoyé",
+    "envoyeTexte": "Il sera prêt à écouter dans quelques secondes.",
+    "toutFait": "Tout est enregistré en {{langue}}",
+    "effacerFiltres": "Effacer les filtres",
+    "deposer": "Déposer un fichier audio",
+    "deposerAide": "{{formats}} · 2 Mo · 15 s maximum",
+    "statuts": {
+      "publie": "Publié",
+      "brouillon": "Brouillon",
+      "en_traitement": "En traitement",
+      "erreur": "Erreur",
+      "manquant": "Manquant"
+    },
+    "versions": {
+      "publie": "Version publiée",
+      "brouillon": "Brouillon à écouter puis publier",
+      "en_traitement": "Traitement en cours (silences, volume)…",
+      "erreur": "Le fichier n'a pas pu être traité : réenregistrez."
+    },
+    "refus": {
+      "format": "Format non pris en charge : mp3, wav, m4a, ogg ou webm.",
+      "taille": "Fichier trop lourd : 2 Mo maximum.",
+      "duree": "Audio trop long : 15 secondes maximum."
+    },
+    "micro": {
+      "enregistrer": "Enregistrer",
+      "aide": "Appuyez, attendez 3-2-1, puis parlez.",
+      "autoriser": "Autorisez le micro dans votre navigateur…",
+      "preparez": "Préparez-vous…",
+      "arreter": "Arrêter",
+      "prise": "Prise de {{duree}}",
+      "reecouter": "Réécouter",
+      "refaire": "Refaire",
+      "valider": "Valider",
+      "refuse": "Le micro est bloqué. Autorisez-le dans la barre d'adresse, ou déposez un fichier ci-dessous.",
+      "indisponible": "Aucun micro n'est disponible sur cet appareil. Déposez un fichier ci-dessous.",
+      "erreurs": {
+        "tropCourt": "Trop court : parlez après le 3-2-1.",
+        "enregistrement": "L'enregistrement a échoué. Réessayez ou déposez un fichier."
+      }
+    },
+    "raccourcis": {
+      "titre": "Raccourcis clavier",
+      "enregistrer": "enregistrer",
+      "valider": "valider",
+      "refaire": "refaire",
+      "suivant": "suivant",
+      "publier": "publier"
+    },
+    "touches": {
+      "espace": "Espace"
+    },
+    "vide": {
+      "titre": "Aucune clé pour ces filtres",
+      "toutFait": "Tout est enregistré en {{langue}}",
+      "texte": "Changez de langue ou effacez les filtres pour voir les autres clés."
+    },
+    "ecrans": {
+      "langue": "Choix de la langue",
+      "accueil": "Accueil",
+      "connexion": "Connexion",
+      "caisse": "Caisse",
+      "paiement": "Paiement",
+      "succes": "Paiement reçu",
+      "navigation": "Menus",
+      "compte": "Compte",
+      "ventes": "Ventes",
+      "tableau": "Tableau de bord",
+      "portefeuille": "Portefeuille",
+      "articles": "Articles",
+      "equipe": "Équipe",
+      "invitation": "Invitation",
+      "reglages": "Réglages",
+      "demarrage": "Démarrage guidé",
+      "recu": "Reçu",
+      "securite": "Sécurité",
+      "admin": "Console",
+      "divers": "Divers"
+    }
+  },
+  "deuxFa": {
+    "titre": "Double authentification",
+    "sousTitre": "Un code à 6 chiffres sur votre téléphone, en plus du mot de passe.",
+    "obligatoire": "La console plateforme exige la double authentification. Activez-la pour continuer.",
+    "etape1": {
+      "titre": "Installez une application d'authentification",
+      "texte": "Google Authenticator, Microsoft Authenticator, Aegis ou 2FAS : elles sont gratuites."
+    },
+    "etape2": {
+      "titre": "Scannez ce code avec l'application",
+      "texte": "Ou recopiez la clé secrète si vous ne pouvez pas scanner."
+    },
+    "etape3": {
+      "titre": "Saisissez le code affiché"
+    },
+    "qrAria": "Code QR à scanner avec votre application d'authentification",
+    "secretAide": "Clé secrète",
+    "copierSecret": "Copier la clé secrète",
+    "code": "Code à 6 chiffres",
+    "codeSecours": "Code de secours",
+    "activer": "Activer",
+    "activee": "Double authentification activée",
+    "codeIncorrect": "Code incorrect. Vérifiez l'heure de votre téléphone et réessayez.",
+    "codeIncomplet": "Saisissez les 6 chiffres.",
+    "secoursIncomplet": "Saisissez le code de secours complet (8 caractères).",
+    "tropDEssais": "Trop d'essais. Patientez une minute puis réessayez.",
+    "codes": {
+      "titre": "Vos codes de secours",
+      "texte": "Chacun sert une seule fois si vous perdez votre téléphone. Ils ne seront plus jamais affichés : rangez-les en lieu sûr.",
+      "copier": "Copier les codes",
+      "telecharger": "Télécharger",
+      "confirmation": "J'ai rangé ces codes en lieu sûr",
+      "terminer": "Terminer",
+      "fichierTitre": "SatsPoint — codes de secours (un usage chacun)"
+    },
+    "activeTitre": "Double authentification activée",
+    "activeTexte": "À chaque connexion, un code de votre application vous sera demandé.",
+    "requiseNote": "Obligatoire pour la console plateforme.",
+    "changerTelephone": "Nouveau téléphone ? Désactivez puis réactivez.",
+    "desactiver": "Désactiver",
+    "desactiverTexte": "Confirmez avec votre mot de passe.",
+    "desactiverRequise": "Votre compte en a besoin pour la console : vous devrez la réactiver avec votre nouveau téléphone. Confirmez avec votre mot de passe.",
+    "motDePasse": "Mot de passe",
+    "motDePasseIncorrect": "Mot de passe incorrect.",
+    "desactivee": "Double authentification désactivée",
+    "verification": {
+      "titre": "Code de vérification",
+      "texte": "Ouvrez votre application d'authentification et saisissez le code à 6 chiffres.",
+      "texteSecours": "Saisissez l'un de vos codes de secours (il ne servira qu'une fois)."
+    },
+    "verifier": "Vérifier",
+    "utiliserSecours": "Utiliser un code de secours",
+    "utiliserApplication": "Utiliser l'application"
+  },
+  "import": {
+    "titre": "Importer des articles",
+    "etapeAria": "Étape {{n}} sur {{total}}",
+    "etapes": {
+      "depot": "Fichier",
+      "colonnes": "Colonnes",
+      "mode": "Mode",
+      "import": "Import"
+    },
+    "deposer": "Déposez votre fichier ici",
+    "deposerAide": "ou touchez pour le choisir",
+    "formats": "CSV ou Excel (.xlsx) · 2 Mo maximum · 1re ligne = noms des colonnes",
+    "analyse": "Lecture du fichier…",
+    "refus": {
+      "format": "Format non pris en charge : CSV ou Excel (.xlsx).",
+      "taille": "Fichier trop lourd : 2 Mo maximum."
+    },
+    "modele": {
+      "telecharger": "Télécharger un modèle",
+      "entetes": "Nom;Prix;Catégorie;Référence;Actif",
+      "exemple1": "Bazin riche 3 m;15000;Tissus;BZ-003;oui",
+      "exemple2": "Thé Ataya (paquet);1200;Épicerie;TH-01;oui"
+    },
+    "resume": "{{colonnes}} colonnes · {{lignes}} lignes",
+    "correspondance": "Correspondance des colonnes",
+    "champPour": "Champ SatsPoint pour la colonne « {{colonne}} »",
+    "exemple": "ex. {{valeur}}",
+    "ignorer": "Ignorer",
+    "suggere": "Suggestion automatique",
+    "obligatoires": "Associez une colonne à : {{champs}}.",
+    "champs": {
+      "nom": "Nom",
+      "prix_xof": "Prix (FCFA)",
+      "categorie": "Catégorie",
+      "sku": "Référence",
+      "couleur": "Couleur",
+      "actif": "En vente"
+    },
+    "apercu": "Aperçu des 10 premières lignes",
+    "apercuOk": "Aucune erreur sur l'aperçu",
+    "apercuErreurs_one": "{{count}} ligne en erreur",
+    "apercuErreurs_other": "{{count}} lignes en erreur",
+    "ligne": "Ligne {{n}}",
+    "erreurs": {
+      "nomManquant": "nom vide",
+      "nomTropLong": "nom trop long (120 caractères maximum)",
+      "prixInvalide": "prix illisible",
+      "skuInvalide": "référence invalide (lettres, chiffres, . _ -)",
+      "couleurInconnue": "couleur inconnue",
+      "actifInvalide": "« en vente » doit être oui ou non"
+    },
+    "modes": {
+      "creer": {
+        "titre": "Créer seulement les nouveaux",
+        "texte": "Ajoute les nouveaux articles. Si une ligne est en erreur, rien n'est importé : corrigez le fichier."
+      },
+      "creer_et_mettre_a_jour": {
+        "titre": "Créer et mettre à jour",
+        "texte": "Les articles déjà présents (même référence ou même nom) prennent les informations du fichier. Une ligne en erreur bloque tout l'import."
+      },
+      "ignorer_erreurs": {
+        "titre": "Ignorer les lignes en erreur",
+        "texte": "Les lignes valides sont importées ; les autres sont listées dans le rapport."
+      }
+    },
+    "lancer_one": "Importer {{count}} ligne",
+    "lancer_other": "Importer {{count}} lignes",
+    "statuts": {
+      "analyse": "En préparation…",
+      "en_cours": "Import en cours…",
+      "termine": "Import terminé",
+      "echoue": "L'import a échoué"
+    },
+    "avancement": "{{traitees}} / {{total}} lignes traitées",
+    "creees": "Créés",
+    "misesAJour": "Mis à jour",
+    "enErreur": "En erreur",
+    "rapport": "Rapport d'erreurs",
+    "telechargerRapport": "Télécharger le rapport",
+    "terminer": "Terminer",
+    "termine": "Import terminé",
+    "fini_one": "{{count}} article importé",
+    "fini_other": "{{count}} articles importés"
+  }
+}

@@ -62,14 +62,16 @@ export interface PropsBoutonLien extends LinkProps {
   pleineLargeur?: boolean
   voix?: string
   icone?: ReactNode
+  iconeDroite?: ReactNode
 }
 
 /** Lien de navigation habillé en bouton (sémantique <a> conservée). */
-export function BoutonLien({ variante = 'primaire', taille = 'md', pleineLargeur, voix, icone, className, children, ...reste }: PropsBoutonLien) {
+export function BoutonLien({ variante = 'primaire', taille = 'md', pleineLargeur, voix, icone, iconeDroite, className, children, ...reste }: PropsBoutonLien) {
   return (
     <Link className={classesBouton({ variante, taille, pleineLargeur, className })} {...reste}>
       <Icone enfant={icone} taille={taille} />
       {children}
+      <Icone enfant={iconeDroite} taille={taille} />
       {voix && <HautParleur cle={voix} dansBouton taille={14} />}
     </Link>
   )

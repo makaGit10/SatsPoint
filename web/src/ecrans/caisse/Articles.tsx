@@ -48,11 +48,11 @@ export function Panier({ panier, onChanger, onVider, className }: { panier: Lign
           <li key={l.article.ulid} className="flex items-center gap-2 py-1.5">
             <span className="min-w-0 flex-1 truncate text-sm text-texte">{l.article.nom}</span>
             <div className="flex items-center gap-0.5">
-              <BoutonIcone taille="sm" libelle={t('caisse.retirer')} icone={<Minus />} onClick={() => onChanger(l.article.ulid, -1)} sansInfobulle />
+              <BoutonIcone taille="sm" libelle={t('caisse.retirer')} icone={<Minus />} voix="caisse.retirer" onClick={() => onChanger(l.article.ulid, -1)} sansInfobulle />
               <span className="w-6 text-center text-sm font-medium text-texte tabulaire" aria-label={t('caisse.quantite')}>
                 {l.quantite}
               </span>
-              <BoutonIcone taille="sm" libelle={t('commun.ajouter')} icone={<Plus />} onClick={() => onChanger(l.article.ulid, 1)} sansInfobulle />
+              <BoutonIcone taille="sm" libelle={t('commun.ajouter')} icone={<Plus />} voix="commun.ajouter" onClick={() => onChanger(l.article.ulid, 1)} sansInfobulle />
             </div>
             <span className="w-24 text-right text-sm font-medium text-texte tabulaire">{formaterFCFA(l.article.prix_xof * l.quantite)}</span>
           </li>

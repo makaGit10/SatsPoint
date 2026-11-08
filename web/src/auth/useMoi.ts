@@ -4,6 +4,7 @@ import { connecter, deconnecter, demanderReinitialisation, inscrire, reinitialis
 import { CLE_MOI, chargerMoi, enregistrerPreferences } from '@/api/moi'
 import type { DonneesConnexion, DonneesInscription, DonneesReinitialisation, Preferences, Utilisateur } from '@/api/types'
 import { changerLocale } from '@/i18n'
+import { queryClient } from '@/lib/queryClient'
 import { useTheme } from '@/lib/theme'
 import { useVoix } from '@/voix/store'
 import { useAuth } from './store'
@@ -90,6 +91,22 @@ export function useDemandeReinitialisation() {
 
 export function useReinitialisation() {
   return useMutation({ mutationFn: (donnees: DonneesReinitialisation) => reinitialiserMotDePasse(donnees) })
+}
+
+/**
+ * Relit `/moi` et l'applique (après une validation de double authentification, une invitation acceptée…) :
+ * les gardes de route voient le nouvel état avant toute navigation.
+ */
+export async function relireSession(client = queryClient): Promise<Utilisateur | null> {
+  const utilisateur = await client.fetchQuery({ queryKey: CLE_MOI, queryFn: chargerMoi, staleTime: 0 })
+  useAuth.getState().definir(utilisateur ?? null)
+  return utilisateur ?? null
+}
+
+/** Applique un utilisateur renvoyé par l'API (même forme que `/moi`). */
+export function appliquerUtilisateur(utilisateur: Utilisateur, client = queryClient) {
+  client.setQueryData(CLE_MOI, utilisateur)
+  useAuth.getState().definir(utilisateur)
 }
 
 /** Enregistre une préférence côté serveur si connecté ; l'appareil est déjà à jour (optimiste). */

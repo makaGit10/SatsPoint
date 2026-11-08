@@ -46,7 +46,7 @@ export default function DialogueRadix({ onFermer, titre, description, children, 
               )}
             </div>
             <Dialog.Close asChild>
-              <BoutonIcone libelle={t('commun.fermer')} icone={<X />} taille="sm" sansInfobulle className="-mt-1 -mr-2" />
+              <BoutonIcone libelle={t('commun.fermer')} icone={<X />} voix="commun.fermer" taille="sm" sansInfobulle className="-mt-1 -mr-2" />
             </Dialog.Close>
           </div>
           {children && <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 md:px-5">{children}</div>}

@@ -59,9 +59,20 @@ export class ErreurApi extends Error {
 
 let gestionnaireNonAuthentifie: (() => void) | null = null
 
+/** Appelé par les téléchargements (`telechargement.ts`) sur un 401. */
+export function signalerNonAuthentifie() {
+  gestionnaireNonAuthentifie?.()
+}
+let gestionnaireDeuxFa: ((etape: 'activer' | 'verifier') => void) | null = null
+
 /** Branché par le store d'authentification : appelé sur un 401 d'une route privée. */
 export function definirGestionnaireNonAuthentifie(fn: (() => void) | null) {
   gestionnaireNonAuthentifie = fn
+}
+
+/** Branché par le store d'authentification : appelé sur un `403 DEUX_FA_REQUISE` (double authentification à valider). */
+export function definirGestionnaireDeuxFa(fn: ((etape: 'activer' | 'verifier') => void) | null) {
+  gestionnaireDeuxFa = fn
 }
 
 export function lireCookie(nom: string): string | null {
@@ -91,7 +102,7 @@ export async function assurerCsrf(force = false): Promise<void> {
   await promesseCsrf
 }
 
-async function lireCorps(reponse: Response): Promise<unknown> {
+export async function lireCorps(reponse: Response): Promise<unknown> {
   if (reponse.status === 204) return null
   const type = reponse.headers.get('content-type') ?? ''
   if (!type.includes('json')) return null
@@ -102,7 +113,7 @@ async function lireCorps(reponse: Response): Promise<unknown> {
   }
 }
 
-function enCorpsErreur(valeur: unknown): Partial<CorpsErreur> | null {
+export function enCorpsErreur(valeur: unknown): Partial<CorpsErreur> | null {
   if (!valeur || typeof valeur !== 'object') return null
   const v = valeur as Record<string, unknown>
   return {
@@ -122,7 +133,9 @@ export async function api<T>(chemin: string, options: OptionsRequete = {}): Prom
 
   const executer = async (): Promise<Response> => {
     const enTetes: Record<string, string> = { Accept: 'application/json', ...options.enTetes }
-    if (options.corps !== undefined) enTetes['Content-Type'] = 'application/json'
+    const multipart = typeof FormData !== 'undefined' && options.corps instanceof FormData
+    // Multipart : le navigateur pose lui-même `Content-Type` avec la frontière.
+    if (options.corps !== undefined && !multipart) enTetes['Content-Type'] = 'application/json'
     if (mutante) {
       await assurerCsrf()
       const jeton = lireCookie('XSRF-TOKEN')
@@ -130,7 +143,7 @@ export async function api<T>(chemin: string, options: OptionsRequete = {}): Prom
     }
     const init: RequestInit = { method: methode, credentials: 'include', headers: enTetes }
     if (options.signal) init.signal = options.signal
-    if (options.corps !== undefined) init.body = JSON.stringify(options.corps)
+    if (options.corps !== undefined) init.body = multipart ? (options.corps as FormData) : JSON.stringify(options.corps)
     return fetch(url, init)
   }
 
@@ -152,6 +165,7 @@ export async function api<T>(chemin: string, options: OptionsRequete = {}): Prom
   if (!reponse.ok) {
     const erreur = new ErreurApi(reponse.status, enCorpsErreur(corps))
     if (erreur.estNonAuthentifie && !options.publique) gestionnaireNonAuthentifie?.()
+    if (erreur.estInterdit && erreur.code === 'DEUX_FA_REQUISE') gestionnaireDeuxFa?.((corps as { etape?: string } | null)?.etape === 'activer' ? 'activer' : 'verifier')
     throw erreur
   }
 
@@ -166,6 +180,7 @@ export const http = {
     api<T>(chemin, { ...options, methode: 'PATCH', corps }),
   put: <T>(chemin: string, corps?: unknown, options?: Omit<OptionsRequete, 'methode' | 'corps'>) =>
     api<T>(chemin, { ...options, methode: 'PUT', corps }),
-  delete: <T>(chemin: string, options?: Omit<OptionsRequete, 'methode' | 'corps'>) =>
+  delete: <T>(chemin: string, options?: Omit<OptionsRequete, 'methode'>) =>
     api<T>(chemin, { ...options, methode: 'DELETE' }),
 }
+

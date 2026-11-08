@@ -1,6 +1,6 @@
 // Vérification visuelle : lance Vite en mode mock (port 5190), capture les écrans clés et leurs états
 // en 390×844 et 1366×768, clair et sombre, FR et EN, et vérifie l'absence d'erreur console / requête en échec / clé i18n brute.
-// Usage : node scripts/captures.mjs [--dossier C:\SatsPoint\captures\vague2] [--garder-serveur] [--seulement 03,07] [--vues mobile] [--themes clair] [--locales fr]
+// Usage : node scripts/captures.mjs [--dossier C:\SatsPoint\captures\vague3] [--garder-serveur] [--seulement 03,07] [--vues mobile] [--themes clair] [--locales fr]
 import { spawn } from 'node:child_process'
 import { mkdir } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
@@ -13,7 +13,7 @@ const option = (nom) => {
   const i = args.indexOf(nom)
   return i >= 0 ? args[i + 1] : undefined
 }
-const dossier = option('--dossier') ?? resolve(racine, '..', 'captures', 'vague2')
+const dossier = option('--dossier') ?? resolve(racine, '..', 'captures', 'vague3')
 const seulement = option('--seulement')?.split(',')
 const PORT = 5190
 const URL_BASE = `http://127.0.0.1:${PORT}`
@@ -27,6 +27,45 @@ const LOCALES = ['fr', 'en'].filter((l) => !option('--locales') || option('--loc
 
 const PROPRIO = 'proprio@demo.test'
 const CAISSIER = 'caissier@demo.test'
+const SUPER = 'super@demo.test'
+/** Super-admin avec double authentification validée (console, studio). */
+const ADMIN_VALIDE = { 'satspoint.mock.2fa': 'validee' }
+
+/** Fichier CSV d'articles (séparateur « ; », en-têtes à reconnaître, 2 lignes en erreur). */
+const CSV_ARTICLES = [
+  'Désignation;PU;Famille;Réf.;Stock',
+  'Bazin riche 3 m;15 000;Tissus;BZ-003;12',
+  'Wax hollandais;9500;Tissus;WX-001;30',
+  'Thé Ataya (paquet);1200;Épicerie;TH-01;80',
+  'Sucre (kg);750;Épicerie;SU-01;40',
+  'Café Touba (sachet);gratuit;Épicerie;CT-01;25',
+  'Savon Kessé;300;Hygiène;SK-01;60',
+  ';500;Divers;DV-01;10',
+  'Eau Kirène 1,5 L;400;Boissons;EK-15;48',
+  'Lait caillé;600;Frais;LC-01;20',
+  'Pain (baguette);150;Boulangerie;PB-01;100',
+  'Huile (1 L);1500;Épicerie;HU-01;30',
+  'Riz brisé (kg);450;Épicerie;RB-01;200',
+].join('\n')
+
+/** Ouvre le panneau d'enregistrement (feuille sur mobile) et lance le micro (périphérique simulé de Chromium). */
+const lancerEnregistrement = async (page) => {
+  const mobile = (page.viewportSize()?.width ?? 1366) < 768
+  if (mobile) {
+    await page.locator('[data-matrice] button[data-statut="manquant"]').first().click()
+    await page.waitForSelector('[role="dialog"] [data-panneau]')
+  }
+  await page.locator('[data-panneau] [data-action="enregistrer"]').click()
+  await page.waitForSelector('[data-panneau][data-phase="enregistrement"]', { timeout: 15_000 })
+  await page.waitForTimeout(1600)
+}
+
+const ouvrirImport = async (page) => {
+  await page.getByRole('button', { name: /^(Importer|Import)/ }).first().click()
+  await page.waitForSelector('[data-depot-import]')
+  await page.locator('[data-depot-import] input[type="file"]').setInputFiles({ name: 'catalogue.csv', mimeType: 'text/csv', buffer: Buffer.from(CSV_ARTICLES, 'utf8') })
+  await page.waitForSelector('[data-correspondance]')
+}
 
 /** Tape 15 000 sur le pavé. */
 const taper15000 = async (page) => {
@@ -118,7 +157,100 @@ const ECRANS = [
       await page.waitForSelector('[role="dialog"] [role="radiogroup"]')
     },
   },
-  { nom: '30-admin', chemin: '/admin', attendre: '[data-ecran="admin"]', session: 'super@demo.test', uniquement: ['bureau'] },
+  // ----- Vague 3 -----
+  { nom: '31-studio-matrice', chemin: '/admin/studio', attendre: '[data-ecran="studio"] [data-matrice]', session: SUPER, stockage: ADMIN_VALIDE },
+  { nom: '32-studio-enregistrement', chemin: '/admin/studio', attendre: '[data-ecran="studio"] [data-matrice]', session: SUPER, stockage: ADMIN_VALIDE, action: lancerEnregistrement },
+  {
+    nom: '33-studio-prise-prete',
+    chemin: '/admin/studio',
+    attendre: '[data-ecran="studio"] [data-matrice]',
+    session: SUPER,
+    stockage: ADMIN_VALIDE,
+    action: async (page) => {
+      await lancerEnregistrement(page)
+      await page.locator('[data-panneau] [data-action="arreter"]').click()
+      await page.waitForSelector('[data-panneau][data-phase="pret"]')
+    },
+  },
+  { nom: '34-console-ensemble', chemin: '/admin', attendre: '[data-ecran="admin"] [data-vue="ensemble"]', session: SUPER, stockage: ADMIN_VALIDE },
+  { nom: '35-console-boutiques', chemin: '/admin?onglet=boutiques', attendre: '[data-vue="boutiques"] li', session: SUPER, stockage: ADMIN_VALIDE },
+  { nom: '36-console-sante', chemin: '/admin?onglet=sante', attendre: '[data-vue="sante"] li', session: SUPER, stockage: ADMIN_VALIDE },
+  { nom: '37-console-journal', chemin: '/admin?onglet=journal', attendre: '[data-vue="journal"] li', session: SUPER, stockage: ADMIN_VALIDE },
+  {
+    nom: '38-console-suspendre',
+    chemin: '/admin?onglet=boutiques',
+    attendre: '[data-vue="boutiques"] li',
+    session: SUPER,
+    stockage: ADMIN_VALIDE,
+    uniquement: ['bureau'],
+    action: async (page) => {
+      await page.getByRole('button', { name: /^(Suspendre la boutique|Suspend the shop)$/ }).nth(1).click()
+      await page.waitForSelector('[role="dialog"]')
+    },
+  },
+  { nom: '39-2fa-activation', chemin: '/securite/2fa', attendre: '[data-ecran="securite-2fa"] [data-qr="pret"]', session: SUPER, stockage: { 'satspoint.mock.2fa': 'inactive' } },
+  {
+    nom: '40-2fa-codes-secours',
+    chemin: '/securite/2fa',
+    attendre: '[data-ecran="securite-2fa"] [data-qr="pret"]',
+    session: SUPER,
+    stockage: { 'satspoint.mock.2fa': 'inactive' },
+    action: async (page) => {
+      await page.locator('[data-ecran="securite-2fa"] input[autocomplete="one-time-code"]').fill('123456')
+      await page.waitForSelector('[data-codes-secours]')
+    },
+  },
+  { nom: '41-2fa-verification', chemin: '/verification-2fa', attendre: '[data-ecran="verification-2fa"] input', session: SUPER },
+  { nom: '42-2fa-active', chemin: '/securite/2fa', attendre: '[data-deux-fa="active"]', session: SUPER, stockage: ADMIN_VALIDE, uniquement: ['mobile'] },
+  {
+    nom: '43-recherche-recentes',
+    chemin: '/caisse',
+    attendre: '[data-ecran="caisse"] [data-pave]',
+    session: PROPRIO,
+    action: async (page) => {
+      await page.keyboard.press('Control+k')
+      await page.waitForSelector('[data-recherche] [data-recente]')
+    },
+  },
+  {
+    nom: '44-recherche-resultats',
+    chemin: '/ventes',
+    attendre: '[data-ecran="ventes"] li',
+    session: PROPRIO,
+    action: async (page) => {
+      await page.keyboard.press('Control+k')
+      await page.waitForSelector('[data-recherche] [data-recente]')
+      await page.keyboard.type('baz')
+      await page.waitForSelector('[data-recherche] [data-rubrique="articles"] [data-resultat]')
+      await page.keyboard.press('ArrowDown')
+    },
+  },
+  { nom: '45-import-correspondance', chemin: '/articles', attendre: '[data-ecran="articles"] li', session: PROPRIO, action: ouvrirImport },
+  {
+    nom: '46-import-progression',
+    chemin: '/articles',
+    attendre: '[data-ecran="articles"] li',
+    session: PROPRIO,
+    action: async (page) => {
+      await ouvrirImport(page)
+      await page.getByRole('button', { name: /^(Continuer|Continue)$/ }).click()
+      await page.waitForSelector('[data-modes]')
+      await page.getByRole('radio', { name: /^(Ignorer les lignes en erreur|Skip rows with errors)/ }).click()
+      await page.getByRole('button', { name: /^(Importer|Import) \d+/ }).click()
+      await page.waitForSelector('[data-progression="termine"]', { timeout: 15_000 })
+    },
+  },
+  { nom: '47-invitation', chemin: '/invitation/demo', attendre: '[data-ecran="invitation"] [data-invitation]' },
+  {
+    nom: '48-ventes-export',
+    chemin: '/ventes',
+    attendre: '[data-ecran="ventes"] li',
+    session: PROPRIO,
+    action: async (page) => {
+      await page.getByRole('button', { name: /^(Exporter|Export)$/ }).click()
+      await page.waitForSelector('[role="menu"]')
+    },
+  },
 ].filter((e) => !seulement || seulement.some((s) => e.nom.startsWith(s)))
 
 async function attendreServeur(url, essais = 60) {
@@ -156,11 +288,22 @@ if (!(await serveurDejaLance())) {
 }
 
 await mkdir(dossier, { recursive: true })
-const navigateur = await chromium.launch()
+const navigateur = await chromium.launch({ args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] })
+
+// Échauffement : Vite optimise ses dépendances au premier chargement (rechargement de page) ; on le provoque avant de capturer.
+{
+  const contexte = await navigateur.newContext()
+  const page = await contexte.newPage()
+  for (const chemin of ['/langue', '/admin/studio', '/articles', '/ventes']) {
+    await page.goto(`${URL_BASE}${chemin}`, { waitUntil: 'load' }).catch(() => undefined)
+    await page.waitForTimeout(1500)
+  }
+  await contexte.close()
+}
 const problemes = []
 let nombre = 0
 
-const NAMESPACES = 'nav|commun|auth|caisse|ventes|paiement|succes|recu|tableau|portefeuille|reglages|equipe|articles|demarrage|erreurs|methodes|operateurs|periodes|statuts|statutsPaiement|temps|roles'
+const NAMESPACES = 'nav|commun|auth|caisse|ventes|paiement|succes|recu|tableau|portefeuille|reglages|equipe|articles|demarrage|erreurs|methodes|operateurs|periodes|statuts|statutsPaiement|temps|roles|admin|studio|deuxFa|import|invitation|recherche|export|utilisateur|entete'
 
 try {
   for (const vue of VUES) {
@@ -176,6 +319,7 @@ try {
             locale: locale === 'fr' ? 'fr-FR' : 'en-US',
             colorScheme: theme === 'sombre' ? 'dark' : 'light',
             reducedMotion: 'reduce',
+            permissions: ['microphone'],
           })
           const etat = {
             theme,
@@ -227,7 +371,17 @@ try {
             await page.waitForTimeout(150)
             await page.screenshot({ path: resolve(dossier, fichier), fullPage: false })
             nombre += 1
-            const texte = await page.evaluate(() => document.body.innerText)
+            // Les identifiants techniques montrés exprès (clés vocales du studio, codes d'action du journal) sont exclus.
+            const texte = await page.evaluate(() => {
+              const copie = document.body.cloneNode(true)
+              for (const el of copie.querySelectorAll('[data-technique]')) el.remove()
+              document.body.appendChild(copie)
+              copie.style.position = 'absolute'
+              copie.style.left = '-99999px'
+              const lu = copie.innerText
+              copie.remove()
+              return lu
+            })
             if (new RegExp(`(^|[\\s(])(${NAMESPACES})\\.[a-z][a-zA-Z]+(\\.[a-zA-Z]+)*([\\s)]|$)`).test(texte)) {
               erreurs.push(`clé i18n brute visible dans ${fichier}`)
             }

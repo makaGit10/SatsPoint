@@ -31,6 +31,7 @@ export function ChampMotDePasse(props: Omit<PropsChamp, 'type' | 'suffixe'>) {
         <BoutonIcone
           libelle={visible ? t('auth.connexion.masquerMotDePasse') : t('auth.connexion.afficherMotDePasse')}
           icone={visible ? <EyeOff /> : <Eye />}
+          voix={visible ? 'auth.connexion.masquerMotDePasse' : 'auth.connexion.afficherMotDePasse'}
           taille="sm"
           onClick={() => setVisible((v) => !v)}
           tabIndex={-1}

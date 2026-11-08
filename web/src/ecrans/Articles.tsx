@@ -1,9 +1,11 @@
 import { useMutation } from '@tanstack/react-query'
-import { Check, ChevronDown, ChevronUp, Package, Pencil, Plus, Trash2, Upload } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { Check, ChevronDown, ChevronUp, Download, FileSpreadsheet, FileText, Package, Pencil, Plus, Trash2, Upload } from 'lucide-react'
+import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import { CLE_ARTICLES, creerArticle, modifierArticle, ordonnerArticles, supprimerArticle, useArticles, type CorpsArticle } from '@/api/articles'
 import { ErreurApi } from '@/api/client'
+import { exporterArticles } from '@/api/exports'
 import type { Article } from '@/api/types'
 import { peut, useAuth } from '@/auth/store'
 import { Bouton } from '@/composants/Bouton'
@@ -13,6 +15,7 @@ import { Dialogue } from '@/composants/Dialogue'
 import { EnTetePage } from '@/composants/EnTetePage'
 import { EtatVide } from '@/composants/EtatVide'
 import { Interrupteur } from '@/composants/Interrupteur'
+import { Menu } from '@/composants/Menu'
 import { Pastille } from '@/composants/Pastille'
 import { SqueletteListe } from '@/composants/Squelette'
 import { notifier } from '@/composants/toastStore'
@@ -20,10 +23,14 @@ import { ErreurFormulaire } from '@/ecrans/auth/communs'
 import { useMessageErreur } from '@/ecrans/auth/useMessageErreur'
 import { cn } from '@/lib/cn'
 import { classePointCouleur, classesTuile, COULEURS_ARTICLES, estCouleurArticle, type CouleurArticle } from '@/lib/couleursArticles'
+import { chargerPaquet } from '@/i18n'
 import { formaterFCFA } from '@/lib/format'
 import { queryClient } from '@/lib/queryClient'
 import { useDonneesEnDirect } from '@/temps-reel/useDonneesEnDirect'
 import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
+
+// Assistant d'import : chargé à la demande avec son paquet de traductions (rien pour la caisse).
+const ImportArticles = lazy(() => Promise.all([import('./articles/ImportArticles'), chargerPaquet('admin')]).then(([m]) => m))
 
 /** Articles (P1) : liste compacte réordonnable, formulaire en fenêtre ; caissier en lecture seule. */
 export default function Articles() {
@@ -38,6 +45,32 @@ export default function Articles() {
 
   const [formulaire, setFormulaire] = useState<{ ouvert: boolean; article: Article | null }>({ ouvert: false, article: null })
   const [suppression, setSuppression] = useState<Article | null>(null)
+  const [importOuvert, setImportOuvert] = useState(false)
+  const [params, setParams] = useSearchParams()
+
+  // Liens directs (recherche globale) : `?importer=1` ouvre l'assistant, `?article=…` le formulaire (ajusté au rendu).
+  const demande = `${params.get('importer') ?? ''}|${params.get('article') ?? ''}`
+  const [demandeVue, setDemandeVue] = useState('|')
+  const articleDemande = params.get('article')
+  if (demande !== '|' && demande !== demandeVue && (!articleDemande || articles)) {
+    setDemandeVue(demande)
+    if (params.get('importer') && peutGerer) setImportOuvert(true)
+    const a = articleDemande ? articles?.find((x) => x.ulid === articleDemande) : undefined
+    if (a && peutGerer) setFormulaire({ ouvert: true, article: a })
+  }
+  useEffect(() => {
+    if (demande === '|' || demande !== demandeVue) return
+    const suivant = new URLSearchParams(params)
+    suivant.delete('importer')
+    suivant.delete('article')
+    setParams(suivant, { replace: true })
+  }, [demande, demandeVue, params, setParams])
+
+  const exportation = useMutation({
+    mutationFn: (format: 'csv' | 'xlsx') => exporterArticles(format),
+    onSuccess: () => notifier({ type: 'succes', titre: t('ventes.exportOk'), voix: 'ventes.exportOk' }),
+    onError: () => notifier({ type: 'erreur', titre: t('ventes.exportErreur'), voix: 'ventes.exportErreur' }),
+  })
 
   const ordre = useMutation({
     mutationFn: (ulids: string[]) => ordonnerArticles(ulids),
@@ -70,7 +103,6 @@ export default function Articles() {
     ordre.mutate(ulids)
   }
 
-  const bientot = () => notifier({ type: 'info', titre: t('articles.importer'), description: t('commun.bientot') })
   const ouvrirAjout = () => setFormulaire({ ouvert: true, article: null })
 
   return (
@@ -82,7 +114,18 @@ export default function Articles() {
         actions={
           peutGerer && (
             <>
-              <BoutonIcone libelle={t('articles.importer')} icone={<Upload />} voix="articles.importer" variante="secondaire" onClick={bientot} />
+              <BoutonIcone libelle={t('articles.importer')} icone={<Upload />} voix="articles.importer" variante="secondaire" onClick={() => setImportOuvert(true)} />
+              <Menu
+                libelle={t('articles.exporter')}
+                icone={<Download />}
+                voix="articles.exporter"
+                titre={t('export.titre')}
+                occupe={exportation.isPending}
+                elements={[
+                  { id: 'csv', libelle: t('export.csv'), detail: t('export.csvDetail'), icone: <FileText />, voix: 'export.csv', onChoisir: () => exportation.mutate('csv') },
+                  { id: 'xlsx', libelle: t('export.xlsx'), detail: t('export.xlsxDetail'), icone: <FileSpreadsheet />, voix: 'export.xlsx', onChoisir: () => exportation.mutate('xlsx') },
+                ]}
+              />
               <Bouton icone={<Plus />} voix="articles.ajouter" taille="sm" onClick={ouvrirAjout}>
                 {t('commun.ajouter')}
               </Bouton>
@@ -143,6 +186,12 @@ export default function Articles() {
             </li>
           ))}
         </ol>
+      )}
+
+      {importOuvert && (
+        <Suspense fallback={null}>
+          <ImportArticles onFermer={() => setImportOuvert(false)} />
+        </Suspense>
       )}
 
       {formulaire.ouvert && <FormulaireArticle article={formulaire.article} onFermer={() => setFormulaire({ ouvert: false, article: null })} />}

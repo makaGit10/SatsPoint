@@ -1,7 +1,7 @@
 import { Phone, Store, User } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ErreurApi } from '@/api/client'
 import { useInscription } from '@/auth/useMoi'
 import { Bouton } from '@/composants/Bouton'
@@ -10,6 +10,7 @@ import { notifier } from '@/composants/toastStore'
 import { cheminAccueil } from '@/coquille/navigation'
 import { MiseEnPageInvite } from '@/coquille/MiseEnPageInvite'
 import { localeCourante } from '@/i18n'
+import { suiteSure } from '@/routes/navigation'
 import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
 import { ChampMotDePasse, ErreurFormulaire, TitreAuth } from './communs'
 import { useMessageErreur } from './useMessageErreur'
@@ -21,6 +22,8 @@ type Champs = { nom?: string; identifiant?: string; password?: string; password_
 export default function Inscription() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const suite = suiteSure(params.get('suite'))
   const inscription = useInscription()
   const messageErreur = useMessageErreur()
   useSaisieEnCours()
@@ -48,7 +51,7 @@ export default function Inscription() {
       {
         onSuccess: ({ utilisateur }) => {
           notifier({ type: 'succes', titre: t('auth.inscription.succes'), voix: 'auth.inscription.succes' })
-          navigate(cheminAccueil(utilisateur), { replace: true })
+          navigate(suite ?? cheminAccueil(utilisateur), { replace: true })
         },
         onError: (err) => {
           if (err instanceof ErreurApi && err.estValidation && err.errors) {
@@ -117,7 +120,7 @@ export default function Inscription() {
       </form>
       <p className="mt-6 text-center text-sm text-texte-2">
         {t('auth.inscription.dejaUnCompte')}{' '}
-        <Link to="/connexion" className="font-medium text-accent-texte hover:underline">
+        <Link to={suite ? `/connexion?suite=${encodeURIComponent(suite)}` : '/connexion'} className="font-medium text-accent-texte hover:underline">
           {t('auth.inscription.connexion')}
         </Link>
       </p>

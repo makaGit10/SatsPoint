@@ -13,7 +13,7 @@ const PanneauPreferences = lazy(() => import('./Preferences').then((m) => ({ def
 
 const MAX_BARRE = 4
 
-function Onglet({ element, actif }: { element: ElementNavigation; actif: boolean }) {
+function OngletBarre({ element, actif }: { element: ElementNavigation; actif: boolean }) {
   const { t } = useTranslation()
   const Icone = element.icone
   return (
@@ -53,7 +53,7 @@ export function BarreBas() {
         className="fixed inset-x-0 bottom-0 z-30 flex h-[calc(var(--hauteur-barre-bas)+env(safe-area-inset-bottom,0px))] items-stretch border-t border-bordure bg-fond/95 px-1 pb-sure backdrop-blur-sm md:hidden"
       >
         {dansBarre.map((e) => (
-          <Onglet key={e.chemin} element={e} actif={estActif(pathname, e.chemin)} />
+          <OngletBarre key={e.chemin} element={e} actif={estActif(pathname, e.chemin)} />
         ))}
         <button
           type="button"

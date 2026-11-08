@@ -1,0 +1,381 @@
+{
+  "admin": {
+    "titre": "Platform console",
+    "sousTitre": "Adoption, shops, service health and audit log. No shop amounts are shown here.",
+    "onglets": {
+      "ensemble": "Overview",
+      "ensembleCourt": "Overview",
+      "boutiques": "Shops",
+      "sante": "Health",
+      "journal": "Log"
+    },
+    "ouvrirStudio": "Open the studio",
+    "stats": {
+      "actifs": "Active merchants",
+      "actifsAide": "At least one payment received this week",
+      "paiements": "Payments per merchant",
+      "paiementsAide": "Weekly average",
+      "delai": "Median confirmation",
+      "delaiAide": "From QR shown to payment confirmed",
+      "secondes": "{{valeur}} s",
+      "repartition": "Bitcoin / mobile money",
+      "repartitionAria": "{{sats}}% of payments in bitcoin, {{mm}}% in mobile money",
+      "sats": "Bitcoin {{pct}}%",
+      "mobileMoney": "Mobile money {{pct}}%",
+      "couverture": "Audio coverage by language",
+      "confidentialite": "Figures aggregated over the last 7 days. Shop sales, wallets and PayTech accounts are never visible from the console.",
+      "parc": "{{total}} shops · {{actives}} active · {{nouvelles}} new this week"
+    },
+    "boutiques": {
+      "rechercher": "Name, city or owner",
+      "statut": "Shop status",
+      "toutes": "All",
+      "actives": "Active",
+      "suspendues": "Suspended",
+      "vide": "No shop matches",
+      "sansProprietaire": "No owner",
+      "wallet": "Wallet connected",
+      "walletNon": "Wallet not connected",
+      "paytech": "Mobile money set up",
+      "paytechNon": "Mobile money not set up",
+      "test": "Test payment done",
+      "testNon": "Test payment not done",
+      "ventes7j_one": "{{count}} sale · 7 d",
+      "ventes7j_other": "{{count}} sales · 7 d",
+      "aucuneVente": "No sales",
+      "statuts": {
+        "active": "Active",
+        "suspendue": "Suspended"
+      },
+      "suspendre": "Suspend the shop",
+      "reactiver": "Reactivate the shop",
+      "suspendreTitre": "Suspend “{{nom}}”?",
+      "suspendreTexte": "The shop team will no longer be able to take payments or sign in. Its data is kept and you can reactivate it.",
+      "reactiverTitre": "Reactivate “{{nom}}”?",
+      "reactiverTexte": "The team will be able to sign in and take payments again.",
+      "suspendueOk": "“{{nom}}” is suspended",
+      "reactiveeOk": "“{{nom}}” is reactivated"
+    },
+    "sante": {
+      "base": "Database",
+      "baseOk": "Responding normally",
+      "redis": "Cache and queues (Redis)",
+      "redisOk": "Responding normally",
+      "reverb": "Real time",
+      "reverbOk": "Screens update by themselves",
+      "reverbKo": "Screens no longer update by themselves",
+      "passerelle": "Lightning gateway",
+      "passerelleOk": "Reachable",
+      "passerelleKo": "Unreachable: bitcoin payments are blocked",
+      "cours": "Bitcoin price",
+      "coursDetail": "Updated {{age}} s ago · {{sources}} sources",
+      "coursKo": "Unavailable: only mobile money works",
+      "files": "Queues",
+      "filesDetail": "{{attente}} waiting · {{echouees}} failed",
+      "audio": "Audio files",
+      "audioDetail": "{{fichiers}} files · {{taille}}",
+      "injoignable": "Unreachable",
+      "majLe": "Checked {{quand}}",
+      "version": "version {{version}}",
+      "niveaux": {
+        "ok": "OK",
+        "alerte": "Watch",
+        "panne": "Down"
+      },
+      "global": {
+        "ok": "All services are working",
+        "alerte": "Degraded service",
+        "panne": "Platform unavailable"
+      }
+    },
+    "journal": {
+      "action": "Action type",
+      "toutes": "All actions",
+      "du": "From",
+      "au": "To",
+      "vide": "No entries for these filters",
+      "systeme": "System",
+      "familles": {
+        "auth": "Sign-ins and security",
+        "audio": "Audio studio",
+        "boutique": "Shops",
+        "equipe": "Team",
+        "wallet": "Wallets",
+        "paytech": "Mobile money",
+        "vente": "Sales"
+      },
+      "actions": {
+        "auth_connexion": "Sign-in",
+        "auth_echec_connexion": "Sign-in refused",
+        "auth_2fa_verifiee": "Two-factor verified",
+        "auth_2fa_activee": "Two-factor turned on",
+        "auth_2fa_desactivee": "Two-factor turned off",
+        "auth_2fa_echec": "Two-factor code refused",
+        "audio_publie": "Audio published",
+        "boutique_creee": "Shop created",
+        "boutique_suspendue": "Shop suspended",
+        "boutique_reactivee": "Shop reactivated",
+        "wallet_connecte": "Wallet connected",
+        "wallet_envoi": "Sats sent",
+        "paytech_ipn_refusee": "PayTech notification refused",
+        "paytech_configure": "Mobile money set up",
+        "equipe_invitation": "Invitation sent",
+        "vente_confirmee_manuellement": "Payment confirmed manually"
+      }
+    }
+  },
+  "studio": {
+    "titre": "Audio studio",
+    "sousTitre": "Record every button in every language. Essential ones (star) first.",
+    "langueTravail": "Working language",
+    "couvertureAria": "{{publies}} published and {{brouillons}} drafts out of {{total}}",
+    "essentiellesManquantes_one": "{{count}} essential missing",
+    "essentiellesManquantes_other": "{{count}} essentials missing",
+    "essentiellesPretes": "Essentials ready",
+    "rechercher": "Search a key or a text",
+    "ecran": "Screen",
+    "tousEcrans": "All screens",
+    "manquantsSeulement": "Missing only",
+    "rafale": "Burst mode",
+    "rafaleAide": "After each validation, moves to the next missing cell and restarts the 3-2-1.",
+    "legende": "Legend",
+    "matrice": "Voice keys by language",
+    "cle": "Text and key",
+    "caseAria": "{{langue}} — “{{texte}}”: {{statut}}",
+    "essentielle": "Essential",
+    "panneau": "Recording",
+    "precedent": "Previous key",
+    "suivant": "Next missing cell",
+    "publier": "Publish",
+    "publie": "Audio published: available to everyone",
+    "publierTout": "Publish drafts",
+    "publierToutAria_one": "Publish {{count}} draft in {{langue}}",
+    "publierToutAria_other": "Publish {{count}} drafts in {{langue}}",
+    "publierToutTitre_one": "Publish {{count}} draft in {{langue}}?",
+    "publierToutTitre_other": "Publish {{count}} drafts in {{langue}}?",
+    "publierToutTexte": "Every merchant will hear them right away.",
+    "lotPublie_one": "{{count}} audio published in {{langue}}",
+    "lotPublie_other": "{{count}} audios published in {{langue}}",
+    "supprimer": "Delete the draft",
+    "supprime": "Draft deleted",
+    "ecouterBrouillon": "Listen to the draft",
+    "ecouterPublie": "Listen to the published version",
+    "envoye": "Recording sent",
+    "envoyeTexte": "It will be ready to listen to in a few seconds.",
+    "toutFait": "Everything is recorded in {{langue}}",
+    "effacerFiltres": "Clear filters",
+    "deposer": "Drop an audio file",
+    "deposerAide": "{{formats}} · 2 MB · 15 s maximum",
+    "statuts": {
+      "publie": "Published",
+      "brouillon": "Draft",
+      "en_traitement": "Processing",
+      "erreur": "Error",
+      "manquant": "Missing"
+    },
+    "versions": {
+      "publie": "Published version",
+      "brouillon": "Draft to listen to, then publish",
+      "en_traitement": "Processing (silences, volume)…",
+      "erreur": "The file could not be processed: record again."
+    },
+    "refus": {
+      "format": "Unsupported format: mp3, wav, m4a, ogg or webm.",
+      "taille": "File too large: 2 MB maximum.",
+      "duree": "Audio too long: 15 seconds maximum."
+    },
+    "micro": {
+      "enregistrer": "Record",
+      "aide": "Press, wait for 3-2-1, then speak.",
+      "autoriser": "Allow the microphone in your browser…",
+      "preparez": "Get ready…",
+      "arreter": "Stop",
+      "prise": "{{duree}} take",
+      "reecouter": "Listen again",
+      "refaire": "Redo",
+      "valider": "Validate",
+      "refuse": "The microphone is blocked. Allow it in the address bar, or drop a file below.",
+      "indisponible": "No microphone is available on this device. Drop a file below.",
+      "erreurs": {
+        "tropCourt": "Too short: speak after the 3-2-1.",
+        "enregistrement": "Recording failed. Try again or drop a file."
+      }
+    },
+    "raccourcis": {
+      "titre": "Keyboard shortcuts",
+      "enregistrer": "record",
+      "valider": "validate",
+      "refaire": "redo",
+      "suivant": "next",
+      "publier": "publish"
+    },
+    "touches": {
+      "espace": "Space"
+    },
+    "vide": {
+      "titre": "No keys for these filters",
+      "toutFait": "Everything is recorded in {{langue}}",
+      "texte": "Change the language or clear the filters to see the other keys."
+    },
+    "ecrans": {
+      "langue": "Language choice",
+      "accueil": "Home",
+      "connexion": "Sign in",
+      "caisse": "Checkout",
+      "paiement": "Payment",
+      "succes": "Payment received",
+      "navigation": "Menus",
+      "compte": "Account",
+      "ventes": "Sales",
+      "tableau": "Dashboard",
+      "portefeuille": "Wallet",
+      "articles": "Items",
+      "equipe": "Team",
+      "invitation": "Invitation",
+      "reglages": "Settings",
+      "demarrage": "Guided setup",
+      "recu": "Receipt",
+      "securite": "Security",
+      "admin": "Console",
+      "divers": "Other"
+    }
+  },
+  "deuxFa": {
+    "titre": "Two-factor authentication",
+    "sousTitre": "A 6-digit code on your phone, on top of your password.",
+    "obligatoire": "The platform console requires two-factor authentication. Turn it on to continue.",
+    "etape1": {
+      "titre": "Install an authenticator app",
+      "texte": "Google Authenticator, Microsoft Authenticator, Aegis or 2FAS: they are free."
+    },
+    "etape2": {
+      "titre": "Scan this code with the app",
+      "texte": "Or type the secret key if you cannot scan."
+    },
+    "etape3": {
+      "titre": "Enter the code shown"
+    },
+    "qrAria": "QR code to scan with your authenticator app",
+    "secretAide": "Secret key",
+    "copierSecret": "Copy the secret key",
+    "code": "6-digit code",
+    "codeSecours": "Backup code",
+    "activer": "Turn on",
+    "activee": "Two-factor authentication turned on",
+    "codeIncorrect": "Wrong code. Check your phone's time and try again.",
+    "codeIncomplet": "Enter all 6 digits.",
+    "secoursIncomplet": "Enter the full backup code (8 characters).",
+    "tropDEssais": "Too many attempts. Wait a minute and try again.",
+    "codes": {
+      "titre": "Your backup codes",
+      "texte": "Each one works once if you lose your phone. They will never be shown again: keep them somewhere safe.",
+      "copier": "Copy the codes",
+      "telecharger": "Download",
+      "confirmation": "I have stored these codes somewhere safe",
+      "terminer": "Done",
+      "fichierTitre": "SatsPoint — backup codes (one use each)"
+    },
+    "activeTitre": "Two-factor authentication is on",
+    "activeTexte": "Each time you sign in, a code from your app will be requested.",
+    "requiseNote": "Required for the platform console.",
+    "changerTelephone": "New phone? Turn it off, then on again.",
+    "desactiver": "Turn off",
+    "desactiverTexte": "Confirm with your password.",
+    "desactiverRequise": "Your account needs it for the console: you will have to turn it on again with your new phone. Confirm with your password.",
+    "motDePasse": "Password",
+    "motDePasseIncorrect": "Wrong password.",
+    "desactivee": "Two-factor authentication turned off",
+    "verification": {
+      "titre": "Verification code",
+      "texte": "Open your authenticator app and enter the 6-digit code.",
+      "texteSecours": "Enter one of your backup codes (it only works once)."
+    },
+    "verifier": "Verify",
+    "utiliserSecours": "Use a backup code",
+    "utiliserApplication": "Use the app"
+  },
+  "import": {
+    "titre": "Import items",
+    "etapeAria": "Step {{n}} of {{total}}",
+    "etapes": {
+      "depot": "File",
+      "colonnes": "Columns",
+      "mode": "Mode",
+      "import": "Import"
+    },
+    "deposer": "Drop your file here",
+    "deposerAide": "or tap to choose it",
+    "formats": "CSV or Excel (.xlsx) · 2 MB maximum · first row = column names",
+    "analyse": "Reading the file…",
+    "refus": {
+      "format": "Unsupported format: CSV or Excel (.xlsx).",
+      "taille": "File too large: 2 MB maximum."
+    },
+    "modele": {
+      "telecharger": "Download a template",
+      "entetes": "Name;Price;Category;Reference;Active",
+      "exemple1": "Bazin riche 3 m;15000;Fabrics;BZ-003;yes",
+      "exemple2": "Ataya tea (pack);1200;Groceries;TH-01;yes"
+    },
+    "resume": "{{colonnes}} columns · {{lignes}} rows",
+    "correspondance": "Column mapping",
+    "champPour": "SatsPoint field for column “{{colonne}}”",
+    "exemple": "e.g. {{valeur}}",
+    "ignorer": "Ignore",
+    "suggere": "Automatic suggestion",
+    "obligatoires": "Map a column to: {{champs}}.",
+    "champs": {
+      "nom": "Name",
+      "prix_xof": "Price (FCFA)",
+      "categorie": "Category",
+      "sku": "Reference",
+      "couleur": "Colour",
+      "actif": "On sale"
+    },
+    "apercu": "Preview of the first 10 rows",
+    "apercuOk": "No errors in the preview",
+    "apercuErreurs_one": "{{count}} row with errors",
+    "apercuErreurs_other": "{{count}} rows with errors",
+    "ligne": "Row {{n}}",
+    "erreurs": {
+      "nomManquant": "empty name",
+      "nomTropLong": "name too long (120 characters maximum)",
+      "prixInvalide": "unreadable price",
+      "skuInvalide": "invalid reference (letters, digits, . _ -)",
+      "couleurInconnue": "unknown colour",
+      "actifInvalide": "“on sale” must be yes or no"
+    },
+    "modes": {
+      "creer": {
+        "titre": "Create new ones only",
+        "texte": "Adds the new items. If a row has an error, nothing is imported: fix the file."
+      },
+      "creer_et_mettre_a_jour": {
+        "titre": "Create and update",
+        "texte": "Items already present (same reference or name) take the file's details. A row with an error blocks the whole import."
+      },
+      "ignorer_erreurs": {
+        "titre": "Skip rows with errors",
+        "texte": "Valid rows are imported; the others are listed in the report."
+      }
+    },
+    "lancer_one": "Import {{count}} row",
+    "lancer_other": "Import {{count}} rows",
+    "statuts": {
+      "analyse": "Getting ready…",
+      "en_cours": "Importing…",
+      "termine": "Import finished",
+      "echoue": "The import failed"
+    },
+    "avancement": "{{traitees}} / {{total}} rows processed",
+    "creees": "Created",
+    "misesAJour": "Updated",
+    "enErreur": "With errors",
+    "rapport": "Error report",
+    "telechargerRapport": "Download the report",
+    "terminer": "Done",
+    "termine": "Import finished",
+    "fini_one": "{{count}} item imported",
+    "fini_other": "{{count}} items imported"
+  }
+}

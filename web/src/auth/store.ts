@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { definirGestionnaireNonAuthentifie } from '@/api/client'
+import { definirGestionnaireDeuxFa, definirGestionnaireNonAuthentifie } from '@/api/client'
 import { CLE_MOI } from '@/api/moi'
 import type { RoleBoutique, Utilisateur } from '@/api/types'
 import { queryClient } from '@/lib/queryClient'
@@ -34,6 +34,16 @@ export function roleBoutique(u: Utilisateur | null | undefined): RoleBoutique | 
   return u?.boutique?.role ?? null
 }
 
+/** Double authentification activée mais pas encore validée pour cette session. */
+export function deuxFaAValider(u: Utilisateur | null | undefined): boolean {
+  return Boolean(u?.deux_fa?.active && !u.deux_fa.validee)
+}
+
+/** Double authentification obligatoire (super-admin) mais pas encore activée. */
+export function deuxFaAActiver(u: Utilisateur | null | undefined): boolean {
+  return Boolean(u?.deux_fa?.requise && !u.deux_fa.active)
+}
+
 /** Le rôle a-t-il accès à une rubrique réservée ? (refus par défaut) */
 export function peut(u: Utilisateur | null | undefined, roles: readonly RoleBoutique[]): boolean {
   const role = roleBoutique(u)
@@ -49,4 +59,12 @@ definirGestionnaireNonAuthentifie(() => {
   if (!estCheminPublic(chemin)) {
     allerVers(`/connexion?suite=${encodeURIComponent(chemin)}`, { replace: true })
   }
+})
+
+// `403 DEUX_FA_REQUISE` : la session n'est plus validée (expirée, autre appareil…) → relecture de /moi et vérification.
+definirGestionnaireDeuxFa((etape) => {
+  void queryClient.invalidateQueries({ queryKey: CLE_MOI })
+  const chemin = cheminCourant()
+  const cible = etape === 'activer' ? '/securite/2fa' : '/verification-2fa'
+  if (!chemin.startsWith(cible)) allerVers(`${cible}?suite=${encodeURIComponent(chemin)}`, { replace: true })
 })

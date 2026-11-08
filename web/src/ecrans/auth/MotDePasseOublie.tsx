@@ -41,7 +41,7 @@ export default function MotDePasseOublie() {
           titre={t('auth.oubli.envoyeTitre')}
           texte={t('auth.oubli.envoye')}
           action={
-            <BoutonLien to="/connexion" variante="secondaire">
+            <BoutonLien to="/connexion" variante="secondaire" voix="auth.oubli.retourConnexion">
               {t('auth.oubli.retourConnexion')}
             </BoutonLien>
           }

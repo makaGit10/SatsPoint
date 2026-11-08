@@ -49,6 +49,16 @@ export interface Utilisateur {
   role_plateforme: RolePlateforme
   preferences: Preferences
   boutique: Boutique | null
+  /** Double authentification (vague 3) ; absente des anciennes réponses = inactive. */
+  deux_fa?: EtatDeuxFa
+}
+
+export interface EtatDeuxFa {
+  active: boolean
+  /** Obligatoire pour ce compte (super-admin). */
+  requise: boolean
+  /** Validée pour la session en cours. */
+  validee: boolean
 }
 
 export interface ReponseUtilisateur {
@@ -314,4 +324,169 @@ export interface Invitation {
 export interface Equipe {
   membres: Membre[]
   invitations: Invitation[]
+}
+
+// ---------------------------------------------------------------------------
+// Vague 3 — contrat `docs/CONTRAT_API.md` § V3 (studio audio, 2FA, console, recherche, import / export, invitation)
+// ---------------------------------------------------------------------------
+
+export type StatutAudio = 'publie' | 'brouillon' | 'en_traitement' | 'erreur' | 'manquant'
+
+export interface EtatCleAudio {
+  statut: StatutAudio
+  id?: number
+  url?: string | null
+  duree_ms?: number | null
+  mis_a_jour_le?: string | null
+  erreur?: string | null
+  /** Une version publiée existe et une nouvelle est en préparation (précision back V3.9). */
+  nouvelle_version?: { statut: StatutAudio; id: number; url?: string | null; duree_ms?: number | null; mis_a_jour_le?: string | null } | null
+  /** URL de la version publiée quand une nouvelle version est affichée (normalisé par le front). */
+  url_publiee?: string | null
+}
+
+export interface CleAudio {
+  cle: string
+  ecran: string
+  contexte: string
+  texte_fr: string
+  texte_en: string
+  essentielle: boolean
+  ordre: number
+  etats: Partial<Record<LangueAudio, EtatCleAudio>>
+}
+
+export interface CouvertureLangue {
+  publies: number
+  brouillons: number
+  manquants: number
+  total: number
+  essentielles_manquantes: number
+  pct?: number
+}
+
+export interface MatriceAudio {
+  langues: Array<{ code: LangueAudio; nom: string }>
+  ecrans: string[]
+  couverture: Partial<Record<LangueAudio, CouvertureLangue>>
+  cles: CleAudio[]
+}
+
+export interface AudioStudio {
+  id: number
+  cle: string
+  langue: LangueAudio
+  statut: StatutAudio
+  duree_ms?: number | null
+  url_ecoute?: string | null
+  erreur?: string | null
+}
+
+export interface InitialisationDeuxFa {
+  secret: string
+  otpauth_url: string
+  qr_svg?: string
+}
+
+export interface BoutiqueAdmin {
+  ulid: string
+  nom: string
+  ville: string
+  statut: 'active' | 'suspendue'
+  cree_le: string
+  proprietaire: { nom: string; contact: string } | null
+  configuration: ConfigurationBoutique
+  activite: { ventes_7j: number; derniere_vente_le: string | null }
+}
+
+export interface PageBoutiquesAdmin {
+  boutiques: BoutiqueAdmin[]
+  curseur_suivant: string | null
+}
+
+export interface SanteAdmin {
+  statut?: 'ok' | 'degrade' | 'indisponible'
+  base: boolean
+  redis: boolean
+  reverb: boolean
+  passerelle: boolean
+  cours: { age_s: number | null; disponible: boolean; sources?: number | null }
+  /** `en_attente` : total, ou détail par file. */
+  files: { en_attente: number | Record<string, number | null> | null; echouees: number | null; echouees_24h?: number | null }
+  audio: { fichiers: number | null; octets: number | null; publies?: number | null }
+  version?: string | null
+  horodatage?: string
+}
+
+export interface EntreeJournal {
+  id: number | string
+  action: string
+  utilisateur: { ulid: string; nom: string } | null
+  boutique: { ulid: string; nom: string } | null
+  ip: string | null
+  details: Record<string, unknown> | string | null
+  cree_le: string
+}
+
+export interface PageJournal {
+  entrees: EntreeJournal[]
+  curseur_suivant: string | null
+}
+
+export interface StatistiquesAdmin {
+  commercants_actifs_semaine: number
+  paiements_par_commercant_semaine: number
+  delai_median_confirmation_ms: number | null
+  part_sats_pct: number
+  part_mobile_money_pct: number
+  couverture_audio: Partial<Record<LangueAudio, number>>
+  boutiques?: { total: number; actives: number; nouvelles_7j: number }
+}
+
+export type RubriqueRecherche = 'ventes' | 'articles' | 'equipe' | 'pages'
+
+export interface ResultatRecherche {
+  titre: string
+  sous_titre: string | null
+  url: string
+  score: number
+}
+
+export interface GroupeRecherche {
+  rubrique: RubriqueRecherche
+  resultats: ResultatRecherche[]
+}
+
+export type ChampImport = 'nom' | 'prix_xof' | 'categorie' | 'sku' | 'couleur' | 'actif'
+export type Correspondance = Record<string, ChampImport | null>
+export type ModeImport = 'creer' | 'creer_et_mettre_a_jour' | 'ignorer_erreurs'
+
+export interface ImportAnalyse {
+  ulid: string
+  colonnes: string[]
+  apercu: string[][]
+  suggestions: Correspondance
+  /** Nombre de lignes de données du fichier (ajout front vague 3 ; `total` côté back). */
+  total_lignes?: number
+  total?: number
+}
+
+export interface ImportEtat {
+  ulid: string
+  statut: 'analyse' | 'en_cours' | 'termine' | 'echoue'
+  total: number
+  traitees: number
+  creees: number
+  mises_a_jour: number
+  erreurs: Array<{ ligne: number; message: string }>
+  /** Total réel des lignes en erreur (`erreurs` est borné à 100). */
+  lignes_en_erreur?: number
+  rapport_url: string | null
+}
+
+export interface InvitationPublique {
+  boutique: { nom: string }
+  role: RoleBoutique
+  contact_masque: string
+  expire_le: string
 }

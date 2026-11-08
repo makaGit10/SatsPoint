@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest'
 import en from './en.json'
 import fr from './fr.json'
 
+/** Paquets chargés à la demande : `<nom>.fr.json` / `<nom>.en.json`, découverts automatiquement. */
+const paquets = import.meta.glob<Record<string, unknown>>('./*.*.json', { eager: true, import: 'default' })
+const paquetsDe = (locale: 'fr' | 'en') => Object.entries(paquets).filter(([chemin]) => chemin.endsWith(`.${locale}.json`))
+
 type Arbre = { [cle: string]: string | Arbre }
 
 function aplatir(objet: Arbre, prefixe = ''): Map<string, string> {
@@ -14,8 +18,29 @@ function aplatir(objet: Arbre, prefixe = ''): Map<string, string> {
   return resultat
 }
 
-const FR = aplatir(fr as Arbre)
-const EN = aplatir(en as Arbre)
+// Paquet principal + paquets chargés à la demande (même espace de clés).
+const FR = new Map([...aplatir(fr as Arbre), ...paquetsDe('fr').flatMap(([, p]) => [...aplatir(p as Arbre)])])
+const EN = new Map([...aplatir(en as Arbre), ...paquetsDe('en').flatMap(([, p]) => [...aplatir(p as Arbre)])])
+
+describe('paquets chargés à la demande', () => {
+  it('existent dans les deux langues', () => {
+    const noms = (l: 'fr' | 'en') => paquetsDe(l).map(([c]) => c.replace(`.${l}.json`, '')).sort()
+    expect(noms('fr').length).toBeGreaterThan(0)
+    expect(noms('en')).toEqual(noms('fr'))
+  })
+
+  it('ne redéfinissent aucune clé (ni du paquet principal, ni entre eux)', () => {
+    const vues = new Map<string, string>([...aplatir(fr as Arbre).keys()].map((c) => [c, 'fr.json']))
+    const doublons: string[] = []
+    for (const [chemin, paquet] of paquetsDe('fr')) {
+      for (const cle of aplatir(paquet as Arbre).keys()) {
+        if (vues.has(cle)) doublons.push(`${cle} (${vues.get(cle)} et ${chemin})`)
+        vues.set(cle, chemin)
+      }
+    }
+    expect(doublons).toEqual([])
+  })
+})
 
 describe('parité des traductions FR / EN', () => {
   it('toute clé FR existe en EN', () => {

@@ -1,0 +1,95 @@
+{
+  "recherche": {
+    "titre": "Search",
+    "placeholder": "Sales, items, team, settings…",
+    "aide": "Type at least 2 letters: sales, items, team, pages and settings.",
+    "recentes": "Recent searches",
+    "effacerRecentes": "Clear recent searches",
+    "aucune": "No results for “{{terme}}”",
+    "resultats": "Search results",
+    "vider": "Clear the search",
+    "horsLigne": "Offline: only pages and settings are suggested.",
+    "rubriques": {
+      "ventes": "Sales",
+      "articles": "Items",
+      "equipe": "Team",
+      "pages": "Pages and settings"
+    },
+    "touches": {
+      "naviguer": "navigate",
+      "ouvrir": "open",
+      "fermer": "close",
+      "echap": "Esc"
+    },
+    "pages": {
+      "exporter": "Export",
+      "importer": "Import",
+      "boutique": "Shop",
+      "paiements": "Payment methods",
+      "paytech": "PayTech (mobile money)",
+      "preferences": "Theme and language",
+      "securite": "Two-factor authentication",
+      "aideEncaisser": "Charge a customer"
+    },
+    "mots": {
+      "caisse": "charge keypad amount sell checkout encaisser",
+      "ventes": "history sales receipts transactions ventes",
+      "exporter": "export csv excel pdf download",
+      "tableau": "revenue statistics dashboard",
+      "portefeuille": "wallet lightning sats balance receive send nwc",
+      "articles": "products catalogue price items",
+      "importer": "import csv excel file",
+      "equipe": "cashier manager invite members team",
+      "reglages": "settings configuration",
+      "boutique": "name city phone shop",
+      "paiements": "methods expiry maximum amount wave",
+      "paytech": "paytech mobile money orange money free money wave",
+      "preferences": "theme dark light language voice",
+      "securite": "2fa code totp authentication security",
+      "demarrage": "setup guided start",
+      "aideEncaisser": "help how to charge lightning qr",
+      "console": "admin shops health log platform",
+      "studio": "audio voice record wolof serer pulaar jola"
+    },
+    "aideRubrique": "Help"
+  },
+  "invitation": {
+    "titre": "You're invited",
+    "sousTitre": "Join this shop's team on SatsPoint.",
+    "boutique": "Shop",
+    "role": "Your role",
+    "pour": "Invitation for",
+    "expire": "Valid until",
+    "droits": {
+      "proprietaire": "You will manage everything: checkout, sales, wallet, team and settings.",
+      "gerant": "You will take payments, follow sales and manage items and the team.",
+      "caissier": "You will take payments and see your sales of the day."
+    },
+    "connecteEnTantQue": "Signed in as {{nom}}.",
+    "accepter": "Join the shop",
+    "creerCompte": "Create my account",
+    "meConnecter": "I already have an account",
+    "memeContact": "Use the phone number or email the invitation was sent to.",
+    "bienvenue": "Welcome to {{boutique}}",
+    "dejaMembre": "Your account already belongs to a shop. Sign in with another account.",
+    "invalide": {
+      "titre": "Invitation not found",
+      "texte": "The link has expired or was already used. Ask the shop for a new invitation."
+    },
+    "retourAccueil": "Back to home",
+    "expiree": {
+      "titre": "Invitation expired",
+      "texte": "This link is no longer valid. Ask the shop for a new invitation."
+    }
+  },
+  "export": {
+    "titre": "Export",
+    "titreFiltres": "Export (current filters)",
+    "csv": "CSV",
+    "csvDetail": "Opens in Excel",
+    "xlsx": "Excel",
+    "xlsxDetail": ".xlsx workbook",
+    "pdf": "PDF",
+    "pdfDetail": "Printable report"
+  }
+}

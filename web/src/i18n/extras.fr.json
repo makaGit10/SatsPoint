@@ -1,0 +1,95 @@
+{
+  "recherche": {
+    "titre": "Recherche",
+    "placeholder": "Ventes, articles, équipe, réglages…",
+    "aide": "Tapez au moins 2 lettres : ventes, articles, équipe, pages et réglages.",
+    "recentes": "Dernières recherches",
+    "effacerRecentes": "Effacer les dernières recherches",
+    "aucune": "Aucun résultat pour « {{terme}} »",
+    "resultats": "Résultats de recherche",
+    "vider": "Effacer la recherche",
+    "horsLigne": "Hors connexion : seules les pages et réglages sont proposés.",
+    "rubriques": {
+      "ventes": "Ventes",
+      "articles": "Articles",
+      "equipe": "Équipe",
+      "pages": "Pages et réglages"
+    },
+    "touches": {
+      "naviguer": "naviguer",
+      "ouvrir": "ouvrir",
+      "fermer": "fermer",
+      "echap": "Échap"
+    },
+    "pages": {
+      "exporter": "Exporter",
+      "importer": "Importer",
+      "boutique": "Boutique",
+      "paiements": "Moyens de paiement",
+      "paytech": "PayTech (mobile money)",
+      "preferences": "Thème et langue",
+      "securite": "Double authentification",
+      "aideEncaisser": "Encaisser un client"
+    },
+    "mots": {
+      "caisse": "encaisser pavé montant vendre checkout",
+      "ventes": "historique ventes reçus transactions sales",
+      "exporter": "export csv excel pdf télécharger",
+      "tableau": "chiffre d'affaires statistiques dashboard",
+      "portefeuille": "wallet lightning sats solde recevoir envoyer nwc",
+      "articles": "produits catalogue prix items",
+      "importer": "import csv excel fichier",
+      "equipe": "caissier gérant inviter membres team",
+      "reglages": "paramètres configuration settings",
+      "boutique": "nom ville téléphone shop",
+      "paiements": "moyens expiration montant maximum wave",
+      "paytech": "paytech mobile money orange money free money wave",
+      "preferences": "thème sombre clair langue voix theme dark",
+      "securite": "2fa code totp authentification sécurité",
+      "demarrage": "configuration démarrage guidé setup",
+      "aideEncaisser": "aide comment encaisser lightning qr help",
+      "console": "admin boutiques santé journal plateforme",
+      "studio": "audio voix enregistrer wolof sérère pulaar diola"
+    },
+    "aideRubrique": "Aide"
+  },
+  "invitation": {
+    "titre": "Vous êtes invité",
+    "sousTitre": "Rejoignez l'équipe de cette boutique sur SatsPoint.",
+    "boutique": "Boutique",
+    "role": "Votre rôle",
+    "pour": "Invitation pour",
+    "expire": "Valable jusqu'au",
+    "droits": {
+      "proprietaire": "Vous pourrez tout gérer : caisse, ventes, portefeuille, équipe et réglages.",
+      "gerant": "Vous pourrez encaisser, suivre les ventes, gérer les articles et l'équipe.",
+      "caissier": "Vous pourrez encaisser et voir vos ventes du jour."
+    },
+    "connecteEnTantQue": "Connecté en tant que {{nom}}.",
+    "accepter": "Rejoindre la boutique",
+    "creerCompte": "Créer mon compte",
+    "meConnecter": "J'ai déjà un compte",
+    "memeContact": "Utilisez le téléphone ou l'e-mail auquel l'invitation a été envoyée.",
+    "bienvenue": "Bienvenue chez {{boutique}}",
+    "dejaMembre": "Votre compte fait déjà partie d'une boutique. Connectez-vous avec un autre compte.",
+    "invalide": {
+      "titre": "Invitation introuvable",
+      "texte": "Le lien a expiré ou a déjà servi. Demandez une nouvelle invitation à la boutique."
+    },
+    "retourAccueil": "Retour à l'accueil",
+    "expiree": {
+      "titre": "Invitation expirée",
+      "texte": "Ce lien n'est plus valable. Demandez une nouvelle invitation à la boutique."
+    }
+  },
+  "export": {
+    "titre": "Exporter",
+    "titreFiltres": "Exporter (filtres en cours)",
+    "csv": "CSV",
+    "csvDetail": "Lisible par Excel",
+    "xlsx": "Excel",
+    "xlsxDetail": "Classeur .xlsx",
+    "pdf": "PDF",
+    "pdfDetail": "Rapport à imprimer"
+  }
+}

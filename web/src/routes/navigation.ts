@@ -21,9 +21,14 @@ export function cheminCourant(): string {
 }
 
 /** Chemins accessibles sans session (aucune redirection sur 401). */
-const PREFIXES_PUBLICS = ['/langue', '/accueil', '/connexion', '/inscription', '/mot-de-passe', '/r/']
+const PREFIXES_PUBLICS = ['/langue', '/accueil', '/connexion', '/inscription', '/mot-de-passe', '/r/', '/invitation/']
 
 export function estCheminPublic(chemin: string): boolean {
   const sansRequete = chemin.split('?')[0] ?? chemin
   return sansRequete === '/' || PREFIXES_PUBLICS.some((p) => sansRequete === p || sansRequete.startsWith(p))
+}
+
+/** Paramètre `?suite=` accepté seulement s'il reste dans l'application (pas de redirection ouverte). */
+export function suiteSure(valeur: string | null | undefined): string | null {
+  return valeur && valeur.startsWith('/') && !valeur.startsWith('//') && !valeur.startsWith('/\\') ? valeur : null
 }

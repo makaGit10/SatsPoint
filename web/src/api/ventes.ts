@@ -1,5 +1,7 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { http } from './client'
+import { telecharger } from './telechargement'
+import type { FormatExport } from './exports'
 import type { FiltresVentes, PageVentes, Vente } from './types'
 
 // Caisse et paiements (création, tentatives, lecture du statut…) : `./paiements` — réexportés ici pour les écrans qui lisent les deux.
@@ -44,19 +46,9 @@ export function useVentes(filtres: FiltresVentes) {
   })
 }
 
-/** Export respectant les filtres en cours (CSV en P0). Téléchargé via fetch pour garder les cookies de session. */
-export async function exporterVentes(filtres: FiltresVentes, format: 'csv' | 'xlsx' | 'pdf' = 'csv'): Promise<void> {
+/** Export respectant les filtres en cours (CSV, Excel, PDF). Téléchargé via fetch pour garder les cookies de session. */
+export function exporterVentes(filtres: FiltresVentes, format: FormatExport = 'csv'): Promise<void> {
   const p = parametresVentes(filtres)
   p.set('format', format)
-  const reponse = await fetch(`/api/v1/exports/ventes?${p}`, { credentials: 'include', headers: { Accept: 'text/csv, */*' } })
-  if (!reponse.ok) throw new Error(`export ${reponse.status}`)
-  const blob = await reponse.blob()
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `ventes-${new Date().toISOString().slice(0, 10)}.${format}`
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  setTimeout(() => URL.revokeObjectURL(url), 1000)
+  return telecharger(`/exports/ventes?${p}`, `ventes-${new Date().toISOString().slice(0, 10)}.${format}`)
 }

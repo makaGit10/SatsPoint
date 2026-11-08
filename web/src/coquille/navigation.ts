@@ -40,7 +40,7 @@ export const NAV_BOUTIQUE: readonly ElementNavigation[] = [
 
 export const NAV_ADMIN: readonly ElementNavigation[] = [
   { cle: 'nav.admin', chemin: '/admin', icone: ShieldCheck, roles: [], barreBas: true },
-  { cle: 'nav.studio', chemin: '/admin/studio-audio', icone: Mic, roles: [], barreBas: true },
+  { cle: 'nav.studio', chemin: '/admin/studio', icone: Mic, roles: [], barreBas: true },
 ]
 
 /** Éléments visibles pour une personne donnée (super-admin : console uniquement). */

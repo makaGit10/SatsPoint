@@ -1,10 +1,10 @@
-import { LogOut } from 'lucide-react'
+import { LogOut, ShieldCheck } from 'lucide-react'
 import { lazy, Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/auth/store'
 import { useDeconnexion } from '@/auth/useMoi'
-import { Bouton } from '@/composants/Bouton'
+import { Bouton, BoutonLien } from '@/composants/Bouton'
 import { Dialogue } from '@/composants/Dialogue'
 import { cn } from '@/lib/cn'
 import { initiales } from '@/lib/format'
@@ -74,9 +74,15 @@ export function MenuUtilisateur() {
           </span>
         }
         pied={
+          <div className="flex w-full flex-col gap-2">
+          <BoutonLien to="/securite/2fa" variante="fantome" icone={<ShieldCheck />} voix="utilisateur.securite" onClick={() => setOuvert(false)} pleineLargeur>
+            {t('utilisateur.securite')}
+            {utilisateur.deux_fa?.active && <span className="ml-1 rounded-full bg-succes-doux px-1.5 text-2xs text-succes-texte">{t('utilisateur.deuxFaActive')}</span>}
+          </BoutonLien>
           <Bouton variante="secondaire" icone={<LogOut />} voix="utilisateur.deconnexion" chargement={deconnexion.isPending} onClick={seDeconnecter} pleineLargeur>
             {t('utilisateur.deconnexion')}
           </Bouton>
+          </div>
         }
       >
         <Suspense fallback={<SqueletteTexte lignes={4} className="py-1" />}>
