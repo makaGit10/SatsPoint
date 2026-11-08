@@ -49,7 +49,14 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         // Caddy (même conteneur) et le réseau Docker sont les seuls mandataires de confiance.
-        $middleware->trustProxies(at: ['127.0.0.1', '::1', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16']);
+        // TRUSTED_PROXIES (liste d'IP/CIDR séparées par des virgules, ou « * » = le seul pair TCP direct)
+        // remplace cette liste chez un hébergeur dont le répartiteur termine TLS (Render).
+        $mandataires = trim((string) env('TRUSTED_PROXIES', ''));
+        $middleware->trustProxies(at: match (true) {
+            $mandataires === '*' => '*',
+            $mandataires !== '' => array_values(array_filter(array_map('trim', explode(',', $mandataires)))),
+            default => ['127.0.0.1', '::1', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16'],
+        });
 
         // Sessions SPA par cookie (Sanctum) pour les requêtes venant du front.
         $middleware->statefulApi();

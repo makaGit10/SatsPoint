@@ -1,72 +1,80 @@
-# Blueprint Render (offre gratuite) — un seul service web « tout-en-un » :
-# Caddy + PHP (API), Reverb, worker de files, planificateur et passerelle Lightning
-# dans le même conteneur (SATSPOINT_ROLE=all → supervisord). Base PostgreSQL sur Neon
-# (gratuite, sans expiration) ; Redis remplacé par la base de données.
+# Blueprint Render (offre gratuite) — UN SEUL service web « tout-en-un », une seule URL HTTPS :
+#   Caddy (PWA compilée + API Laravel + WebSocket /app) + Reverb + worker de files + planificateur
+#   + passerelle Lightning, dans le même conteneur (image `all`, supervisord).
+# Base PostgreSQL : Neon (gratuite, sans expiration), via DATABASE_URL. Pas de Redis : cache, files,
+# sessions, limites de débit et nonces HMAC sont en base.
 #
-# Front servi par Netlify (web/netlify.toml) qui proxifie /api, /sanctum, /broadcasting,
-# /r, /webhooks, /audio vers ce service ; le WebSocket se connecte directement ici (/app).
+# Cible Docker : le Blueprint Render n'a pas de clé pour choisir l'étape (`--target`) d'un Dockerfile
+# multi-étapes ; Render construit la DERNIÈRE étape, qui est justement `all` dans infra/api.Dockerfile.
 #
-# Déploiement : Render → New → Blueprint → ce dépôt. Renseigner les variables marquées sync: false.
+# Adresse publique : APP_URL, FRONTEND_URL, SANCTUM_STATEFUL_DOMAINS, REVERB_PUBLIC_HOST (et PAYTECH_IPN_BASE_URL,
+# qui vaut APP_URL par défaut) sont déduits au démarrage de RENDER_EXTERNAL_URL / RENDER_EXTERNAL_HOSTNAME
+# (variables fournies par Render), voir infra/entrypoint.sh. Ne les ajouter que pour un domaine personnalisé.
+#
+# Procédure complète : docs/CAHIER_DES_CHARGES.md § 16.2 et README.md (« Deploy »).
 services:
   - type: web
-    name: satspoint-api
+    name: satspoint
     runtime: docker
     plan: free
-    region: frankfurt
+    region: frankfurt                # même région que la base Neon (AWS eu-central-1)
     dockerfilePath: ./infra/api.Dockerfile
     dockerContext: .
-    dockerCommand: ""            # l'entrypoint choisit supervisord grâce à SATSPOINT_ROLE=all
     healthCheckPath: /up
     autoDeploy: true
+    buildFilter:
+      paths:
+        - api/**
+        - web/**
+        - lightning-gateway/**
+        - infra/**
     envVars:
+      # --- Rôle et réseau (valeurs par défaut de l'image `all`, rappelées ici) ---
       - key: SATSPOINT_ROLE
         value: all
-      - key: API_BUILD_TARGET
-        value: all
-      - key: SERVER_NAME
-        value: ":8000"
       - key: PORT
-        value: "8000"
+        value: "10000"               # port d'écoute de Caddy (Render ne le fournit pas : défaut 10000)
+      - key: TRUSTED_PROXIES
+        value: "*"                   # Laravel croit le pair TCP direct (répartiteur Render) pour X-Forwarded-*
+      # --- Application ---
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: "false"
       - key: APP_NAME
         value: SatsPoint
-      - key: APP_URL
-        sync: false               # https://satspoint.netlify.app (origine vue par les utilisateurs)
-      - key: FRONTEND_URL
-        sync: false               # https://satspoint.netlify.app
-      - key: SANCTUM_STATEFUL_DOMAINS
-        sync: false               # satspoint.netlify.app
+      - key: APP_KEY
+        generateValue: true          # base64 de 32 octets : l'entrypoint ajoute le préfixe « base64: »
+      - key: DATA_ENCRYPTION_KEY
+        generateValue: true          # idem ; NE JAMAIS la changer ensuite (secrets NWC / PayTech / 2FA illisibles)
       - key: SESSION_DOMAIN
-        value: "null"             # cookie limité au domaine appelé (proxy Netlify = même origine)
+        value: "null"                # cookie limité à l'hôte appelé (même origine)
       - key: SESSION_SECURE_COOKIE
         value: "true"
-      - key: TRUSTED_PROXIES
-        value: "*"
-      - key: APP_KEY
-        generateValue: true
-      - key: DATA_ENCRYPTION_KEY
-        sync: false               # base64 de 32 octets aléatoires, distinct de APP_KEY
-      - key: GATEWAY_HMAC_SECRET
-        generateValue: true
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: info
+      # --- Base (Neon) ---
       - key: DB_CONNECTION
         value: pgsql
       - key: DATABASE_URL
-        sync: false               # chaîne Neon (postgresql://…?sslmode=require)
+        sync: false                  # chaîne Neon « Direct connection » : postgresql://…/neondb?sslmode=require
       - key: CACHE_STORE
         value: database
       - key: QUEUE_CONNECTION
         value: database
       - key: SESSION_DRIVER
         value: database
+      - key: DB_QUEUE_RETRY_AFTER
+        value: "180"                 # > --timeout=120 du worker
+      # --- Temps réel (Reverb interne, public via Caddy sur /app) ---
       - key: BROADCAST_CONNECTION
         value: reverb
       - key: REVERB_APP_ID
         value: satspoint
       - key: REVERB_APP_KEY
-        generateValue: true
+        value: satspoint-public      # clé PUBLIQUE (envoyée au navigateur, dans l'URL /app/{cle}) : pas un secret
       - key: REVERB_APP_SECRET
         generateValue: true
       - key: REVERB_HOST
@@ -77,33 +85,32 @@ services:
         value: http
       - key: REVERB_UPSTREAM
         value: 127.0.0.1:8080
-      - key: REVERB_PUBLIC_HOST
-        sync: false               # satspoint-api.onrender.com
       - key: REVERB_PUBLIC_PORT
         value: "443"
       - key: REVERB_PUBLIC_SCHEME
         value: https
+      # --- Passerelle Lightning (interne, 127.0.0.1:3011) ---
       - key: LIGHTNING_GATEWAY_URL
         value: http://127.0.0.1:3011
-      - key: API_INTERNAL_URL
-        value: http://127.0.0.1:8000
+      - key: GATEWAY_HMAC_SECRET
+        generateValue: true
+      - key: ALLOW_MOCK_WALLET
+        value: "false"               # "true" seulement pour une démo SANS DEMO_NWC_URI (portefeuille simulé)
+      # --- Comptes et démo (demandés à la création du Blueprint) ---
       - key: SUPERADMIN_EMAIL
         sync: false
       - key: SUPERADMIN_PASSWORD
-        sync: false
+        sync: false                  # ≥ 12 caractères (vide = généré une fois, affiché dans les journaux)
       - key: DEMO_SEED
         value: "true"
       - key: DEMO_PASSWORD
-        sync: false
+        sync: false                  # ≥ 12 caractères (vide = RÉGÉNÉRÉ à chaque démarrage : à renseigner)
       - key: DEMO_NWC_URI
-        sync: false               # lien Coinos (jamais dans le dépôt)
+        sync: false                  # nostr+walletconnect://… (Coinos) — jamais dans le dépôt ; vide = simulé
+      # --- PayTech (mobile money) ---
       - key: PAYTECH_ENV
         value: test
       - key: PAYTECH_API_KEY
         sync: false
       - key: PAYTECH_API_SECRET
         sync: false
-      - key: LOG_CHANNEL
-        value: stderr
-      - key: LOG_LEVEL
-        value: info

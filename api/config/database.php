@@ -86,7 +86,9 @@ return [
 
         'pgsql' => [
             'driver' => 'pgsql',
-            'url' => env('DB_URL'),
+            // DATABASE_URL (Neon, Render…) accepté comme DB_URL : postgresql://user:pass@hote/base?sslmode=require
+            // (les paramètres de la chaîne, dont sslmode, priment sur DB_HOST, DB_PORT… et DB_SSLMODE).
+            'url' => env('DB_URL', env('DATABASE_URL')),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'laravel'),

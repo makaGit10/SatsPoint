@@ -668,23 +668,76 @@ Exigence du jury : *one-command setup, seed data, testable happy path*. Un juge 
 - Le mode simulé est **affiché en permanence** par un bandeau « Mode démo : paiements simulés ». Il est **impossible à activer en production** (refus au démarrage).
 - **Avec les variables renseignées** : intégrations réelles (Lightning mainnet, PayTech). C'est ce que montre la démo en ligne.
 - Le README contient un encadré « Testez en 2 minutes » : commande, adresse, comptes, puis les 4 gestes du parcours heureux.
-- **Production** : une machine allumée en permanence avec Docker Compose et Caddy (HTTPS automatique).
-  Une URL publique en HTTPS est **obligatoire** pour l'IPN PayTech et pour que les juges testent ; un nom de domaine payant ne l'est **pas**.
-  **Choix retenu (budget zéro)** :
-  - **Front (PWA)** sur **Netlify** → `satspoint.netlify.app` (CDN rapide) ; règle de proxy Netlify `/api/*`, `/broadcasting/*`, `/r/*`, `/webhooks/*` → Render,
-    pour que le navigateur reste sur une seule origine (cookies de session `SameSite`, pas de CORS).
-  - **Back** sur **Render (offre gratuite)**, **un seul conteneur Docker** qui regroupe API Laravel, Reverb (derrière un proxy interne, un seul port exposé),
-    worker de files, planificateur et passerelle Lightning → `satspoint-api.onrender.com`. Connexion WebSocket directe vers Render (l'autorisation des canaux passe par le proxy Netlify).
-  - **Base** sur **Neon (PostgreSQL gratuit, sans expiration)** ; cache, files et limitation de débit sur la base de données (pas de Redis en production gratuite).
-  - Render endort un service gratuit après 15 min d'inactivité → ping de `/sante` toutes les 10 min (cron-job.org, gratuit) pendant la période de jugement.
-  - Limites connues : 512 Mo de RAM et peu de CPU → budgets mémoire surveillés ; si c'est insuffisant, repli sur **Oracle Cloud « Always Free »** ou **GitHub Student Developer Pack** (la propriétaire est étudiante).
-  - Vercel écarté (même rôle que Netlify, déjà maîtrisé) ; Netlify et Vercel ne peuvent pas héberger le back (processus permanents, WebSocket).
+- **Production** : une URL publique en HTTPS est **obligatoire** pour l'IPN PayTech et pour que les juges testent ; un nom de domaine payant ne l'est **pas**.
+  Choix retenu (budget zéro) et procédure : § 16.2.
+
+### 16.2 Mise en ligne gratuite : Render + Neon (choix retenu)
+
+**Architecture en ligne** : **une seule URL** `https://<service>.onrender.com`, **une seule image Docker** (`infra/api.Dockerfile`, cible `all`)
+et un seul service web Render (offre gratuite : 512 Mo de RAM, 0,1 CPU). Pas de Netlify : le front compilé est servi par Caddy dans la même image,
+donc **même origine** pour la PWA, l'API, les cookies de session Sanctum et le WebSocket (`/app`) — ni CORS, ni cookie tiers, ni proxy externe.
+
+| Processus (supervisord, utilisateur non-root) | Écoute | Rôle |
+|---|---|---|
+| Caddy + PHP 8.3 (FrankenPHP, 4 fils) | `0.0.0.0:$PORT` (10000) | PWA, `/api`, `/sanctum`, `/broadcasting`, `/r`, `/webhooks`, `/audio`, `/internal`, `/sante`, `/up` ; `/app/*` → Reverb |
+| Reverb | `127.0.0.1:8080` | WebSocket (protocole Pusher) |
+| Worker de files (`--memory=96`) | — | files `paiements`, `audio`, `imports`, `default` (pilote `database`) |
+| Planificateur (`schedule:work`) | — | cours toutes les minutes, expirations |
+| Passerelle Lightning (Node 22) | `127.0.0.1:3011` | NWC ; rappelle l'API par `http://127.0.0.1:$PORT/internal/…` (HMAC) |
+
+- **Base** sur **Neon** (PostgreSQL géré, gratuit sans expiration, sans carte bancaire, 100 CU-heures/mois, mise en veille après 5 min sans requête) via `DATABASE_URL` (`?sslmode=require`).
+  **Pas de Redis** : cache (cours, limites de débit, nonces HMAC anti-rejeu), files et sessions sont **en base** (tables `cache`, `cache_locks`,
+  `jobs`, `failed_jobs`, `sessions` créées par les migrations).
+- Les adresses publiques (`APP_URL`, `FRONTEND_URL`, `SANCTUM_STATEFUL_DOMAINS`, `REVERB_PUBLIC_HOST`, base des IPN PayTech) sont **déduites
+  au démarrage** de `RENDER_EXTERNAL_URL` (fourni par Render) ; on ne les renseigne que pour un domaine personnalisé.
+- Mémoire mesurée localement (image `all`, `mem_limit` 512 Mo, démo simulée, 8/11/2026) : **≈ 214 Mo** après un parcours d'encaissement complet,
+  **≈ 222 Mo** sous 600 requêtes concurrentes ; budget **≤ 400 Mo** sur 512 (réglages : 4 fils PHP, OPcache 64 Mo, worker `--memory=96`, Node `--max-old-space-size=96`).
+- Repli si les limites gratuites ne suffisent pas : **Oracle Cloud « Always Free »** ou **GitHub Student Developer Pack** (même image, ou `docker compose up`).
+
+**Procédure pas à pas** (une seule fois, ~20 min) :
+
+1. **Comptes** (gratuits, sans carte bancaire) : créer un compte **GitHub** (dépôt `SatsPoint` poussé), puis **Neon** (neon.com → *Sign up* →
+   *Continue with GitHub*) et **Render** (render.com → *Get started* → *GitHub*). Sur Render, autoriser l'accès au dépôt `SatsPoint`.
+2. **Base Neon** : *New project* → nom `satspoint`, PostgreSQL 16, région **AWS Europe Central 1 (Frankfurt)** (la même que Render).
+   Dans le *compute* de la branche principale (*Branches → production → Edit*), régler l'autoscaling sur **0,25 ↔ 0,25 CU** pour économiser les CU-heures.
+   *Connect* → décocher **Connection pooling** (connexion **directe**, nécessaire aux processus permanents) → copier la chaîne
+   `postgresql://neondb_owner:…@ep-….eu-central-1.aws.neon.tech/neondb?sslmode=require` (le paramètre `channel_binding` éventuel peut rester).
+3. **Blueprint Render** : *New* → **Blueprint** → choisir le dépôt → Render lit `infra/render.yaml` (indiquer ce chemin si demandé : *Blueprint Path*).
+4. **Variables demandées** (`sync: false`) :
+
+   | Variable | Valeur |
+   |---|---|
+   | `DATABASE_URL` | la chaîne Neon de l'étape 2 |
+   | `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD` | adresse et mot de passe (≥ 12 caractères) de la propriétaire |
+   | `DEMO_PASSWORD` | mot de passe (≥ 12) des comptes démo `demo@satspoint.local` et `caissier@satspoint.local` — **obligatoire** (sinon régénéré à chaque démarrage) |
+   | `DEMO_NWC_URI` | lien Nostr Wallet Connect **Coinos** de la boutique démo (réception seule, budget) ; vide = portefeuille simulé (mettre alors `ALLOW_MOCK_WALLET=true`) |
+   | `PAYTECH_API_KEY` / `PAYTECH_API_SECRET` | clés PayTech (mode test) ; vide = mobile money simulé |
+
+   Les secrets techniques (`APP_KEY`, `DATA_ENCRYPTION_KEY`, `GATEWAY_HMAC_SECRET`, `REVERB_APP_SECRET`) sont **générés par Render** (`generateValue`).
+   **Ne jamais régénérer `DATA_ENCRYPTION_KEY`** ensuite : les URI NWC, clés PayTech et secrets 2FA chiffrés deviendraient illisibles.
+5. *Apply* : premier build ~10 min (front, Composer, passerelle). Au démarrage : migrations, registre des clés vocales, données de démo.
+   Vérifier `https://<service>.onrender.com/sante` → `base`, `redis` (= cache), `reverb`, `passerelle` à `true` et `/api/v1/config`.
+6. **Première connexion super-admin** : ouvrir l'URL, se connecter avec `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD`, **activer la 2FA**
+   (obligatoire pour la console plateforme), enregistrer les audios essentiels dans le studio. Tester le parcours démo (1 500 FCFA).
+7. **PayTech** : dans le tableau de bord PayTech, l'IPN est `https://<service>.onrender.com/webhooks/paytech/{boutique}` (posée automatiquement à chaque demande).
+8. **Réveil** : Render endort un service gratuit après 15 min sans trafic (réveil ≈ 1 min). Sur **cron-job.org** (compte gratuit) : *Create cronjob*
+   → URL `https://<service>.onrender.com/up`, **toutes les 10 minutes**, méthode GET, alerte e-mail en cas d'échec.
+   Budget Neon : service éveillé en permanence ≈ 0,25 CU × 24 h = **6 CU-h/jour** → 100 CU-h ≈ **16 jours** : n'activer le ping que pendant la
+   période de jugement (ping désactivé, Render et Neon s'endorment et ne consomment presque rien).
+9. Mises à jour : chaque `git push` sur la branche suivie (`main`) redéploie (`autoDeploy`, filtré sur `api/`, `web/`, `lightning-gateway/`, `infra/`).
+
+**Limites connues de l'offre gratuite** : disque **non persistant** (les fichiers audio enregistrés dans le studio et les rapports d'import sont
+perdus à chaque redéploiement ou réveil : les réenregistrer, ou passer à un disque persistant / stockage objet en phase 2) ; un seul processus
+de chaque type ; CPU faible (premier affichage après réveil ≈ 1 min).
+
+### 16.3 Exploitation
+
 - **Développement** : tout tourne en local ; pour recevoir l'IPN PayTech pendant les tests, tunnel temporaire gratuit (Cloudflare Quick Tunnel).
-- Mise en ligne : `git pull` + `docker compose up -d --build` + migrations ; script `infra/deploy.sh`.
+- **Auto-hébergement** (VPS, Oracle) : `git pull` + `docker compose up -d --build` (un conteneur par rôle, Redis) ou l'image `all` seule.
 - Comptes créés automatiquement par les seeders **à partir de variables d'environnement** (jamais de mot de passe dans le dépôt) :
   super-admin de la propriétaire, boutique de démonstration « Boutique Démo » avec un propriétaire et un caissier de démonstration
   (portefeuille de démo **sans permission d'envoi** pour les juges).
-- Surveillance : `GET /sante` (base, Redis, Reverb, passerelle, âge du cours), alerte de disponibilité externe, logs structurés JSON avec rotation.
+- Surveillance : `GET /sante` (base, cache — Redis ou base —, Reverb, passerelle, âge du cours), alerte de disponibilité externe (cron-job.org), journaux sur la sortie standard (Render les conserve).
 - Sauvegardes : base chiffrée quotidienne, 14 jours conservés, audios sauvegardés avec la base.
 
 ## 17. Livrables du hackathon
@@ -803,4 +856,4 @@ Le MVP est **accepté** quand :
 - Éligibilité : la propriétaire est étudiante (université) → éligible ; seul le profil Devpost est à corriger.
 - PayTech : mode test suffisant pour le hackathon (vérifié le 8 nov. : test OK, production non activée).
 - Portefeuille de développement et de démo : **Coinos** (connexion NWC) ; Alby Hub envisagé pour la démo finale.
-- Hébergement : Netlify (front) + Render (back) + Neon (base), voir section 16.
+- Hébergement : tout sur Render (une seule image : PWA + API + temps réel + passerelle) + Neon (base), voir section 16.2. Netlify abandonné (même origine plus simple et plus sûre).

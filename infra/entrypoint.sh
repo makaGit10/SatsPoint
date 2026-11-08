@@ -1,10 +1,41 @@
 #!/usr/bin/env bash
 # SatsPoint — point d'entrée des conteneurs API (web, reverb, queue, scheduler, tout-en-un).
+#   SATSPOINT_ROLE=web|reverb|queue|scheduler : docker-compose.yml (un conteneur par rôle) → exécute la commande.
+#   SATSPOINT_ROLE=all : image « all » (Render) → supervisord lance Caddy+PHP, Reverb, file, planificateur, passerelle.
 set -euo pipefail
 
 cd /app/api
 
+ROLE="${SATSPOINT_ROLE:-web}"
+
 export PHP_OPCACHE_VALIDATE_TIMESTAMPS="${PHP_OPCACHE_VALIDATE_TIMESTAMPS:-$([ "${APP_ENV:-production}" = "production" ] && echo 0 || echo 1)}"
+export PHP_OPCACHE_MEMORY="${PHP_OPCACHE_MEMORY:-128}"
+
+# --- Hébergeur (Render) : adresse publique déduite de RENDER_EXTERNAL_URL si elle n'est pas fournie ---
+# Front, API et WebSocket sont servis sur la même origine (Caddy), d'où les mêmes valeurs partout.
+if [ -n "${RENDER_EXTERNAL_URL:-}" ]; then
+  RENDER_HOTE="${RENDER_EXTERNAL_HOSTNAME:-$(printf '%s' "$RENDER_EXTERNAL_URL" | sed -E 's#^https?://##; s#/.*$##')}"
+  export APP_URL="${APP_URL:-$RENDER_EXTERNAL_URL}"
+  export FRONTEND_URL="${FRONTEND_URL:-$APP_URL}"
+  export SANCTUM_STATEFUL_DOMAINS="${SANCTUM_STATEFUL_DOMAINS:-$RENDER_HOTE}"
+  export REVERB_PUBLIC_HOST="${REVERB_PUBLIC_HOST:-${RENDER_HOTE%%:*}}"
+  export REVERB_PUBLIC_PORT="${REVERB_PUBLIC_PORT:-443}"
+  export REVERB_PUBLIC_SCHEME="${REVERB_PUBLIC_SCHEME:-https}"
+  export SESSION_SECURE_COOKIE="${SESSION_SECURE_COOKIE:-true}"
+fi
+
+# --- Clés : une valeur « generateValue » de Render (base64 de 32 octets, sans préfixe) reçoit le préfixe « base64: » ---
+normaliser_cle() {
+  local valeur="$1"
+  if [ -n "$valeur" ] && [ "${valeur#base64:}" = "$valeur" ] && [ "${#valeur}" -eq 44 ] \
+     && [ "$(printf '%s' "$valeur" | base64 -d 2>/dev/null | wc -c)" -eq 32 ]; then
+    printf 'base64:%s' "$valeur"
+  else
+    printf '%s' "$valeur"
+  fi
+}
+if [ -n "${APP_KEY:-}" ]; then export APP_KEY="$(normaliser_cle "$APP_KEY")"; fi
+if [ -n "${DATA_ENCRYPTION_KEY:-}" ]; then export DATA_ENCRYPTION_KEY="$(normaliser_cle "$DATA_ENCRYPTION_KEY")"; fi
 
 # --- Clé d'application : générée une fois et conservée dans le volume de stockage si absente ---
 if [ -z "${APP_KEY:-}" ]; then
@@ -21,6 +52,9 @@ if [ -z "${DATA_ENCRYPTION_KEY:-}" ]; then
     echo "base64:$(head -c 32 /dev/urandom | base64 | tr -d '\n')" > storage/app/.data_key
   fi
   export DATA_ENCRYPTION_KEY="$(cat storage/app/.data_key)"
+  if [ "$ROLE" = "all" ]; then
+    echo "[satspoint] ATTENTION : DATA_ENCRYPTION_KEY absente — clé temporaire (disque non persistant) : les secrets chiffrés seront illisibles au prochain démarrage."
+  fi
 fi
 
 mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache storage/app/public
@@ -31,12 +65,32 @@ if [ ! -f vendor/autoload.php ]; then
   composer install --no-interaction --prefer-dist --no-progress
 fi
 
-# --- Attente de la base ---
-until php -r 'try { new PDO(sprintf("pgsql:host=%s;port=%s;dbname=%s", getenv("DB_HOST"), getenv("DB_PORT"), getenv("DB_DATABASE")), getenv("DB_USERNAME"), getenv("DB_PASSWORD")); exit(0);} catch (Throwable $e) { exit(1);} ' >/dev/null 2>&1; do
-  echo "[satspoint] base de données indisponible, nouvelle tentative…"; sleep 2
+# --- Attente de la base : DATABASE_URL / DB_URL (Neon : postgresql://…?sslmode=require) sinon DB_HOST… ---
+attendre_base() {
+  php -r '
+    $url = getenv("DB_URL") ?: getenv("DATABASE_URL");
+    if ($url) {
+        $p = parse_url($url);
+        if ($p === false || empty($p["host"])) { fwrite(STDERR, "DATABASE_URL illisible\n"); exit(2); }
+        parse_str($p["query"] ?? "", $q);
+        $dsn = sprintf("pgsql:host=%s;port=%s;dbname=%s", $p["host"], $p["port"] ?? 5432, ltrim($p["path"] ?? "", "/"));
+        if (!empty($q["sslmode"])) { $dsn .= ";sslmode=".$q["sslmode"]; }
+        $u = isset($p["user"]) ? urldecode($p["user"]) : null;
+        $m = isset($p["pass"]) ? urldecode($p["pass"]) : null;
+    } else {
+        $dsn = sprintf("pgsql:host=%s;port=%s;dbname=%s", getenv("DB_HOST") ?: "127.0.0.1", getenv("DB_PORT") ?: 5432, getenv("DB_DATABASE"));
+        if (getenv("DB_SSLMODE")) { $dsn .= ";sslmode=".getenv("DB_SSLMODE"); }
+        $u = getenv("DB_USERNAME"); $m = getenv("DB_PASSWORD");
+    }
+    try { new PDO($dsn, $u, $m, [PDO::ATTR_TIMEOUT => 5]); exit(0); } catch (Throwable $e) { exit(1); }
+  ' >/dev/null 2>&1
+}
+tentatives=0
+until attendre_base; do
+  tentatives=$((tentatives + 1))
+  echo "[satspoint] base de données indisponible (tentative ${tentatives}), nouvelle tentative…"
+  sleep 2
 done
-
-ROLE="${SATSPOINT_ROLE:-web}"
 
 if [ "$ROLE" = "web" ] || [ "$ROLE" = "all" ]; then
   # Pas de `storage:link` : storage/app/public (audios, brouillons compris) n'est JAMAIS servi directement ;
@@ -61,6 +115,14 @@ if [ "$ROLE" = "web" ] || [ "$ROLE" = "all" ]; then
 fi
 
 if [ "$ROLE" = "all" ]; then
+  # Un seul port public ($PORT, imposé par l'hébergeur) : Caddy y écoute ; Reverb (127.0.0.1:8080) et la
+  # passerelle (127.0.0.1:3011) restent internes. supervisord transmet tout cet environnement aux programmes.
+  export PORT="${PORT:-10000}"
+  export SERVER_NAME=":${PORT}"
+  export API_INTERNAL_URL="${API_INTERNAL_URL:-http://127.0.0.1:${PORT}}"
+  # Premier cours BTC/XOF tout de suite (sinon jusqu'à 1 min de « cours indisponible » après un réveil). Non bloquant.
+  timeout 25 php artisan cours:rafraichir --no-interaction >/dev/null 2>&1 || echo "[satspoint] cours non récupéré au démarrage (le planificateur réessaie chaque minute)."
+  echo "[satspoint] tout-en-un : Caddy :${PORT}, Reverb 127.0.0.1:8080, passerelle 127.0.0.1:3011 — ${APP_URL:-}"
   exec supervisord -c /etc/supervisor/supervisord.conf
 fi
 

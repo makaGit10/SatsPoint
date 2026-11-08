@@ -1,11 +1,17 @@
 {
-	frankenphp
+	# Réglages FrankenPHP facultatifs (image « all » : `num_threads 4` pour tenir dans 512 Mo).
+	frankenphp {
+		{$FRANKENPHP_CONFIG}
+	}
 	admin off
 	auto_https off
 	servers {
-		trusted_proxies static private_ranges
+		# Mandataires dont les en-têtes X-Forwarded-* sont crus (Render : son répartiteur, réseau privé).
+		trusted_proxies static {$CADDY_TRUSTED_PROXIES:private_ranges}
 	}
 }
+
+# Adresse d'écoute : SERVER_NAME (compose : « :8000 » ; image « all » : « :$PORT », posé par l'entrypoint).
 
 {$SERVER_NAME::8000} {
 	encode zstd br gzip
@@ -18,6 +24,10 @@
 		-X-Powered-By
 	}
 
+	# HSTS aussi sur la PWA statique quand TLS est terminé par l'hébergeur (Render) ; l'API pose le sien elle-même.
+	@viaHttps header X-Forwarded-Proto https
+	header @viaHttps ?Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
 	# API Laravel, reçus publics, webhooks, fichiers audio
 	@backend path /api/* /broadcasting/* /sanctum/* /r/* /webhooks/* /audio/* /internal/* /sante /up
 	handle @backend {
@@ -27,7 +37,7 @@
 		php_server
 	}
 
-	# Temps réel (protocole Pusher) → Reverb
+	# Temps réel (protocole Pusher) → Reverb (compose : reverb:8080 ; image « all » : 127.0.0.1:8080)
 	@ws path /app/*
 	handle @ws {
 		reverse_proxy {$REVERB_UPSTREAM:reverb:8080}
