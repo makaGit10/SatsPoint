@@ -69,15 +69,55 @@ SatsPoint **ne détient jamais l'argent** du commerçant.
 | Fonctionner en conditions réelles | Chargement initial **< 3 s en 3G** sur un Android de milieu de gamme |
 | Ne pas détenir les fonds | Aucune clé privée ni graine stockée par SatsPoint |
 
-### 2.2 Objectifs hackathon (grille officielle du jury)
-| Critère du jury | Réponse de SatsPoint |
-|---|---|
-| **Usefulness & Local Impact** | Utilisateur cible précis (petit commerçant), FCFA, mobile money, langues locales parlées, indicateurs de portée (commerçants actifs par semaine, paiements par commerçant). |
-| **Security by Design** | Non-custodial (NWC), modèle de menaces écrit, moindre privilège, secrets chiffrés, IPN vérifiée, aucune donnée personnelle dans les logs, bibliothèques Bitcoin éprouvées. |
-| **UX/UI Quality** | Pavé numérique, gros écran vert, aide vocale, sans jargon, léger en 3G, clair/sombre, FR/EN. |
-| **Working MVP** | Démo en ligne sur le **vrai réseau Lightning**, `docker compose up` en une commande, données de démonstration, parcours testable par les juges. |
-| **Clear Pitch & Docs** | Vidéo de 3 min, README avec schéma d'architecture, contraintes, indicateurs, prochaine itération. |
-| **Exigence de soumission** | « At least, a bitcoin/lightning wallet implementation » → module **Portefeuille** (solde, recevoir, envoyer, historique). |
+### 2.2 Objectifs hackathon : grille officielle du jury, exigence par exigence
+Chaque phrase de la grille est une exigence. Cette table est la **check-list de soumission** : rien n'est soumis tant qu'une ligne n'est pas cochée.
+
+| Critère | Exigence exacte du jury | Où c'est traité | Preuve montrée au jury |
+|---|---|---|---|
+| **Usefulness & Local Impact** | *Solve a real, well-scoped local problem* | §1 | Problème formulé en une phrase dans le README et la vidéo |
+| | *Identify your primary user* | §3.1 (Awa, petite commerçante) | Persona en tête du README |
+| | *Show how it changes their daily workflow* | §2.3 (avant / après) | Tableau avant / après dans le README + séquence de la vidéo |
+| | *Estimate reach (e.g., merchants served per week)* | §2.4 (portée estimée), §6.16 (indicateurs) | Estimation chiffrée **sourcée** + indicateurs mesurés dans la console |
+| **Security by Design** | *Minimal attack surface* | §9.3, §13 | Passerelle sur réseau interne uniquement, aucun port superflu |
+| | *Threat model* | §13.3, `docs/THREAT_MODEL.md` | Fichier lié depuis le README |
+| | *Least-privilege access* | §3.3, §13.1 | Matrice des droits + permissions NWC minimales + budget |
+| | *Safe secret handling* | §13.1 | Secrets chiffrés, `.env` hors dépôt, jamais renvoyés au navigateur |
+| | *Validated inputs* | §13.2 | Form Requests + tests de validation |
+| | *No PII in logs* | §7.4, §13.2 | Client anonyme, logs filtrés, test automatique sur les logs |
+| | *Prefer proven Bitcoin/Lightning libraries* | §9.2 | `@getalby/sdk` (NWC), bibliothèque éprouvée de décodage BOLT11 |
+| | *Secure defaults* | §3.3, §13 | Tout refusé par défaut, HTTPS, CSP, envoi de sats désactivé par défaut |
+| **UX/UI Quality** | *Fast, frictionless flows on low bandwidth and mid-range phones* | §14, §6.3 | Mesures Lighthouse « Slow 4G » publiées dans le README |
+| | *Clear labels* | §8.1 | Vocabulaire sans jargon + aide vocale |
+| | *Helpful errors* | §6.18 | Catalogue des messages : ce qui s'est passé + quoi faire |
+| | *Accessible contrast/size* | §8.2, §8.3 | Contraste WCAG AA, cibles ≥ 44 px, audit axe-core |
+| | *Simple copy free of jargon* | §8.1 | Relecture de chaque texte d'interface |
+| **Working MVP** | *End-to-end demo that actually runs* | §5.3, §16 | URL publique, vrai réseau Lightning |
+| | *One-command setup (Docker or script)* | §16.1 | `docker compose up` fonctionne **sans aucune configuration** (mode démo locale) |
+| | *Seed data* | §16 | Boutique, ventes et articles de démonstration |
+| | *A testable happy path* | §17 | Pas-à-pas « testez en 2 minutes » dans le README + comptes de démo |
+| | *Avoid mockups when a minimal integration is possible* | §16.1 | Intégrations réelles (Lightning mainnet, PayTech) ; le simulateur local sert uniquement à l'installation sans clés et il est **clairement signalé** |
+| **Clear Pitch & Docs** | *3-minute demo: problem → solution → impact → next steps* | §17 | Vidéo dans **cet ordre exact** |
+| | *README with setup* | §17 | Section « Installation » |
+| | *Architecture diagram* | §9.1 | Schéma dans le README |
+| | *Constraints* | §17 | Section « Contraintes et limites connues » |
+| | *Metrics to track* | §2.4, §6.16 | Section « Indicateurs suivis » |
+| | *What you'll ship in the next iteration* | §21 | Section « Prochaine itération » |
+| **Soumission** | *A presentation (text or video)* · *a public GitHub repo* · *an MVP accessible through internet (or a demo video)* · *at least, a bitcoin/lightning wallet implementation* | §17, §6.9 | Page Devpost, dépôt public, URL + vidéo, module **Portefeuille** |
+
+### 2.3 Avant / après : le quotidien du commerçant
+| Moment | Aujourd'hui (sans SatsPoint) | Avec SatsPoint |
+|---|---|---|
+| Un client veut payer en bitcoin | Vente refusée, ou adresse recopiée à la main, sans savoir combien de sats demander | Montant tapé en FCFA → QR → payé en quelques secondes |
+| Savoir si on a été payé | Attendre, vérifier son téléphone, faire confiance à une capture d'écran du client | Écran vert + son + annonce vocale, décidés par le serveur |
+| Le client n'a pas de bitcoin | Changer d'outil (appli Wave à part) | Onglet « Mobile money » sur le même écran |
+| Le commerçant ne lit pas | Dépend d'un proche pour utiliser les applis | Aide vocale dans sa langue sur chaque bouton |
+| Le patron n'est pas sur place | Appelle le caissier, compte le soir | Ventes en direct sur son téléphone |
+| Fin de journée | Additionner à la main | Total du jour, répartition sats / mobile money, export |
+
+### 2.4 Portée estimée et indicateurs
+- **Méthode d'estimation**, à présenter avec des **chiffres sourcés** (aucun chiffre inventé) : nombre de commerçants et de points de vente au Sénégal (sources publiques : ANSD, rapports sur le commerce et le mobile money), taux d'équipement en smartphone, puis hypothèse prudente d'adoption pour un pilote.
+- **Indicateurs mesurés dans l'application** (console super-admin, §6.16) : commerçants actifs par semaine, paiements par commerçant et par semaine, délai médian entre règlement et écran vert, part des ventes en sats et en mobile money, couverture audio par langue.
+- **Objectif du pilote** (§21) : 10 commerçants dans un quartier de Dakar, chiffres rapportés chaque semaine.
 
 ## 3. Utilisateurs, rôles et droits
 
@@ -325,6 +365,23 @@ Réservé au rôle `super_admin` (2FA obligatoire). Objectif : enregistrer **vit
 - Thème clair / sombre / automatique, appliqué sans flash au chargement.
 - Interface FR / EN (i18next), formats de nombres et dates localisés (`15 000 FCFA`, `08/11/2026 14:32`).
 - Toutes les chaînes dans les fichiers de traduction ; un test échoue si une clé manque dans une langue.
+
+### 6.18 Messages d'erreur utiles (P0)
+Chaque message dit **ce qui s'est passé** et **quoi faire**, sans jargon, avec une icône, une couleur et une clé vocale. Jamais de code technique à l'écran.
+
+| Situation | Message affiché | Action proposée |
+|---|---|---|
+| Portefeuille injoignable | « Votre portefeuille ne répond pas. » | **Réessayer** · **Encaisser par mobile money** |
+| Cours du bitcoin indisponible | « Le prix du bitcoin n'est pas disponible pour le moment. » | **Encaisser par mobile money** |
+| Facture expirée | « Le délai de paiement est dépassé. » | **Nouvelle demande de paiement** |
+| Montant trop petit / trop grand | « Le montant doit être entre 100 et 2 000 000 FCFA. » | Correction sur le pavé |
+| Paiement mobile money refusé | « Le paiement n'a pas abouti. Le client n'a pas été débité. » | **Réessayer** · **Payer en bitcoin** |
+| Connexion Internet perdue | « Pas de connexion. Votre vente est conservée. » | Reprise automatique au retour du réseau |
+| Solde insuffisant (envoi) | « Il vous manque 1 200 sats pour cet envoi. » | **Modifier le montant** |
+| Budget d'envoi atteint | « Limite d'envoi atteinte pour aujourd'hui. » | Explication du budget |
+| Identifiants incorrects | « Téléphone ou mot de passe incorrect. » | **Mot de passe oublié ?** |
+| Accès refusé | « Cette page est réservée au propriétaire de la boutique. » | **Retour à la caisse** |
+| Erreur inattendue | « Un problème est survenu. Réessayez dans un instant. » (référence courte pour le support) | **Réessayer** |
 
 ## 7. Règles métier
 
@@ -602,6 +659,15 @@ Application de [DIRECTIVES.md § 4](DIRECTIVES.md#4-tests-de-bout-en-bout-playwr
 ## 16. Déploiement et exploitation
 
 - **Environnements** : local (Docker Compose), test (base dédiée, données `TEST-E2E-`), production.
+
+### 16.1 Installation en une commande, sans aucune configuration
+Exigence du jury : *one-command setup, seed data, testable happy path*. Un juge qui clone le dépôt n'a ni portefeuille NWC ni clés PayTech.
+- `docker compose up` démarre **tout**, crée la base, charge les données de démonstration et affiche l'adresse et les comptes de démo dans la console.
+- **Sans `DEMO_NWC_URI`** : la boutique de démo utilise un **portefeuille simulé** (service `mock-wallet` qui parle le vrai protocole NWC sur un relais local). Le parcours complet fonctionne : facture, QR, bouton « Simuler le paiement », écran vert.
+- **Sans clés PayTech** : le mobile money passe en mode simulé de la même façon (page de paiement factice + notification signée).
+- Le mode simulé est **affiché en permanence** par un bandeau « Mode démo : paiements simulés ». Il est **impossible à activer en production** (refus au démarrage).
+- **Avec les variables renseignées** : intégrations réelles (Lightning mainnet, PayTech). C'est ce que montre la démo en ligne.
+- Le README contient un encadré « Testez en 2 minutes » : commande, adresse, comptes, puis les 4 gestes du parcours heureux.
 - **Production** : une machine allumée en permanence avec Docker Compose et Caddy (HTTPS automatique).
   Une URL publique en HTTPS est **obligatoire** pour l'IPN PayTech et pour que les juges testent ; un nom de domaine payant ne l'est **pas**.
   **Choix retenu (budget zéro)** :
@@ -626,10 +692,10 @@ Application de [DIRECTIVES.md § 4](DIRECTIVES.md#4-tests-de-bout-en-bout-playwr
 | Livrable | Contenu |
 |---|---|
 | Dépôt GitHub public | Code complet, licence MIT, historique de commits clair |
-| `README.md` | Problème, solution, captures, **schéma d'architecture**, installation en une commande, comptes de démo, contraintes, indicateurs suivis, prochaine itération |
+| `README.md` | Problème, utilisateur principal, avant / après, solution, captures, **schéma d'architecture**, « Testez en 2 minutes », installation en une commande, comptes de démo, **contraintes et limites connues**, **indicateurs suivis**, **prochaine itération**, mesures de performance |
 | `docs/THREAT_MODEL.md` | Modèle de menaces STRIDE |
 | MVP en ligne | URL HTTPS publique, vrai réseau Lightning, PayTech |
-| Vidéo de 3 min | Problème (30 s) → démo réelle sur téléphone (1 min 30) → sécurité (30 s) → impact et suite (30 s) ; voix off `fr-FR-VivienneMultilingualNeural` selon les directives |
+| Vidéo de 3 min | **Dans l'ordre exigé par le jury** : problème (30 s) → solution, démontrée en vrai sur téléphone, sécurité comprise (1 min 30) → impact et portée (30 s) → prochaines étapes (30 s). Voix off `fr-FR-VivienneMultilingualNeural` selon les directives ; sous-titres anglais (jury en partie anglophone) |
 | Page Devpost | Texte déjà rédigé (à aligner sur ce qui est réellement livré) |
 
 ## 18. Planning
