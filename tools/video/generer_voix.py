@@ -83,8 +83,23 @@ def nettoyer(mp3: str, wav: str) -> None:
     )
 
 
+def reconstruire_timeline() -> None:
+    """Recalcule timeline.json à partir des wav déjà présents, sans rien synthétiser."""
+    timeline = []
+    for numero, texte in lire_phrases():
+        wav = os.path.join(OUT, f"{numero:02d}.wav")
+        if os.path.exists(wav):
+            timeline.append({"numero": numero, "texte": texte, "fichier": os.path.basename(wav), "duree_s": round(duree_wav(wav), 2), "voix": VOIX[0]})
+    json.dump(timeline, open(os.path.join(OUT, "timeline.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    total = sum(e["duree_s"] for e in timeline)
+    print(f"{len(timeline)} phrases, voix totale : {total:.0f} s (cible <= 150 s)")
+
+
 async def main() -> None:
     os.makedirs(OUT, exist_ok=True)
+    if sys.argv[1:] == ["--timeline"]:
+        reconstruire_timeline()
+        return
     voulus = {int(a) for a in sys.argv[1:]} or None
     timeline = []
     for numero, texte in lire_phrases():
@@ -104,8 +119,14 @@ async def main() -> None:
         existant = [e for e in json.load(open(chemin, encoding="utf-8")) if e["numero"] not in voulus]
     json.dump(sorted(existant + timeline, key=lambda e: e["numero"]), open(chemin, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     total = sum(e["duree_s"] for e in existant + timeline)
-    print(f"\nvoix totale : {total:.0f} s (cible ≤ 150 s pour laisser respirer les images)")
+    print(f"\nvoix totale : {total:.0f} s (cible <= 150 s pour laisser respirer les images)")
 
 
 if __name__ == "__main__":
+    # Console Windows en cp1252 : forcer l'UTF-8 pour les accents du script.
+    for flux in (sys.stdout, sys.stderr):
+        try:
+            flux.reconfigure(encoding="utf-8")
+        except Exception:  # noqa: BLE001
+            pass
     asyncio.run(main())
