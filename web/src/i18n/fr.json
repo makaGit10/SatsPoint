@@ -1,0 +1,321 @@
+{
+  "app": {
+    "nom": "SatsPoint",
+    "slogan": "Encaissez en bitcoin ou en mobile money, en quelques secondes."
+  },
+  "commun": {
+    "annuler": "Annuler",
+    "fermer": "Fermer",
+    "enregistrer": "Enregistrer",
+    "continuer": "Continuer",
+    "retour": "Retour",
+    "reessayer": "Réessayer",
+    "chargement": "Chargement…",
+    "ecouter": "Écouter",
+    "bientot": "Bientôt disponible",
+    "rechercher": "Rechercher",
+    "ok": "OK",
+    "oui": "Oui",
+    "non": "Non",
+    "confirmer": "Confirmer",
+    "supprimer": "Supprimer",
+    "modifier": "Modifier",
+    "ajouter": "Ajouter",
+    "copier": "Copier",
+    "copie": "Copié",
+    "partager": "Partager",
+    "actualiser": "Actualiser",
+    "voirTout": "Voir tout",
+    "aucunResultat": "Aucun résultat",
+    "optionnel": "facultatif",
+    "ouvrir": "Ouvrir"
+  },
+  "langue": {
+    "titre": "Choisissez votre langue",
+    "sousTitre": "Touchez le haut-parleur pour entendre le nom de la langue.",
+    "wo": "Wolof",
+    "srr": "Seereer",
+    "ff": "Pulaar",
+    "dyo": "Joola",
+    "fr": "Français",
+    "en": "English",
+    "ecouterNom": "Écouter le nom de la langue",
+    "changer": "Changer de langue"
+  },
+  "accueil": {
+    "titre": "Bienvenue sur SatsPoint",
+    "accroche": "Votre caisse en bitcoin et mobile money. Simple, rapide, sans commission cachée.",
+    "creerBoutique": "Créer ma boutique",
+    "meConnecter": "Me connecter",
+    "pointLightning": "Paiement bitcoin reçu en quelques secondes",
+    "pointMobileMoney": "Wave, Orange Money et Free Money acceptés",
+    "pointVoix": "Aide vocale en wolof, seereer, pulaar et joola"
+  },
+  "auth": {
+    "connexion": {
+      "titre": "Me connecter",
+      "sousTitre": "Retrouvez votre caisse et vos ventes.",
+      "identifiant": "Téléphone ou e-mail",
+      "motDePasse": "Mot de passe",
+      "afficherMotDePasse": "Afficher le mot de passe",
+      "masquerMotDePasse": "Masquer le mot de passe",
+      "seSouvenir": "Rester connecté sur cet appareil",
+      "valider": "Me connecter",
+      "oubli": "Mot de passe oublié ?",
+      "pasDeCompte": "Pas encore de boutique ?",
+      "creer": "Créer ma boutique",
+      "erreurIdentifiants": "Téléphone ou mot de passe incorrect.",
+      "tropDeTentatives": "Trop de tentatives. Patientez une minute avant de réessayer."
+    },
+    "inscription": {
+      "titre": "Créer ma boutique",
+      "sousTitre": "Un compte en moins d'une minute. Vous configurerez votre boutique juste après.",
+      "nom": "Votre nom",
+      "identifiant": "Téléphone ou e-mail",
+      "identifiantAide": "Vous l'utiliserez pour vous connecter.",
+      "motDePasse": "Mot de passe",
+      "motDePasseAide": "12 caractères minimum.",
+      "confirmation": "Confirmez le mot de passe",
+      "confirmationErreur": "Les deux mots de passe ne sont pas identiques.",
+      "motDePasseCourt": "Le mot de passe doit contenir au moins 12 caractères.",
+      "valider": "Créer mon compte",
+      "dejaUnCompte": "Déjà un compte ?",
+      "connexion": "Me connecter",
+      "succes": "Votre compte est créé. Bienvenue !"
+    },
+    "oubli": {
+      "titre": "Mot de passe oublié",
+      "sousTitre": "Indiquez votre téléphone ou votre e-mail : nous vous envoyons un lien pour choisir un nouveau mot de passe.",
+      "identifiant": "Téléphone ou e-mail",
+      "valider": "Envoyer le lien",
+      "envoyeTitre": "Vérifiez vos messages",
+      "envoye": "Si un compte existe pour cet identifiant, un lien valable 30 minutes vient d'être envoyé.",
+      "retourConnexion": "Retour à la connexion"
+    },
+    "reinit": {
+      "titre": "Nouveau mot de passe",
+      "sousTitre": "Choisissez un mot de passe de 12 caractères minimum.",
+      "identifiant": "Téléphone ou e-mail",
+      "motDePasse": "Nouveau mot de passe",
+      "confirmation": "Confirmez le mot de passe",
+      "valider": "Changer le mot de passe",
+      "succes": "Mot de passe changé. Vous pouvez vous connecter.",
+      "lienInvalide": "Ce lien n'est plus valable. Demandez-en un nouveau."
+    },
+    "champRequis": "Ce champ est obligatoire."
+  },
+  "nav": {
+    "caisse": "Caisse",
+    "ventes": "Ventes",
+    "tableau": "Tableau de bord",
+    "tableauCourt": "Tableau",
+    "portefeuille": "Portefeuille",
+    "plus": "Plus",
+    "equipe": "Équipe",
+    "articles": "Articles",
+    "reglages": "Réglages",
+    "demarrage": "Démarrage guidé",
+    "admin": "Console",
+    "studio": "Studio audio",
+    "principale": "Navigation principale",
+    "replier": "Replier le menu",
+    "deplier": "Déplier le menu",
+    "menuPlus": "Autres rubriques"
+  },
+  "entete": {
+    "recherche": "Rechercher…",
+    "rechercheAria": "Recherche globale",
+    "theme": "Thème",
+    "langueInterface": "Langue de l'interface",
+    "menuUtilisateur": "Mon compte",
+    "accueil": "Aller à l'accueil"
+  },
+  "theme": {
+    "titre": "Thème",
+    "clair": "Clair",
+    "sombre": "Sombre",
+    "auto": "Automatique"
+  },
+  "recherche": {
+    "titre": "Recherche",
+    "placeholder": "Ventes, articles, équipe, réglages…",
+    "aide": "Tapez pour chercher dans toutes les rubriques.",
+    "recentes": "Dernières recherches",
+    "aucune": "Aucun résultat pour « {{terme}} »",
+    "bientot": "La recherche arrive avec les premières ventes."
+  },
+  "utilisateur": {
+    "preferences": "Préférences",
+    "aideVocale": "Aide vocale",
+    "aideVocaleAide": "Un haut-parleur sur chaque bouton lit son nom à voix haute.",
+    "langueAudio": "Langue de la voix",
+    "deconnexion": "Me déconnecter",
+    "boutique": "Boutique",
+    "role": "Rôle"
+  },
+  "roles": {
+    "proprietaire": "Propriétaire",
+    "gerant": "Gérant",
+    "caissier": "Caissier",
+    "super_admin": "Administration"
+  },
+  "voix": {
+    "ecouter": "Écouter",
+    "lectureEnCours": "Lecture en cours",
+    "aucuneLangue": "Aucune"
+  },
+  "demo": {
+    "bandeau": "Mode démo : paiements simulés"
+  },
+  "caisse": {
+    "titre": "Caisse",
+    "encaisser": "Encaisser",
+    "montant": "Montant",
+    "equivalent": "Équivalent en sats",
+    "lightning": "Bitcoin",
+    "mobileMoney": "Mobile money",
+    "nouvelleVente": "Nouvelle vente",
+    "recu": "Reçu",
+    "annuler": "Annuler la vente",
+    "note": "Note",
+    "vide": {
+      "titre": "Votre caisse arrive",
+      "texte": "Tapez un montant, encaissez en bitcoin ou en mobile money, et voyez le paiement arriver en direct."
+    }
+  },
+  "ventes": {
+    "titre": "Ventes",
+    "exporter": "Exporter",
+    "filtrer": "Filtrer",
+    "aujourdhui": "Aujourd'hui",
+    "vide": {
+      "titre": "Aucune vente pour l'instant",
+      "texte": "Vos ventes apparaîtront ici dès le premier encaissement, avec leur statut et leur reçu."
+    }
+  },
+  "tableau": {
+    "titre": "Tableau de bord",
+    "chiffreDuJour": "Chiffre du jour",
+    "nombreVentes": "Ventes",
+    "repartition": "Répartition",
+    "dernieresVentes": "Dernières ventes",
+    "vide": {
+      "titre": "Rien à afficher pour l'instant",
+      "texte": "Dès la première vente, vous verrez ici votre chiffre du jour et la répartition bitcoin / mobile money, en direct."
+    }
+  },
+  "portefeuille": {
+    "titre": "Portefeuille",
+    "solde": "Solde",
+    "recevoir": "Recevoir",
+    "envoyer": "Envoyer",
+    "historique": "Historique",
+    "connecter": "Connecter mon portefeuille",
+    "vide": {
+      "titre": "Aucun portefeuille connecté",
+      "texte": "Connectez votre portefeuille Lightning pour recevoir vos paiements directement, sans intermédiaire."
+    }
+  },
+  "equipe": {
+    "titre": "Équipe",
+    "inviter": "Inviter",
+    "vide": {
+      "titre": "Vous êtes seul pour l'instant",
+      "texte": "Invitez un caissier ou un gérant : il encaisse pour vous, sans accès à votre argent."
+    }
+  },
+  "articles": {
+    "titre": "Articles",
+    "ajouter": "Ajouter un article",
+    "importer": "Importer",
+    "vide": {
+      "titre": "Aucun article",
+      "texte": "Créez vos articles les plus vendus pour encaisser d'un seul geste."
+    }
+  },
+  "reglages": {
+    "titre": "Réglages",
+    "boutique": "Ma boutique",
+    "paiements": "Moyens de paiement",
+    "preferences": "Préférences",
+    "securite": "Sécurité",
+    "vide": {
+      "titre": "Réglages de la boutique",
+      "texte": "Nom, ville, durée des demandes de paiement, montant maximum et message du reçu : tout se règle ici."
+    }
+  },
+  "demarrage": {
+    "titre": "Démarrage guidé",
+    "sousTitre": "Quatre étapes, environ trois minutes.",
+    "commencer": "Commencer",
+    "etapes": {
+      "boutique": "Ma boutique",
+      "boutiqueTexte": "Nom, téléphone et ville.",
+      "portefeuille": "Mon portefeuille",
+      "portefeuilleTexte": "Lien Nostr Wallet Connect.",
+      "mobileMoney": "Mobile money",
+      "mobileMoneyTexte": "Clés PayTech (facultatif).",
+      "test": "Paiement test",
+      "testTexte": "100 FCFA pour vérifier que tout marche."
+    },
+    "vide": {
+      "titre": "Votre boutique n'est pas encore créée",
+      "texte": "Le démarrage guidé vous accompagne jusqu'au premier paiement test."
+    }
+  },
+  "admin": {
+    "titre": "Console plateforme",
+    "boutiques": "Boutiques",
+    "sante": "Santé",
+    "journal": "Journal",
+    "vide": {
+      "titre": "Console plateforme",
+      "texte": "Liste des boutiques, état de santé des services et journal d'audit arriveront ici."
+    },
+    "studio": {
+      "titre": "Studio audio",
+      "sousTitre": "Enregistrez les audios de chaque bouton dans chaque langue.",
+      "vide": {
+        "titre": "Aucun audio enregistré",
+        "texte": "La matrice clés × langues s'affichera ici. Enregistrez au micro ou déposez un fichier, puis publiez."
+      }
+    }
+  },
+  "recu": {
+    "titre": "Reçu",
+    "chargement": "Chargement du reçu…",
+    "introuvable": "Ce reçu est introuvable",
+    "introuvableTexte": "Le lien est peut-être incomplet ou trop ancien.",
+    "montant": "Montant",
+    "date": "Date",
+    "statut": "Statut",
+    "boutique": "Boutique",
+    "pied": "Reçu généré par SatsPoint",
+    "moyen": "Moyen de paiement"
+  },
+  "statuts": {
+    "payee": "Payée",
+    "en_attente": "En attente",
+    "annulee": "Annulée",
+    "expiree": "Expirée",
+    "echouee": "Échouée"
+  },
+  "erreurs": {
+    "inattendue": "Un problème est survenu. Réessayez dans un instant.",
+    "reseau": "Pas de connexion. Vérifiez votre réseau et réessayez.",
+    "accesRefuse": "Cette page est réservée au propriétaire de la boutique.",
+    "retourCaisse": "Retour à la caisse",
+    "sessionExpiree": "Votre session a expiré. Reconnectez-vous.",
+    "validation": "Vérifiez les champs en rouge."
+  },
+  "introuvable": {
+    "titre": "Page introuvable",
+    "texte": "Cette adresse ne mène nulle part. Revenez à l'accueil pour continuer.",
+    "retour": "Retour à l'accueil"
+  },
+  "pwa": {
+    "horsLigne": "Vous êtes hors ligne. Les écrans restent consultables.",
+    "miseAJour": "Une nouvelle version est prête.",
+    "recharger": "Mettre à jour"
+  }
+}

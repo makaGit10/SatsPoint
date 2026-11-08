@@ -1,17 +1,24 @@
 {
-  "name": "web",
+  "name": "satspoint-web",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:mock": "vite --mode mock",
     "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "icones": "node scripts/generer-icones.mjs",
+    "captures": "node scripts/captures.mjs",
+    "taille": "node scripts/taille-bundle.mjs",
+    "preview": "vite preview --port 5190 --strictPort"
   },
   "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
     "@radix-ui/react-dialog": "^1.3.1",
-    "@radix-ui/react-dropdown-menu": "^2.2.1",
     "@radix-ui/react-switch": "^1.4.1",
     "@radix-ui/react-tabs": "^1.2.1",
     "@radix-ui/react-toast": "^1.3.1",

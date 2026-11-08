@@ -1,0 +1,175 @@
+/* Inter (variable, sous-ensemble latin), auto-hébergée. Chiffres tabulaires pour les montants via `.tabulaire`. */
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F,
+    U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ---------- Jetons communs ---------- */
+:root {
+  --rayon-xs: 4px;
+  --rayon-sm: 6px;
+  --rayon-md: 10px;
+  --rayon-lg: 14px;
+  --rayon-xl: 20px;
+
+  --hauteur-entete: 52px;
+  --hauteur-barre-bas: 60px;
+  --largeur-laterale: 232px;
+  --largeur-laterale-repliee: 64px;
+
+  --duree: 150ms;
+}
+
+/* ---------- Thème clair ---------- */
+:root {
+  color-scheme: light;
+
+  --fond: #ffffff;
+  --fond-2: #f6f6f8;
+  --surface: #ffffff;
+  --surface-2: #f3f4f6;
+  --surface-3: #e9eaee;
+  --bordure: #e5e6ea;
+  --bordure-forte: #cfd1d8;
+  --texte: #16171b;
+  --texte-2: #4f525c;
+  --texte-3: #767a86;
+  --inverse: #16171b;
+  --inverse-texte: #ffffff;
+
+  /* Orange Bitcoin : fond de bouton avec texte sombre (contraste ≥ 7:1) ; en texte sur blanc, variante foncée (AA). */
+  --accent: #f7931a;
+  --accent-fort: #e4820c;
+  --accent-texte: #a85a00;
+  --accent-doux: rgba(247, 147, 26, 0.14);
+  --sur-accent: #1b1206;
+
+  /* Mobile money : bleu (Wave) distinct de l'orange. */
+  --mm: #1fa8e0;
+  --mm-texte: #0b6f99;
+  --mm-doux: rgba(31, 168, 224, 0.14);
+
+  --succes: #19a34a;
+  --succes-texte: #137a38;
+  --succes-doux: rgba(25, 163, 74, 0.13);
+  --attente: #e0a10a;
+  --attente-texte: #8a5f00;
+  --attente-doux: rgba(224, 161, 10, 0.16);
+  --danger: #dc2f2f;
+  --danger-texte: #b31f1f;
+  --danger-doux: rgba(220, 47, 47, 0.12);
+  --neutre: #8b8f9b;
+  --neutre-texte: #5c606b;
+  --neutre-doux: rgba(139, 143, 155, 0.16);
+
+  --anneau: #f7931a;
+
+  --ombre-xs: 0 1px 2px rgba(16, 17, 20, 0.06);
+  --ombre-sm: 0 1px 3px rgba(16, 17, 20, 0.08), 0 1px 2px rgba(16, 17, 20, 0.04);
+  --ombre-md: 0 4px 12px rgba(16, 17, 20, 0.1), 0 1px 3px rgba(16, 17, 20, 0.06);
+  --ombre-lg: 0 12px 32px rgba(16, 17, 20, 0.16), 0 2px 6px rgba(16, 17, 20, 0.08);
+}
+
+/* ---------- Thème sombre ---------- */
+:root[data-theme='sombre'] {
+  color-scheme: dark;
+
+  --fond: #0f1115;
+  --fond-2: #13161b;
+  --surface: #171a20;
+  --surface-2: #1e222a;
+  --surface-3: #272c36;
+  --bordure: #262b34;
+  --bordure-forte: #353b47;
+  --texte: #f2f3f5;
+  --texte-2: #a6aab4;
+  --texte-3: #7d8290;
+  --inverse: #f2f3f5;
+  --inverse-texte: #0f1115;
+
+  --accent: #f7931a;
+  --accent-fort: #ffa53a;
+  --accent-texte: #ffb152;
+  --accent-doux: rgba(247, 147, 26, 0.18);
+  --sur-accent: #1b1206;
+
+  --mm: #35b8ea;
+  --mm-texte: #6fd0f6;
+  --mm-doux: rgba(53, 184, 234, 0.18);
+
+  --succes: #2fc064;
+  --succes-texte: #62d98b;
+  --succes-doux: rgba(47, 192, 100, 0.16);
+  --attente: #f0b429;
+  --attente-texte: #f6c95d;
+  --attente-doux: rgba(240, 180, 41, 0.16);
+  --danger: #f05252;
+  --danger-texte: #ff7b7b;
+  --danger-doux: rgba(240, 82, 82, 0.16);
+  --neutre: #7d8290;
+  --neutre-texte: #a6aab4;
+  --neutre-doux: rgba(125, 130, 144, 0.2);
+
+  --anneau: #ffa53a;
+
+  --ombre-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --ombre-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --ombre-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --ombre-lg: 0 12px 32px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Thème « auto » : suit le système quand aucun thème explicite n'est posé. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='clair']) {
+    color-scheme: dark;
+
+    --fond: #0f1115;
+    --fond-2: #13161b;
+    --surface: #171a20;
+    --surface-2: #1e222a;
+    --surface-3: #272c36;
+    --bordure: #262b34;
+    --bordure-forte: #353b47;
+    --texte: #f2f3f5;
+    --texte-2: #a6aab4;
+    --texte-3: #7d8290;
+    --inverse: #f2f3f5;
+    --inverse-texte: #0f1115;
+
+    --accent: #f7931a;
+    --accent-fort: #ffa53a;
+    --accent-texte: #ffb152;
+    --accent-doux: rgba(247, 147, 26, 0.18);
+    --sur-accent: #1b1206;
+
+    --mm: #35b8ea;
+    --mm-texte: #6fd0f6;
+    --mm-doux: rgba(53, 184, 234, 0.18);
+
+    --succes: #2fc064;
+    --succes-texte: #62d98b;
+    --succes-doux: rgba(47, 192, 100, 0.16);
+    --attente: #f0b429;
+    --attente-texte: #f6c95d;
+    --attente-doux: rgba(240, 180, 41, 0.16);
+    --danger: #f05252;
+    --danger-texte: #ff7b7b;
+    --danger-doux: rgba(240, 82, 82, 0.16);
+    --neutre: #7d8290;
+    --neutre-texte: #a6aab4;
+    --neutre-doux: rgba(125, 130, 144, 0.2);
+
+    --anneau: #ffa53a;
+
+    --ombre-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --ombre-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --ombre-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
+    --ombre-lg: 0 12px 32px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+  }
+}

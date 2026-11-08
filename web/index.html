@@ -1,10 +1,28 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content="SatsPoint — encaissez en bitcoin (Lightning) ou en mobile money, en quelques secondes." />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>web</title>
+    <link rel="apple-touch-icon" href="/icones/apple-touch-icon.png" />
+    <title>SatsPoint</title>
+    <script>
+      // Applique le thème et la langue mémorisés avant le premier rendu (aucun flash).
+      (function () {
+        try {
+          var t = localStorage.getItem('satspoint.theme');
+          if (t === 'clair' || t === 'sombre') document.documentElement.setAttribute('data-theme', t);
+          var l = localStorage.getItem('satspoint.locale');
+          if (l === 'en' || l === 'fr') document.documentElement.lang = l;
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

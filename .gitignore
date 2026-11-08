@@ -48,3 +48,6 @@ api/.phpunit.result.cache
 
 # Scratch / captures brutes
 captures/**/*.tmp
+
+# Captures de verification (volumineuses) : conservees localement, quelques references copiees dans docs/images
+captures/

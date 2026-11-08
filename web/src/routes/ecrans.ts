@@ -1,0 +1,22 @@
+import { lazy } from 'react'
+
+// Écrans et coquille chargés à la demande (un morceau de JavaScript par route).
+export const Coquille = lazy(() => import('@/coquille/Coquille').then((m) => ({ default: m.Coquille })))
+export const Langue = lazy(() => import('@/ecrans/Langue'))
+export const Accueil = lazy(() => import('@/ecrans/Accueil'))
+export const Connexion = lazy(() => import('@/ecrans/auth/Connexion'))
+export const Inscription = lazy(() => import('@/ecrans/auth/Inscription'))
+export const MotDePasseOublie = lazy(() => import('@/ecrans/auth/MotDePasseOublie'))
+export const Reinitialisation = lazy(() => import('@/ecrans/auth/Reinitialisation'))
+export const Caisse = lazy(() => import('@/ecrans/Caisse'))
+export const Ventes = lazy(() => import('@/ecrans/Ventes'))
+export const TableauDeBord = lazy(() => import('@/ecrans/TableauDeBord'))
+export const Portefeuille = lazy(() => import('@/ecrans/Portefeuille'))
+export const Equipe = lazy(() => import('@/ecrans/Equipe'))
+export const Articles = lazy(() => import('@/ecrans/Articles'))
+export const Reglages = lazy(() => import('@/ecrans/Reglages'))
+export const Demarrage = lazy(() => import('@/ecrans/Demarrage'))
+export const Console = lazy(() => import('@/ecrans/admin/Console'))
+export const StudioAudio = lazy(() => import('@/ecrans/admin/StudioAudio'))
+export const Recu = lazy(() => import('@/ecrans/Recu'))
+export const Introuvable = lazy(() => import('@/ecrans/Introuvable'))

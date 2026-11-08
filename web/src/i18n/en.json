@@ -1,0 +1,321 @@
+{
+  "app": {
+    "nom": "SatsPoint",
+    "slogan": "Get paid in bitcoin or mobile money, in seconds."
+  },
+  "commun": {
+    "annuler": "Cancel",
+    "fermer": "Close",
+    "enregistrer": "Save",
+    "continuer": "Continue",
+    "retour": "Back",
+    "reessayer": "Try again",
+    "chargement": "Loading…",
+    "ecouter": "Listen",
+    "bientot": "Coming soon",
+    "rechercher": "Search",
+    "ok": "OK",
+    "oui": "Yes",
+    "non": "No",
+    "confirmer": "Confirm",
+    "supprimer": "Delete",
+    "modifier": "Edit",
+    "ajouter": "Add",
+    "copier": "Copy",
+    "copie": "Copied",
+    "partager": "Share",
+    "actualiser": "Refresh",
+    "voirTout": "See all",
+    "aucunResultat": "No results",
+    "optionnel": "optional",
+    "ouvrir": "Open"
+  },
+  "langue": {
+    "titre": "Choose your language",
+    "sousTitre": "Tap the speaker to hear the name of the language.",
+    "wo": "Wolof",
+    "srr": "Seereer",
+    "ff": "Pulaar",
+    "dyo": "Joola",
+    "fr": "Français",
+    "en": "English",
+    "ecouterNom": "Hear the language name",
+    "changer": "Change language"
+  },
+  "accueil": {
+    "titre": "Welcome to SatsPoint",
+    "accroche": "Your bitcoin and mobile money checkout. Simple, fast, no hidden fees.",
+    "creerBoutique": "Create my shop",
+    "meConnecter": "Sign in",
+    "pointLightning": "Bitcoin payments received in seconds",
+    "pointMobileMoney": "Wave, Orange Money and Free Money accepted",
+    "pointVoix": "Voice help in Wolof, Seereer, Pulaar and Joola"
+  },
+  "auth": {
+    "connexion": {
+      "titre": "Sign in",
+      "sousTitre": "Get back to your checkout and sales.",
+      "identifiant": "Phone or email",
+      "motDePasse": "Password",
+      "afficherMotDePasse": "Show password",
+      "masquerMotDePasse": "Hide password",
+      "seSouvenir": "Stay signed in on this device",
+      "valider": "Sign in",
+      "oubli": "Forgot your password?",
+      "pasDeCompte": "No shop yet?",
+      "creer": "Create my shop",
+      "erreurIdentifiants": "Incorrect phone or password.",
+      "tropDeTentatives": "Too many attempts. Wait a minute before trying again."
+    },
+    "inscription": {
+      "titre": "Create my shop",
+      "sousTitre": "An account in under a minute. You will set up your shop right after.",
+      "nom": "Your name",
+      "identifiant": "Phone or email",
+      "identifiantAide": "You will use it to sign in.",
+      "motDePasse": "Password",
+      "motDePasseAide": "At least 12 characters.",
+      "confirmation": "Confirm password",
+      "confirmationErreur": "The two passwords do not match.",
+      "motDePasseCourt": "The password must be at least 12 characters long.",
+      "valider": "Create my account",
+      "dejaUnCompte": "Already have an account?",
+      "connexion": "Sign in",
+      "succes": "Your account is ready. Welcome!"
+    },
+    "oubli": {
+      "titre": "Forgot password",
+      "sousTitre": "Enter your phone or email: we will send you a link to choose a new password.",
+      "identifiant": "Phone or email",
+      "valider": "Send the link",
+      "envoyeTitre": "Check your messages",
+      "envoye": "If an account exists for this identifier, a link valid for 30 minutes has just been sent.",
+      "retourConnexion": "Back to sign in"
+    },
+    "reinit": {
+      "titre": "New password",
+      "sousTitre": "Choose a password of at least 12 characters.",
+      "identifiant": "Phone or email",
+      "motDePasse": "New password",
+      "confirmation": "Confirm password",
+      "valider": "Change password",
+      "succes": "Password changed. You can sign in.",
+      "lienInvalide": "This link is no longer valid. Request a new one."
+    },
+    "champRequis": "This field is required."
+  },
+  "nav": {
+    "caisse": "Checkout",
+    "ventes": "Sales",
+    "tableau": "Dashboard",
+    "portefeuille": "Wallet",
+    "plus": "More",
+    "equipe": "Team",
+    "articles": "Items",
+    "reglages": "Settings",
+    "demarrage": "Guided setup",
+    "admin": "Console",
+    "studio": "Audio studio",
+    "principale": "Main navigation",
+    "replier": "Collapse menu",
+    "deplier": "Expand menu",
+    "menuPlus": "More sections",
+    "tableauCourt": "Dashboard"
+  },
+  "entete": {
+    "recherche": "Search…",
+    "rechercheAria": "Global search",
+    "theme": "Theme",
+    "langueInterface": "Interface language",
+    "menuUtilisateur": "My account",
+    "accueil": "Go to home"
+  },
+  "theme": {
+    "titre": "Theme",
+    "clair": "Light",
+    "sombre": "Dark",
+    "auto": "Automatic"
+  },
+  "recherche": {
+    "titre": "Search",
+    "placeholder": "Sales, items, team, settings…",
+    "aide": "Type to search across every section.",
+    "recentes": "Recent searches",
+    "aucune": "No results for “{{terme}}”",
+    "bientot": "Search arrives with your first sales."
+  },
+  "utilisateur": {
+    "preferences": "Preferences",
+    "aideVocale": "Voice help",
+    "aideVocaleAide": "A speaker on every button reads its name aloud.",
+    "langueAudio": "Voice language",
+    "deconnexion": "Sign out",
+    "boutique": "Shop",
+    "role": "Role"
+  },
+  "roles": {
+    "proprietaire": "Owner",
+    "gerant": "Manager",
+    "caissier": "Cashier",
+    "super_admin": "Administration"
+  },
+  "voix": {
+    "ecouter": "Listen",
+    "lectureEnCours": "Playing",
+    "aucuneLangue": "None"
+  },
+  "demo": {
+    "bandeau": "Demo mode: simulated payments"
+  },
+  "caisse": {
+    "titre": "Checkout",
+    "encaisser": "Charge",
+    "montant": "Amount",
+    "equivalent": "Equivalent in sats",
+    "lightning": "Bitcoin",
+    "mobileMoney": "Mobile money",
+    "nouvelleVente": "New sale",
+    "recu": "Receipt",
+    "annuler": "Cancel sale",
+    "note": "Note",
+    "vide": {
+      "titre": "Your checkout is on its way",
+      "texte": "Type an amount, charge in bitcoin or mobile money, and watch the payment land live."
+    }
+  },
+  "ventes": {
+    "titre": "Sales",
+    "exporter": "Export",
+    "filtrer": "Filter",
+    "aujourdhui": "Today",
+    "vide": {
+      "titre": "No sales yet",
+      "texte": "Your sales will show up here from the first charge, with their status and receipt."
+    }
+  },
+  "tableau": {
+    "titre": "Dashboard",
+    "chiffreDuJour": "Today's total",
+    "nombreVentes": "Sales",
+    "repartition": "Breakdown",
+    "dernieresVentes": "Latest sales",
+    "vide": {
+      "titre": "Nothing to show yet",
+      "texte": "From the first sale, you will see today's total and the bitcoin / mobile money split here, live."
+    }
+  },
+  "portefeuille": {
+    "titre": "Wallet",
+    "solde": "Balance",
+    "recevoir": "Receive",
+    "envoyer": "Send",
+    "historique": "History",
+    "connecter": "Connect my wallet",
+    "vide": {
+      "titre": "No wallet connected",
+      "texte": "Connect your Lightning wallet to receive payments directly, with no middleman."
+    }
+  },
+  "equipe": {
+    "titre": "Team",
+    "inviter": "Invite",
+    "vide": {
+      "titre": "You are on your own for now",
+      "texte": "Invite a cashier or a manager: they charge for you, with no access to your money."
+    }
+  },
+  "articles": {
+    "titre": "Items",
+    "ajouter": "Add an item",
+    "importer": "Import",
+    "vide": {
+      "titre": "No items",
+      "texte": "Create your best-selling items to charge in a single tap."
+    }
+  },
+  "reglages": {
+    "titre": "Settings",
+    "boutique": "My shop",
+    "paiements": "Payment methods",
+    "preferences": "Preferences",
+    "securite": "Security",
+    "vide": {
+      "titre": "Shop settings",
+      "texte": "Name, city, payment request duration, maximum amount and receipt message: everything is set here."
+    }
+  },
+  "demarrage": {
+    "titre": "Guided setup",
+    "sousTitre": "Four steps, about three minutes.",
+    "commencer": "Start",
+    "etapes": {
+      "boutique": "My shop",
+      "boutiqueTexte": "Name, phone and city.",
+      "portefeuille": "My wallet",
+      "portefeuilleTexte": "Nostr Wallet Connect link.",
+      "mobileMoney": "Mobile money",
+      "mobileMoneyTexte": "PayTech keys (optional).",
+      "test": "Test payment",
+      "testTexte": "100 FCFA to check everything works."
+    },
+    "vide": {
+      "titre": "Your shop is not created yet",
+      "texte": "The guided setup walks you through to the first test payment."
+    }
+  },
+  "admin": {
+    "titre": "Platform console",
+    "boutiques": "Shops",
+    "sante": "Health",
+    "journal": "Audit log",
+    "vide": {
+      "titre": "Platform console",
+      "texte": "Shop list, service health and the audit log will land here."
+    },
+    "studio": {
+      "titre": "Audio studio",
+      "sousTitre": "Record the audio for every button in every language.",
+      "vide": {
+        "titre": "No audio recorded",
+        "texte": "The keys × languages matrix will appear here. Record with the mic or drop a file, then publish."
+      }
+    }
+  },
+  "recu": {
+    "titre": "Receipt",
+    "chargement": "Loading receipt…",
+    "introuvable": "This receipt cannot be found",
+    "introuvableTexte": "The link may be incomplete or too old.",
+    "montant": "Amount",
+    "date": "Date",
+    "statut": "Status",
+    "boutique": "Shop",
+    "pied": "Receipt generated by SatsPoint",
+    "moyen": "Payment method"
+  },
+  "statuts": {
+    "payee": "Paid",
+    "en_attente": "Pending",
+    "annulee": "Cancelled",
+    "expiree": "Expired",
+    "echouee": "Failed"
+  },
+  "erreurs": {
+    "inattendue": "Something went wrong. Try again in a moment.",
+    "reseau": "No connection. Check your network and try again.",
+    "accesRefuse": "This page is reserved for the shop owner.",
+    "retourCaisse": "Back to checkout",
+    "sessionExpiree": "Your session has expired. Sign in again.",
+    "validation": "Check the fields in red."
+  },
+  "introuvable": {
+    "titre": "Page not found",
+    "texte": "This address leads nowhere. Go back home to continue.",
+    "retour": "Back to home"
+  },
+  "pwa": {
+    "horsLigne": "You are offline. Screens remain available.",
+    "miseAJour": "A new version is ready.",
+    "recharger": "Update"
+  }
+}

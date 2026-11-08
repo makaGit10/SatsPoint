@@ -1,0 +1,93 @@
+@import 'tailwindcss';
+@import './jetons.css';
+@import './base.css';
+
+/* Variante « sombre » explicite : [data-theme=sombre], ou préférence système quand le thème est « auto ». */
+@custom-variant dark {
+  &:where([data-theme='sombre'], [data-theme='sombre'] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme='clair']), :root:not([data-theme='clair']) *) {
+      @slot;
+    }
+  }
+}
+
+/* Jetons exposés à Tailwind (bg-fond, text-texte-2, border-bordure, rounded-md, text-mm…). */
+@theme inline {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --color-fond: var(--fond);
+  --color-fond-2: var(--fond-2);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-bordure: var(--bordure);
+  --color-bordure-forte: var(--bordure-forte);
+  --color-texte: var(--texte);
+  --color-texte-2: var(--texte-2);
+  --color-texte-3: var(--texte-3);
+  --color-inverse: var(--inverse);
+  --color-inverse-texte: var(--inverse-texte);
+
+  --color-accent: var(--accent);
+  --color-accent-fort: var(--accent-fort);
+  --color-accent-texte: var(--accent-texte);
+  --color-accent-doux: var(--accent-doux);
+  --color-sur-accent: var(--sur-accent);
+
+  --color-mm: var(--mm);
+  --color-mm-texte: var(--mm-texte);
+  --color-mm-doux: var(--mm-doux);
+
+  --color-succes: var(--succes);
+  --color-succes-texte: var(--succes-texte);
+  --color-succes-doux: var(--succes-doux);
+  --color-attente: var(--attente);
+  --color-attente-texte: var(--attente-texte);
+  --color-attente-doux: var(--attente-doux);
+  --color-danger: var(--danger);
+  --color-danger-texte: var(--danger-texte);
+  --color-danger-doux: var(--danger-doux);
+  --color-neutre: var(--neutre);
+  --color-neutre-texte: var(--neutre-texte);
+  --color-neutre-doux: var(--neutre-doux);
+
+  --color-anneau: var(--anneau);
+
+  --radius-xs: var(--rayon-xs);
+  --radius-sm: var(--rayon-sm);
+  --radius-md: var(--rayon-md);
+  --radius-lg: var(--rayon-lg);
+  --radius-xl: var(--rayon-xl);
+
+  --shadow-xs: var(--ombre-xs);
+  --shadow-sm: var(--ombre-sm);
+  --shadow-md: var(--ombre-md);
+  --shadow-lg: var(--ombre-lg);
+
+  /* Échelle typographique compacte (base 14 px). */
+  --text-2xs: 0.625rem;
+  --text-2xs--line-height: 0.875rem;
+  --text-xs: 0.6875rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.125rem;
+  --text-base: 0.875rem;
+  --text-base--line-height: 1.25rem;
+  --text-lg: 1rem;
+  --text-lg--line-height: 1.375rem;
+  --text-xl: 1.125rem;
+  --text-xl--line-height: 1.5rem;
+  --text-2xl: 1.375rem;
+  --text-2xl--line-height: 1.75rem;
+  --text-3xl: 1.75rem;
+  --text-3xl--line-height: 2rem;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 2.5rem;
+  --text-5xl: 2.75rem;
+  --text-5xl--line-height: 3rem;
+
+  --ease-sortie: cubic-bezier(0.2, 0.8, 0.2, 1);
+}

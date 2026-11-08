@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Mode mock (aucun secret) : réinclure malgré le .env.* de la racine
+!.env.mock
+!.env.example
+
+# PWA (dev)
+dev-dist
