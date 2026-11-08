@@ -184,3 +184,57 @@ Chaque erreur porte `message` (lisible) et, quand le front doit réagir, un `cod
 | `DERNIER_PROPRIETAIRE` | 422 | `PATCH`/`DELETE /equipe/{ulid}` | « La boutique doit garder au moins un propriétaire » |
 
 Signal temps réel émis par le mock (et attendu du back) après chaque transition : `paiements` + `ventes` (règlement, expiration, annulation), `wallet` (règlement Lightning, envoi, connexion), `parametres` (boutique, PayTech), `articles`, `equipe`. Le règlement constaté par le serveur (webhook, passerelle) est émis avec `auteur = null` : tous les écrans ouverts, y compris celui de la personne qui a créé la vente, relisent le statut.
+
+---
+
+# Vague 3 — aide vocale, studio audio, 2FA, console plateforme, recherche, import/export
+
+Mêmes conventions que ci-dessus. Le back fait foi ; toute précision est ajoutée ici.
+
+## V3.1 Registre des clés vocales
+Le front génère `web/src/voix/cles-vocales.json` (script `npm run cles-vocales`, lancé aussi par `npm run build`) :
+`[{ cle, ecran, contexte, texte_fr, texte_en, essentielle }]` — `cle` = clé i18n utilisée par une prop `voix` / `HautParleur` / `annoncer()`, dans l'ordre d'apparition (écrans du parcours d'encaissement d'abord) ; `essentielle=true` pour le parcours d'encaissement et le choix de la langue.
+Le back l'importe (`php artisan audio:synchroniser`, lancé au démarrage) dans `cles_audio`.
+
+## V3.2 Fichiers et manifeste
+`GET /audio/{langue}/{cle}.{empreinte8}.mp3` (immuable 1 an). `GET /api/v1/audio/manifeste/{langue}` → `{ langue, version, audios: { [cle]: url } }` (publiés seulement, ETag). Publication → signal `donnees.modifiees` rubrique `audios` sur le canal public `plateforme`.
+
+## V3.3 Studio audio (super-admin + 2FA validée)
+| Route | Corps | Réponse |
+|---|---|---|
+| `GET /api/v1/admin/audio/matrice?langue=&ecran=&manquants=1&q=` | — | `{ langues: [{code, nom}], ecrans: string[], couverture: { [langue]: { publies, brouillons, manquants, total, essentielles_manquantes } }, cles: [{ cle, ecran, contexte, texte_fr, texte_en, essentielle, ordre, etats: { [langue]: { statut: 'publie'\|'brouillon'\|'en_traitement'\|'erreur'\|'manquant', id?, url?, duree_ms?, mis_a_jour_le? } } }] }` |
+| `POST /api/v1/admin/audio` (multipart) | `cle, langue, fichier` (mp3/wav/m4a/ogg/webm ≤ 2 Mo ≤ 15 s) | `202 { audio: { id, cle, langue, statut: 'en_traitement' } }` — traitement ffmpeg en file (silences coupés, volume normalisé, MP3 48 kb/s mono) ; fin signalée par rubrique `audio` sur `private-admin` |
+| `GET /api/v1/admin/audio/{id}` | — | `{ audio: { id, cle, langue, statut, duree_ms, url_ecoute, erreur? } }` |
+| `GET /api/v1/admin/audio/{id}/ecouter` | — | flux MP3 du brouillon |
+| `POST /api/v1/admin/audio/publier` | `{ ids: number[] }` ou `{ cle, langue }` | `{ publies: number }` |
+| `DELETE /api/v1/admin/audio/{id}` | — | `204` (brouillon/archive seulement) |
+
+## V3.4 Double authentification (TOTP)
+`GET /moi` ajoute `deux_fa: { active: boolean, requise: boolean, validee: boolean }` (`requise` = super-admin).
+| Route | Corps | Réponse |
+|---|---|---|
+| `POST /api/v1/auth/2fa/initialiser` | — | `{ secret, otpauth_url, qr_svg }` |
+| `POST /api/v1/auth/2fa/activer` | `{ code }` | `{ codes_secours: string[8] }` (affichés une seule fois) |
+| `POST /api/v1/auth/2fa/verifier` | `{ code }` (TOTP ou code de secours) | `{ utilisateur }` (session marquée validée) |
+| `DELETE /api/v1/auth/2fa` | `{ password }` | `204` |
+Sans 2FA validée, `/api/v1/admin/*` → `403 { code: 'DEUX_FA_REQUISE' }`.
+
+## V3.5 Console plateforme (super-admin + 2FA ; aucun accès aux ventes, portefeuilles ou PayTech des boutiques)
+- `GET /api/v1/admin/boutiques?q=&statut=&curseur=` → `{ boutiques: [{ ulid, nom, ville, statut, cree_le, proprietaire: { nom, contact }, configuration: { wallet, paytech, paiement_test }, activite: { ventes_7j, derniere_vente_le } }], curseur_suivant }`
+- `PATCH /api/v1/admin/boutiques/{ulid}` `{ statut: 'active'|'suspendue' }` → `{ boutique }`
+- `GET /api/v1/admin/sante` → `{ base, redis, reverb, passerelle, cours: { age_s, disponible }, files: { en_attente, echouees }, audio: { fichiers, octets } }`
+- `GET /api/v1/admin/journal?action=&boutique=&du=&au=&curseur=` → `{ entrees: [{ id, action, utilisateur: { ulid, nom } | null, boutique: { ulid, nom } | null, ip, details, cree_le }], curseur_suivant }`
+- `GET /api/v1/admin/statistiques` → `{ commercants_actifs_semaine, paiements_par_commercant_semaine, delai_median_confirmation_ms, part_sats_pct, part_mobile_money_pct, couverture_audio: { [langue]: pct } }`
+
+## V3.6 Recherche globale
+- `GET /api/v1/recherche?q=` (≥ 2 caractères) → `{ groupes: [{ rubrique: 'ventes'|'articles'|'equipe'|'pages', resultats: [{ titre, sous_titre, url, score }] }] }` — 5 par rubrique, droits du rôle respectés (caissier : ni équipe ni réglages), tolérant aux accents et fautes.
+- `GET /api/v1/recherche/recentes` → `{ recentes: string[] }` (4 dernières) ; `POST /api/v1/recherche/recentes` `{ terme }` → `204` ; `DELETE /api/v1/recherche/recentes` → `204`.
+
+## V3.7 Import / export
+- `POST /api/v1/imports/analyser` (multipart `fichier` CSV/XLSX ≤ 2 Mo, `type=articles`) → `{ import: { ulid, colonnes: string[], apercu: string[][], suggestions: { [colonne]: champ | null } }, champs: ['nom','prix_xof','categorie','sku','couleur','actif'] }`
+- `POST /api/v1/imports/{ulid}/executer` `{ correspondance: { [colonne]: champ | null }, mode: 'creer'|'creer_et_mettre_a_jour'|'ignorer_erreurs' }` → `202 { import }` ; progression par rubrique `imports`.
+- `GET /api/v1/imports/{ulid}` → `{ import: { ulid, statut: 'analyse'|'en_cours'|'termine'|'echoue', total, traitees, creees, mises_a_jour, erreurs: [{ ligne, message }], rapport_url | null } }`
+- `GET /api/v1/exports/ventes?format=csv|xlsx|pdf&…filtres`, `GET /api/v1/exports/articles?format=csv|xlsx`, `GET /api/v1/exports/paiements?format=csv` — propriétaire/gérant.
+
+## V3.8 Invitation
+`GET /api/v1/invitations/{jeton}` (public) → `{ invitation: { boutique: { nom }, role, contact_masque, expire_le } }` ; `POST /api/v1/invitations/{jeton}/accepter` (session) → `{ utilisateur }`.
