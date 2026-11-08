@@ -1,0 +1,39 @@
+# Vidéo de démonstration — 3 minutes
+
+Ordre imposé par le jury : **problème → solution → impact → prochaines étapes**.
+Voix off : `fr-FR-VivienneMultilingualNeural` (secours `fr-FR-DeniseNeural`), vitesse 1,0, pas d'émotion forcée, musique très basse ou absente, **sous-titres anglais** incrustés. Règles d'écriture : une idée par phrase, 15 à 25 mots, pas de sigle, les mots anglais toujours à l'intérieur d'une phrase française, une phrase par bloc audio. Voir [DIRECTIVES.md § 5](../../docs/DIRECTIVES.md).
+
+Durée cible par partie : problème 0:00–0:30 · solution 0:30–2:00 · impact 2:00–2:30 · suite 2:30–3:00.
+
+| # | Temps | Image | Voix off (une phrase = un bloc audio) | Sous-titre anglais |
+|---|---|---|---|---|
+| 1 | 0:00 | Marché de Dakar, étal de tissus, téléphone à la main (photo libre de droits ou plan tourné) | Au marché, Awa vend des tissus, et elle encaisse presque tout le monde. | At the market, Awa sells fabric and gets paid by almost everyone. |
+| 2 | 0:05 | Client qui montre un portefeuille Bitcoin sur son téléphone | Presque. Quand un client veut payer en bitcoin, elle n'a aucun outil simple pour accepter. | Almost. When a customer wants to pay in bitcoin, she has no simple way to accept it. |
+| 3 | 0:12 | Captures d'outils existants : jargon, dollars, ordinateur | Les outils existants parlent anglais, affichent des dollars, et supposent un ordinateur et une bonne connexion. | Existing tools speak English, show dollars, and assume a laptop and a good connection. |
+| 4 | 0:20 | Gros plan sur une personne qui regarde un écran plein de texte | Et pour les commerçants qui ne lisent pas, un écran rempli de texte, c'est une porte fermée. | And for merchants who do not read, a screen full of text is a closed door. |
+| 5 | 0:26 | Logo SatsPoint, éclair orange | Nous avons construit SatsPoint : une caisse Lightning pensée pour les commerçants africains. | We built SatsPoint: a Lightning point-of-sale designed for African merchants. |
+| 6 | 0:32 | Écran de choix de la langue, doigt qui touche le haut-parleur « Wolof » (on entend l'audio) | Dès le premier écran, chaque langue se présente à voix haute, en wolof, en sérère, en pulaar ou en diola. | From the very first screen, each language introduces itself aloud, in Wolof, Serer, Pulaar or Jola. |
+| 7 | 0:42 | Caisse : saisie de 15 000 sur le pavé, les sats s'affichent | Awa tape le prix en francs CFA, et SatsPoint affiche l'équivalent en sats, au cours du moment. | Awa types the price in CFA francs, and SatsPoint shows the equivalent in sats at the live rate. |
+| 8 | 0:50 | Doigt sur le haut-parleur du bouton Encaisser (audio wolof), puis tap | Un doute sur un bouton ? Le petit haut-parleur le dit dans sa langue. | Unsure about a button? The small speaker says it in her language. |
+| 9 | 0:57 | QR code plein écran, compte à rebours | Un code apparaît, valable cinq minutes, au prix figé. | A code appears, valid for five minutes, at a frozen price. |
+| 10 | 1:03 | Téléphone du client qui scanne et valide (vrai paiement, mainnet) | Le client scanne avec son portefeuille habituel, et paie. | The customer scans with their usual wallet, and pays. |
+| 11 | 1:08 | Écran vert « Paiement reçu », son, annonce vocale | Une seconde plus tard, l'écran d'Awa devient vert, et une voix confirme : paiement reçu. | One second later, Awa's screen turns green and a voice confirms: payment received. |
+| 12 | 1:15 | Chronomètre incrusté : [X,X s] | C'est le serveur qui a vérifié le paiement auprès du portefeuille : aucune capture d'écran ne peut tromper Awa. | The server verified the payment with the wallet: no screenshot can fool Awa. |
+| 13 | 1:23 | Onglet Mobile money, QR PayTech, paiement Wave, écran vert | Si le client n'a pas de bitcoin, le même écran encaisse en mobile money, avec la même confirmation automatique. | If the customer has no bitcoin, the same screen takes mobile money, with the same automatic confirmation. |
+| 14 | 1:32 | Reçu partagé sur WhatsApp | Un reçu part sur WhatsApp en un geste, sans imprimante. | A receipt goes out on WhatsApp in one tap, no printer needed. |
+| 15 | 1:38 | Tableau de bord sur un autre téléphone qui se met à jour tout seul | Pendant ce temps, le patron voit chaque vente apparaître en direct sur son propre téléphone. | Meanwhile, the owner watches every sale appear live on their own phone. |
+| 16 | 1:46 | Écran Portefeuille : solde, recevoir, envoyer | Le portefeuille intégré montre le solde en sats et en francs, et permet d'envoyer des sats, avec une confirmation et un plafond. | The built-in wallet shows the balance in sats and francs, and lets the owner send sats, with confirmation and a cap. |
+| 17 | 1:54 | Schéma : SatsPoint ne détient pas les fonds, flèche vers le portefeuille du commerçant | SatsPoint ne garde jamais l'argent : il reste dans le portefeuille du commerçant, et les droits accordés sont limités et révocables. | SatsPoint never holds the money: it stays in the merchant's wallet, with limited, revocable permissions. |
+| 18 | 2:02 | Studio audio : matrice des langues, enregistrement au micro | Les audios sont enregistrés dans un studio intégré, et chaque nouveau bouton apparaît automatiquement comme audio manquant. | Audio is recorded in a built-in studio, and every new button automatically shows up as missing audio. |
+| 19 | 2:10 | Chiffres à l'écran : commerçants cibles, sources | Au Sénégal, des centaines de milliers de petits commerçants vivent déjà avec le mobile money, et un téléphone suffit pour les rejoindre. | In Senegal, hundreds of thousands of small merchants already live on mobile money, and a phone is all it takes to reach them. |
+| 20 | 2:18 | Console : indicateurs (commerçants actifs, paiements par semaine, délai médian) | Nous mesurons les commerçants actifs par semaine, les paiements par commerçant, et le délai entre règlement et écran vert. | We track weekly active merchants, payments per merchant, and the delay between settlement and green screen. |
+| 21 | 2:26 | Terminal : `docker compose up`, puis l'appli qui s'ouvre avec bandeau « Mode démo » | Tout tient dans une commande : le projet démarre avec des données de démonstration, et un mode simulé quand aucun portefeuille n'est branché. | Everything runs with one command: the project starts with demo data, and a simulated mode when no wallet is connected. |
+| 22 | 2:36 | Liste « Prochaines étapes » | Ensuite : convertir les sats en francs via un partenaire local, dire les montants à voix haute, et un mode hors ligne par message. | Next: convert sats to francs through a local partner, speak amounts aloud, and an offline mode over text messages. |
+| 23 | 2:46 | Carte de Dakar, dix points lumineux | Puis un pilote avec dix commerçants dans un quartier de Dakar, avec des chiffres publiés chaque semaine. | Then a pilot with ten merchants in one Dakar neighbourhood, with numbers published every week. |
+| 24 | 2:53 | Logo, adresse du dépôt et de la démo | SatsPoint : encaisser en bitcoin, aussi simplement qu'en mobile money. Merci. | SatsPoint: getting paid in bitcoin, as simply as mobile money. Thank you. |
+
+## Production
+- Enregistrements d'écran : téléphone Android réel (ou émulateur 390×844) en mode sombre pour les plans caisse, mode clair pour le tableau de bord ; cacher toute donnée personnelle ; jamais le lien NWC à l'écran.
+- Le paiement du plan 10–12 est un **vrai paiement mainnet** de 100 FCFA, chronométré ; le chiffre incrusté au plan 12 est la mesure réelle.
+- Génération de la voix : `tools/video/generer_voix.py` (edge-tts, voix `fr-FR-VivienneMultilingualNeural`, un fichier par ligne), puis découpe des silences et normalisation (ffmpeg `silenceremove` + `loudnorm`), réécoute de chaque phrase, surtout celles avec « SatsPoint », « Lightning », « Wave », « WhatsApp ».
+- Montage : une phrase = un plan ; sous-titres anglais en bas, police lisible, fond semi-transparent ; export 1080p, 30 i/s, ≤ 3:00.
