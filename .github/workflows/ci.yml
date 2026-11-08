@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Front (typage, lint, tests, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run: { working-directory: web }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: web/package-lock.json }
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck --if-present
+      - run: npm run lint --if-present
+      - run: npm test -- --run
+      - run: npm run build
+      - run: npm audit --omit=dev --audit-level=high
+
+  gateway:
+    name: Passerelle Lightning (typage, tests, image)
+    runs-on: ubuntu-latest
+    defaults:
+      run: { working-directory: lightning-gateway }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: lightning-gateway/package-lock.json }
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck --if-present
+      - run: npm test -- --run
+      - run: npm audit --omit=dev --audit-level=high
+      - run: docker build --target prod -t satspoint/lightning-gateway .
+
+  api:
+    name: API Laravel (style, tests, audit)
+    runs-on: ubuntu-latest
+    defaults:
+      run: { working-directory: api }
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: satspoint_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      APP_ENV: testing
+      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      DATA_ENCRYPTION_KEY: base64:BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=
+      GATEWAY_HMAC_SECRET: ci-gateway-secret
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: satspoint_test
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      REDIS_HOST: 127.0.0.1
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: sync
+      SESSION_DRIVER: array
+      BROADCAST_CONNECTION: log
+      MAIL_MAILER: array
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_pgsql, redis, intl, bcmath, pcntl, gd, zip
+          coverage: none
+      - uses: ramsey/composer-install@v3
+        with: { working-directory: api }
+      - run: vendor/bin/pint --test
+      - run: php artisan test --compact
+      - run: composer audit
+
+  image:
+    name: Image complète (démo sans configuration)
+    runs-on: ubuntu-latest
+    needs: [web, api]
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f infra/api.Dockerfile --target prod -t satspoint/api .

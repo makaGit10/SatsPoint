@@ -663,7 +663,7 @@ Application de [DIRECTIVES.md § 4](DIRECTIVES.md#4-tests-de-bout-en-bout-playwr
 ### 16.1 Installation en une commande, sans aucune configuration
 Exigence du jury : *one-command setup, seed data, testable happy path*. Un juge qui clone le dépôt n'a ni portefeuille NWC ni clés PayTech.
 - `docker compose up` démarre **tout**, crée la base, charge les données de démonstration et affiche l'adresse et les comptes de démo dans la console.
-- **Sans `DEMO_NWC_URI`** : la boutique de démo utilise un **portefeuille simulé** (service `mock-wallet` qui parle le vrai protocole NWC sur un relais local). Le parcours complet fonctionne : facture, QR, bouton « Simuler le paiement », écran vert.
+- **Sans `DEMO_NWC_URI`** : la boutique de démo utilise un **portefeuille simulé** intégré à la passerelle Lightning (connexion `mock://demo`, voir [CONTRAT_PASSERELLE.md](CONTRAT_PASSERELLE.md) § 4) : mêmes routes, mêmes événements qu'un vrai portefeuille. Le parcours complet fonctionne : facture, QR, bouton « Simuler le paiement », écran vert.
 - **Sans clés PayTech** : le mobile money passe en mode simulé de la même façon (page de paiement factice + notification signée).
 - Le mode simulé est **affiché en permanence** par un bandeau « Mode démo : paiements simulés ». Il est **impossible à activer en production** (refus au démarrage).
 - **Avec les variables renseignées** : intégrations réelles (Lightning mainnet, PayTech). C'est ce que montre la démo en ligne.
