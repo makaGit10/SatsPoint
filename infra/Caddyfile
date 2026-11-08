@@ -1,0 +1,45 @@
+{
+	frankenphp
+	admin off
+	auto_https off
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+{$SERVER_NAME::8000} {
+	encode zstd br gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		Permissions-Policy "camera=(self), microphone=(self), geolocation=(), payment=()"
+		-Server
+		-X-Powered-By
+	}
+
+	# API Laravel, reçus publics, webhooks, fichiers audio
+	@backend path /api/* /broadcasting/* /sanctum/* /r/* /webhooks/* /audio/* /internal/* /sante /up
+	handle @backend {
+		root * /app/api/public
+		php_server
+	}
+
+	# Temps réel (protocole Pusher) → Reverb
+	@ws path /app/*
+	handle @ws {
+		reverse_proxy {$REVERB_UPSTREAM:reverb:8080}
+	}
+
+	# Front (PWA compilée). En développement le front tourne sur Vite (hôte), ce bloc ne sert pas.
+	handle {
+		root * /app/web-dist
+		@immutable path /assets/*
+		header @immutable Cache-Control "public, max-age=31536000, immutable"
+		@sw path /sw.js /registerSW.js /manifest.webmanifest
+		header @sw Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+}

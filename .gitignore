@@ -35,3 +35,16 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 *.log
+
+# Laravel (sous api/)
+api/vendor/
+api/storage/app/*
+!api/storage/app/.gitignore
+api/storage/framework/
+api/storage/logs/
+api/bootstrap/cache/*.php
+api/.phpunit.cache/
+api/.phpunit.result.cache
+
+# Scratch / captures brutes
+captures/**/*.tmp

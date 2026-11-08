@@ -1,0 +1,168 @@
+# SatsPoint — une commande pour tout lancer : `docker compose up`
+#
+# Sans fichier .env : mode démonstration locale (portefeuille et mobile money simulés,
+# bandeau « Mode démo » affiché). Copier .env.example en .env pour brancher un vrai
+# portefeuille Lightning (NWC) et PayTech.
+#
+# Application : http://localhost:8120   (front + API + temps réel derrière Caddy)
+
+name: satspoint
+
+x-api-env: &api-env
+  APP_NAME: ${APP_NAME:-SatsPoint}
+  APP_ENV: ${APP_ENV:-production}
+  APP_DEBUG: ${APP_DEBUG:-false}
+  APP_KEY: ${APP_KEY:-}
+  APP_URL: ${APP_URL:-http://localhost:8120}
+  FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8120}
+  SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-localhost:8120,127.0.0.1:8120}
+  SESSION_DOMAIN: ${SESSION_DOMAIN:-localhost}
+  APP_LOCALE: ${APP_LOCALE:-fr}
+  APP_FALLBACK_LOCALE: ${APP_FALLBACK_LOCALE:-en}
+  APP_TIMEZONE: ${APP_TIMEZONE:-Africa/Dakar}
+  LOG_CHANNEL: stderr
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  DB_CONNECTION: pgsql
+  DB_HOST: db
+  DB_PORT: 5432
+  DB_DATABASE: ${DB_DATABASE:-satspoint}
+  DB_USERNAME: ${DB_USERNAME:-postgres}
+  DB_PASSWORD: ${DB_PASSWORD:-satspoint}
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  CACHE_STORE: redis
+  QUEUE_CONNECTION: redis
+  SESSION_DRIVER: redis
+  BROADCAST_CONNECTION: reverb
+  REVERB_APP_ID: ${REVERB_APP_ID:-satspoint}
+  REVERB_APP_KEY: ${REVERB_APP_KEY:-satspoint-local-key}
+  REVERB_APP_SECRET: ${REVERB_APP_SECRET:-satspoint-local-secret}
+  REVERB_HOST: reverb
+  REVERB_PORT: 8080
+  REVERB_SCHEME: http
+  REVERB_PUBLIC_HOST: ${REVERB_PUBLIC_HOST:-localhost}
+  REVERB_PUBLIC_PORT: ${REVERB_PUBLIC_PORT:-8120}
+  REVERB_PUBLIC_SCHEME: ${REVERB_PUBLIC_SCHEME:-http}
+  DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:-}
+  GATEWAY_HMAC_SECRET: ${GATEWAY_HMAC_SECRET:-satspoint-local-gateway-secret}
+  LIGHTNING_GATEWAY_URL: http://lightning-gateway:3011
+  SUPERADMIN_EMAIL: ${SUPERADMIN_EMAIL:-admin@satspoint.local}
+  SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:-}
+  DEMO_SEED: ${DEMO_SEED:-true}
+  DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+  DEMO_NWC_URI: ${DEMO_NWC_URI:-}
+  PAYTECH_ENV: ${PAYTECH_ENV:-test}
+  PAYTECH_API_KEY: ${PAYTECH_API_KEY:-}
+  PAYTECH_API_SECRET: ${PAYTECH_API_SECRET:-}
+
+x-api-base: &api-base
+  image: satspoint/api
+  build:
+    context: .
+    dockerfile: infra/api.Dockerfile
+    target: ${API_BUILD_TARGET:-prod}
+  environment: *api-env
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-satspoint}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-satspoint}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PUBLIC_PORT:-5440}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-satspoint}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  # Front + API + fichiers audio, servis par Caddy (FrankenPHP). Migre et charge la démo au démarrage.
+  api:
+    <<: *api-base
+    command: ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
+    environment:
+      <<: *api-env
+      SATSPOINT_ROLE: web
+    ports:
+      - "${APP_PUBLIC_PORT:-8120}:8000"
+    volumes:
+      - app-storage:/app/api/storage/app
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8000/up >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  # Temps réel (WebSocket). Exposé en dev ; en prod, Caddy le proxifie sur /app.
+  reverb:
+    <<: *api-base
+    command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8080"]
+    environment:
+      <<: *api-env
+      SATSPOINT_ROLE: reverb
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${REVERB_PUBLIC_PORT_BIND:-8125}:8080"
+
+  queue:
+    <<: *api-base
+    command: ["php", "artisan", "queue:work", "--tries=3", "--timeout=120", "--sleep=1"]
+    environment:
+      <<: *api-env
+      SATSPOINT_ROLE: queue
+    depends_on:
+      api:
+        condition: service_healthy
+    volumes:
+      - app-storage:/app/api/storage/app
+
+  scheduler:
+    <<: *api-base
+    command: ["php", "artisan", "schedule:work"]
+    environment:
+      <<: *api-env
+      SATSPOINT_ROLE: scheduler
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # Passerelle Lightning (NWC). Réseau interne uniquement : aucun port publié.
+  lightning-gateway:
+    image: satspoint/lightning-gateway
+    build:
+      context: ./lightning-gateway
+      dockerfile: Dockerfile
+    environment:
+      PORT: 3011
+      GATEWAY_HMAC_SECRET: ${GATEWAY_HMAC_SECRET:-satspoint-local-gateway-secret}
+      API_INTERNAL_URL: http://api:8000
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  app-storage:

@@ -1,0 +1,43 @@
+# Surcharge de développement : code monté (rechargement à chaud), débogage, image sans build du front.
+# Activée automatiquement quand .env contient COMPOSE_FILE=docker-compose.yml:docker-compose.dev.yml
+# Le front tourne sur la machine hôte : `cd web && npm run dev` → http://localhost:5190
+
+services:
+  api:
+    build:
+      target: dev
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      LOG_LEVEL: debug
+    volumes:
+      - ./api:/app/api
+
+  reverb:
+    build:
+      target: dev
+    volumes:
+      - ./api:/app/api
+
+  queue:
+    build:
+      target: dev
+    volumes:
+      - ./api:/app/api
+
+  scheduler:
+    build:
+      target: dev
+    volumes:
+      - ./api:/app/api
+
+  lightning-gateway:
+    build:
+      target: dev
+    command: ["npm", "run", "dev"]
+    environment:
+      LOG_LEVEL: debug
+    volumes:
+      - ./lightning-gateway/src:/app/src
+    ports:
+      - "127.0.0.1:3011:3011"   # local uniquement, pour les tests de la passerelle
