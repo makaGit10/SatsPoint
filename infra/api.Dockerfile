@@ -100,7 +100,9 @@ ENV SATSPOINT_ROLE=all \
     LIGHTNING_GATEWAY_URL=http://127.0.0.1:3011 \
     LOG_CHANNEL=stderr \
     FRANKENPHP_CONFIG="num_threads 4" \
-    PHP_OPCACHE_MEMORY=64
+    PHP_OPCACHE_MEMORY=64 \
+    PHP_OPCACHE_CLI=1 \
+    PHP_OPCACHE_FILE_CACHE=/tmp/opcache
 USER www-data
 EXPOSE 10000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=5 \

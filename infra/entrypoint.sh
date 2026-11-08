@@ -10,6 +10,10 @@ ROLE="${SATSPOINT_ROLE:-web}"
 
 export PHP_OPCACHE_VALIDATE_TIMESTAMPS="${PHP_OPCACHE_VALIDATE_TIMESTAMPS:-$([ "${APP_ENV:-production}" = "production" ] && echo 0 || echo 1)}"
 export PHP_OPCACHE_MEMORY="${PHP_OPCACHE_MEMORY:-128}"
+# OPcache en ligne de commande (image « all » : 1) avec cache sur fichier partagé entre les processus PHP.
+export PHP_OPCACHE_CLI="${PHP_OPCACHE_CLI:-0}"
+export PHP_OPCACHE_FILE_CACHE="${PHP_OPCACHE_FILE_CACHE:-}"
+if [ -n "$PHP_OPCACHE_FILE_CACHE" ]; then mkdir -p "$PHP_OPCACHE_FILE_CACHE" 2>/dev/null || true; fi
 
 # --- Hébergeur (Render) : adresse publique déduite de RENDER_EXTERNAL_URL si elle n'est pas fournie ---
 # Front, API et WebSocket sont servis sur la même origine (Caddy), d'où les mêmes valeurs partout.

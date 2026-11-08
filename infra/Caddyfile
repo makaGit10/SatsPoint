@@ -14,6 +14,9 @@
 # Adresse d'écoute : SERVER_NAME (compose : « :8000 » ; image « all » : « :$PORT », posé par l'entrypoint).
 
 {$SERVER_NAME::8000} {
+	# Écoute explicite en IPv4 sur toutes les interfaces : sans cela Caddy n'ouvre qu'un socket IPv6 (« :::port »),
+	# que Render ne détecte pas (il exige 0.0.0.0) et que la passerelle ne joint pas sur 127.0.0.1.
+	bind {$CADDY_BIND:tcp4/0.0.0.0}
 	encode zstd br gzip
 
 	header {

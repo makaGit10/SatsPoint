@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 
 /*
@@ -12,8 +13,10 @@ use Illuminate\Support\Facades\Schedule;
 | - audio:nettoyer       toutes les 5 min : traitements audio interrompus → erreur « à renvoyer »
 */
 
-Schedule::command('cours:rafraichir')->everyMinute()->withoutOverlapping(2)->runInBackground();
-Schedule::command('paiements:expirer')->everyMinute()->withoutOverlapping(2)->runInBackground();
+// Exécution DANS le processus `schedule:run` (Artisan::call) plutôt qu'un nouveau `php artisan …` par tâche :
+// sur l'offre gratuite de Render (0,1 CPU), chaque démarrage de PHP coûte plusieurs secondes de processeur.
+Schedule::call(fn () => Artisan::call('cours:rafraichir'))->name('cours:rafraichir')->everyMinute()->withoutOverlapping(2);
+Schedule::call(fn () => Artisan::call('paiements:expirer'))->name('paiements:expirer')->everyMinute()->withoutOverlapping(2);
 Schedule::command('cours:rafraichir --purger')->dailyAt('03:15')->withoutOverlapping(10);
 // Traitements audio interrompus (redémarrage, disque non persistant) → erreur « à renvoyer » ; sources orphelines supprimées.
-Schedule::command('audio:nettoyer')->everyFiveMinutes()->withoutOverlapping(5)->runInBackground();
+Schedule::call(fn () => Artisan::call('audio:nettoyer'))->name('audio:nettoyer')->everyFiveMinutes()->withoutOverlapping(5);
