@@ -6,12 +6,11 @@ use App\Models\Audio;
 use App\Models\CleAudio;
 use App\Models\JournalAudit;
 use App\Models\User;
-use App\Services\Audio\InspecteurAudio;
-use App\Services\Audio\TraitementAudio;
+use App\Services\Audio\StockageAudio;
 use App\Services\DeuxFacteurs;
-use App\Services\Diffuseur;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Log\Events\MessageLogged;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
@@ -28,6 +27,7 @@ use Symfony\Component\Process\Process;
 beforeEach(function () {
     Storage::fake('public');
     Storage::fake('local');
+    Storage::fake('cache-audio');
     $this->cle = CleAudio::create(['cle' => 'caisse.encaisser', 'ecran' => 'caisse', 'contexte' => 'Bouton', 'texte_fr' => 'Encaisser', 'texte_en' => 'Charge', 'essentielle' => true, 'ordre' => 1]);
     $this->cle2 = CleAudio::create(['cle' => 'nav.ventes', 'ecran' => 'navigation', 'texte_fr' => 'Ventes', 'texte_en' => 'Sales', 'ordre' => 2]);
     CleAudio::create(['cle' => 'ancienne.cle', 'ecran' => 'x', 'texte_fr' => 'x', 'texte_en' => 'x', 'presente_dans_code' => false]);
@@ -131,23 +131,28 @@ it('traite réellement l\'audio avec ffmpeg : silences coupés, MP3 mono 48 kHz,
 
     $id = $this->post('/api/v1/admin/audio', ['cle' => 'caisse.encaisser', 'langue' => 'wo', 'fichier' => wavGenere(2, 1)])->assertStatus(202)->json('audio.id');
 
-    (new TraiterAudio($id))->handle(app(TraitementAudio::class), app(InspecteurAudio::class), app(Diffuseur::class));
+    app()->call([new TraiterAudio($id), 'handle']);
 
     $audio = Audio::findOrFail($id);
     expect($audio->statut)->toBe('brouillon')
         ->and($audio->chemin)->toBe('audio/wo/caisse.encaisser.'.substr($audio->empreinte, 0, 8).'.mp3')
         ->and($audio->empreinte)->toHaveLength(64)
         ->and($audio->chemin_source)->toBeNull()
-        ->and(Storage::disk('public')->exists($audio->chemin))->toBeTrue()
         ->and(Storage::disk('local')->exists('audio-sources/'.$id.'.wav'))->toBeFalse()
+        ->and(Storage::disk('public')->allFiles())->toBe([]) // plus rien sur l'ancien disque public
         // 2 s de silence retirées : il reste ~1 s de ton (tolérance ffmpeg).
         ->and($audio->duree_ms)->toBeGreaterThan(600)->toBeLessThan(1600)
         ->and($audio->taille)->toBeGreaterThan(2000)->toBeLessThan(20000);
 
-    expect(hash_file('sha256', Storage::disk('public')->path($audio->chemin)))->toBe($audio->empreinte);
+    // Contenu en base : même empreinte, même taille.
+    $contenu = app(StockageAudio::class)->contenu($id);
+    $ligne = DB::table('audio_fichiers')->where('audio_id', $id)->first(['mime', 'octets', 'empreinte']);
+    expect(hash('sha256', $contenu))->toBe($audio->empreinte)
+        ->and($ligne->empreinte)->toBe($audio->empreinte)->and($ligne->octets)->toBe($audio->taille)->and($ligne->mime)->toBe('audio/mpeg');
 
-    // Sonde du fichier produit : mp3, mono, 48 kHz.
-    $p = new Process(['ffprobe', '-v', 'error', '-show_entries', 'stream=codec_name,channels,sample_rate', '-of', 'json', Storage::disk('public')->path($audio->chemin)]);
+    // Sonde du fichier produit (relu depuis la base) : mp3, mono, 48 kHz.
+    Storage::disk('local')->put('tests/sonde.mp3', $contenu);
+    $p = new Process(['ffprobe', '-v', 'error', '-show_entries', 'stream=codec_name,channels,sample_rate', '-of', 'json', Storage::disk('local')->path('tests/sonde.mp3')]);
     $p->run();
     $flux = json_decode($p->getOutput(), true)['streams'][0];
     expect($flux['codec_name'])->toBe('mp3')->and((int) $flux['channels'])->toBe(1)->and((int) $flux['sample_rate'])->toBe(48000);
@@ -161,11 +166,11 @@ it('publie, archive l\'ancien, invalide le manifeste (version + ETag), diffuse �
     $admin = superAdminPret();
 
     $ancien = Audio::create(['cle_audio_id' => $this->cle->id, 'langue' => 'wo', 'chemin' => Audio::cheminPublic('wo', 'caisse.encaisser', str_repeat('a', 64)), 'empreinte' => str_repeat('a', 64), 'duree_ms' => 900, 'taille' => 3000, 'statut' => 'publie', 'publie_at' => now()->subDay()]);
-    Storage::disk('public')->put($ancien->chemin, 'ancien');
+    contenuAudioEnBase($ancien, 'ancien');
     $nouveau = Audio::create(['cle_audio_id' => $this->cle->id, 'langue' => 'wo', 'chemin' => Audio::cheminPublic('wo', 'caisse.encaisser', str_repeat('d', 64)), 'empreinte' => str_repeat('d', 64), 'duree_ms' => 800, 'taille' => 3000, 'statut' => 'brouillon']);
-    Storage::disk('public')->put($nouveau->chemin, 'nouveau');
+    contenuAudioEnBase($nouveau, 'nouveau');
     $autre = Audio::create(['cle_audio_id' => $this->cle2->id, 'langue' => 'wo', 'chemin' => Audio::cheminPublic('wo', 'nav.ventes', str_repeat('e', 64)), 'empreinte' => str_repeat('e', 64), 'duree_ms' => 800, 'taille' => 3000, 'statut' => 'brouillon']);
-    Storage::disk('public')->put($autre->chemin, 'autre');
+    contenuAudioEnBase($autre, 'autre');
 
     $avant = $this->getJson('/api/v1/audio/manifeste/wo')->assertOk();
     expect($avant->json('audios'))->toBe(['caisse.encaisser' => url('/audio/wo/caisse.encaisser.aaaaaaaa.mp3')]);
@@ -188,9 +193,13 @@ it('publie, archive l\'ancien, invalide le manifeste (version + ETag), diffuse �
     $this->withHeaders(['If-None-Match' => $etagAvant])->getJson('/api/v1/audio/manifeste/wo')->assertOk();
 
     // Fichiers : le publié ET l'archivé restent servis (cache immuable), un brouillon non ; aucun listing, aucune traversée.
-    $fichier = $this->get('/audio/wo/caisse.encaisser.dddddddd.mp3')->assertOk()->assertHeader('X-Content-Type-Options', 'nosniff')->assertHeader('Content-Type', 'audio/mpeg');
-    expect($fichier->headers->get('Cache-Control'))->toContain('public')->toContain('max-age=31536000')->toContain('immutable');
+    $fichier = $this->get('/audio/wo/caisse.encaisser.dddddddd.mp3')->assertOk()->assertHeader('X-Content-Type-Options', 'nosniff')->assertHeader('Content-Type', 'audio/mpeg')
+        ->assertHeader('ETag', '"'.str_repeat('d', 64).'"');
+    expect($fichier->headers->get('Cache-Control'))->toContain('public')->toContain('max-age=31536000')->toContain('immutable')
+        ->and(contenuReponse($fichier))->toBe('nouveau');
     $this->get('/audio/wo/caisse.encaisser.aaaaaaaa.mp3')->assertOk();
+    // Le cache disque a été (re)construit depuis la base.
+    expect(Storage::disk('cache-audio')->get(StockageAudio::nomCache($ancien)))->toBe('ancien');
     $this->get('/audio/wo/nav.ventes.eeeeeeee.mp3')->assertNotFound();
     $this->get('/audio/wo/')->assertNotFound();
     $this->get('/audio/wo/../../.env')->assertNotFound();
@@ -205,7 +214,10 @@ it('publie, archive l\'ancien, invalide le manifeste (version + ETag), diffuse �
     // Suppression : jamais le publié ; l'archive oui (fichier effacé).
     $this->deleteJson("/api/v1/admin/audio/{$nouveau->id}")->assertStatus(409)->assertJsonPath('code', 'AUDIO_NON_SUPPRIMABLE');
     $this->deleteJson("/api/v1/admin/audio/{$ancien->id}")->assertNoContent();
-    expect(Audio::find($ancien->id))->toBeNull()->and(Storage::disk('public')->exists('audio/wo/caisse.encaisser.aaaaaaaa.mp3'))->toBeFalse();
+    expect(Audio::find($ancien->id))->toBeNull()
+        ->and(DB::table('audio_fichiers')->where('audio_id', $ancien->id)->exists())->toBeFalse() // cascade
+        ->and(Storage::disk('cache-audio')->exists(StockageAudio::nomCache($ancien)))->toBeFalse();
+    $this->get('/audio/wo/caisse.encaisser.aaaaaaaa.mp3')->assertNotFound();
     $this->deleteJson("/api/v1/admin/audio/{$ancien->id}")->assertNotFound();
     $this->deleteJson('/api/v1/admin/audio/abc')->assertNotFound();
 

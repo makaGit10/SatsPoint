@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Fichier audio d'une clé vocale dans une langue (plateforme, non scopé).
  *
  * Cycle de vie : en_traitement → brouillon → publie → archive (remplacé par une nouvelle publication),
- * ou erreur (traitement ffmpeg impossible). Une seule ligne « publie » par (clé, langue) — index partiel unique.
+ * ou erreur (traitement ffmpeg impossible ou interrompu). Une seule ligne « publie » par (clé, langue) — index partiel unique.
+ *
+ * Le contenu MP3 est dans `audio_fichiers` (bytea, table séparée : jamais chargé par les listes), lu par StockageAudio.
  */
 class Audio extends Model
 {
@@ -90,7 +92,7 @@ class Audio extends Model
         return sprintf('%s.%s.mp3', $cle, substr($empreinte, 0, self::EMPREINTE_FICHIER));
     }
 
-    /** Chemin relatif au disque « public » : audio/{langue}/{cle}.{empreinte8}.mp3 */
+    /** Chemin LOGIQUE (URL publique, colonne `chemin`) : audio/{langue}/{cle}.{empreinte8}.mp3 — le contenu est en base (audio_fichiers). */
     public static function cheminPublic(string $langue, string $cle, string $empreinte): string
     {
         return sprintf('%s/%s/%s', config('satspoint.audio.dossier_public', 'audio'), $langue, self::nomFichier($cle, $empreinte));

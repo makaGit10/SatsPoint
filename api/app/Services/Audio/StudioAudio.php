@@ -23,6 +23,7 @@ class StudioAudio
     public function __construct(
         private readonly InspecteurAudio $inspecteur,
         private readonly Diffuseur $diffuseur,
+        private readonly StockageAudio $stockage,
     ) {}
 
     /** @return list<string> */
@@ -233,14 +234,11 @@ class StudioAudio
         }
 
         $audio->loadMissing('cle:id,cle');
-        $chemin = $audio->chemin;
         $source = $audio->chemin_source;
-
+        // Le contenu en base (audio_fichiers) part avec la ligne (cascade) ; la copie de cache est effacée.
         DB::transaction(fn () => $audio->delete());
+        $this->stockage->oublierCache($audio);
 
-        if ($chemin !== '' && $chemin !== null && ! Audio::query()->where('chemin', $chemin)->exists()) {
-            Storage::disk('public')->delete($chemin);
-        }
         if ($source !== null) {
             Storage::disk('local')->delete($source);
         }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Audio;
 use App\Models\Boutique;
 use App\Models\ConnexionWallet;
 use App\Models\Membre;
@@ -7,6 +8,7 @@ use App\Models\Paiement;
 use App\Models\SequenceVente;
 use App\Models\User;
 use App\Models\Vente;
+use App\Services\Audio\StockageAudio;
 use App\Services\BoutiqueCourante;
 use App\Services\CoursChange;
 use App\Services\DeuxFacteurs;
@@ -17,6 +19,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
 use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
@@ -233,4 +236,21 @@ function adminConsole(): User
     session()->put(DeuxFacteurs::CLE_SESSION, now()->toIso8601String());
 
     return $admin;
+}
+
+/** Enregistre en base (audio_fichiers) le contenu d'un audio créé à la main par un test. */
+function contenuAudioEnBase(Audio $audio, string $contenu): Audio
+{
+    app(StockageAudio::class)->enregistrerContenu($audio->id, $contenu);
+
+    return $audio;
+}
+
+/** Corps réellement envoyé par une réponse (fichier, flux ou texte). */
+function contenuReponse(TestResponse $reponse): string
+{
+    ob_start();
+    $reponse->baseResponse->sendContent();
+
+    return (string) ob_get_clean();
 }

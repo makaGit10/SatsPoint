@@ -190,6 +190,28 @@ it('en mode « creer », une ligne en erreur annule tout (rien n\'est écrit) ; 
     avecBoutique($this->boutique, fn () => expect(Article::query()->where('nom', 'Bissap')->value('prix_xof'))->toBe(350)->and(Article::query()->count())->toBe(2));
 });
 
+it('disque non persistant : le rapport d\'import (en base) survit à la purge du disque ; un fichier perdu avant l\'exécution donne une erreur claire', function () {
+    $csv = "nom;prix\nBissap;300\nPain;abc\n";
+    $ulid = connecte($this->gerant)->post('/api/v1/imports/analyser', ['fichier' => csvUpload($csv)])->assertCreated()->json('import.ulid');
+    $this->postJson("/api/v1/imports/{$ulid}/executer", ['correspondance' => ['nom' => 'nom', 'prix' => 'prix_xof'], 'mode' => 'ignorer_erreurs'])->assertStatus(202);
+
+    // Redémarrage simulé : tout le disque local disparaît.
+    Storage::disk('local')->deleteDirectory('imports');
+    expect(Storage::disk('local')->allFiles())->toBe([]);
+
+    $rapport = $this->get("/api/v1/imports/{$ulid}/rapport")->assertOk()->assertHeader('Content-Type', 'text/csv; charset=UTF-8')->streamedContent();
+    expect($rapport)->toContain('Creees;1')->toContain('Ligne;Erreur')->toContain('3;');
+    $this->getJson("/api/v1/imports/{$ulid}")->assertOk()->assertJsonPath('import.statut', 'termine')->assertJsonPath('import.lignes_en_erreur', 1);
+
+    // Fichier analysé puis perdu (redémarrage entre l'analyse et l'exécution) : échec explicite, « renvoyez-le ».
+    $ulid = $this->post('/api/v1/imports/analyser', ['fichier' => csvUpload($csv)])->assertCreated()->json('import.ulid');
+    Storage::disk('local')->deleteDirectory('imports');
+    $this->postJson("/api/v1/imports/{$ulid}/executer", ['correspondance' => ['nom' => 'nom', 'prix' => 'prix_xof'], 'mode' => 'ignorer_erreurs'])->assertStatus(202);
+    $this->getJson("/api/v1/imports/{$ulid}")->assertOk()->assertJsonPath('import.statut', 'echoue')
+        ->assertJsonPath('import.erreurs.0.message', 'Le fichier importé n\'est plus disponible (redémarrage du serveur) : renvoyez-le.');
+    expect($this->get("/api/v1/imports/{$ulid}/rapport")->assertOk()->streamedContent())->toContain('renvoyez-le');
+});
+
 it('exporte les ventes en XLSX et PDF (propriétaire / gérant seulement, formules neutralisées)', function () {
     $v = venteAvecTentative($this->boutique, $this->caissier, vente: ['montant_xof' => 1000, 'note' => '=HYPERLINK("x")']);
     avecBoutique($this->boutique, function () use ($v) {

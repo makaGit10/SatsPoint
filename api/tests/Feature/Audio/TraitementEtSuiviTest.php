@@ -4,10 +4,8 @@ use App\Events\DonneesModifiees;
 use App\Jobs\TraiterAudio;
 use App\Models\Audio;
 use App\Models\CleAudio;
-use App\Services\Audio\InspecteurAudio;
-use App\Services\Audio\TraitementAudio;
-use App\Services\Diffuseur;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
@@ -34,11 +32,12 @@ function fichierFfmpeg(array $arguments, string $extension, string $nom, string 
 
 function traiter(int $id): void
 {
-    (new TraiterAudio($id))->handle(app(TraitementAudio::class), app(InspecteurAudio::class), app(Diffuseur::class));
+    app()->call([new TraiterAudio($id), 'handle']);
 }
 
 beforeEach(function () {
     Storage::fake('public');
+    Storage::fake('cache-audio');
     Storage::fake('local');
     $this->cle = CleAudio::create(['cle' => 'caisse.encaisser', 'ecran' => 'caisse', 'texte_fr' => 'Encaisser', 'texte_en' => 'Charge', 'essentielle' => true, 'ordre' => 1]);
 });
@@ -78,7 +77,8 @@ it('accepte un vrai fichier du navigateur et le convertit en MP3', function (str
     traiter($id);
 
     $audio = Audio::find($id);
-    expect($audio->statut)->toBe('brouillon')->and($audio->chemin)->toEndWith('.mp3')->and(Storage::disk('public')->exists($audio->chemin))->toBeTrue();
+    expect($audio->statut)->toBe('brouillon')->and($audio->chemin)->toEndWith('.mp3')
+        ->and(DB::table('audio_fichiers')->where('audio_id', $id)->value('octets'))->toBe($audio->taille);
 })->with([
     'ogg (vorbis)' => ['ogg', ['-c:a', 'libvorbis'], 'audio/ogg'],
     'webm (opus)' => ['webm', ['-c:a', 'libopus'], 'audio/webm'],
@@ -111,6 +111,7 @@ it('passe en « erreur » (message générique) si ffmpeg ne peut pas traiter la
         ->and($audio->message_erreur)->toBe('Le traitement du fichier a échoué. Réessayez avec un autre enregistrement.')
         ->and($audio->chemin_source)->toBeNull()
         ->and(Storage::disk('local')->exists($source))->toBeFalse()
+        ->and(DB::table('audio_fichiers')->count())->toBe(0)
         ->and(Storage::disk('public')->allFiles())->toBe([]);
 
     Event::assertDispatched(DonneesModifiees::class, fn ($e) => $e->canal->name === 'private-admin' && $e->rubrique === 'audio');

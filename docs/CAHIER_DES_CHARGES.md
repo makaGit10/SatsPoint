@@ -726,9 +726,14 @@ donc **même origine** pour la PWA, l'API, les cookies de session Sanctum et le 
    période de jugement (ping désactivé, Render et Neon s'endorment et ne consomment presque rien).
 9. Mises à jour : chaque `git push` sur la branche suivie (`main`) redéploie (`autoDeploy`, filtré sur `api/`, `web/`, `lightning-gateway/`, `infra/`).
 
-**Limites connues de l'offre gratuite** : disque **non persistant** (les fichiers audio enregistrés dans le studio et les rapports d'import sont
-perdus à chaque redéploiement ou réveil : les réenregistrer, ou passer à un disque persistant / stockage objet en phase 2) ; un seul processus
-de chaque type ; CPU faible (premier affichage après réveil ≈ 1 min).
+**Limites connues de l'offre gratuite** : disque **non persistant** (effacé à chaque redéploiement ou réveil). Conséquence traitée : **les audios
+du studio sont désormais stockés en base** (Neon, table `audio_fichiers`, bytea ; brouillons compris, dès la fin du traitement ffmpeg) et les
+**rapports d'import aussi** (`imports.rapport`) ; le disque n'est plus qu'un cache reconstruit à la demande (`storage/app/cache-audio`). Seuls
+les fichiers en transit peuvent être perdus par un redémarrage : un audio déposé mais pas encore traité passe en `erreur` « Renvoyez
+l'enregistrement » (`audio:nettoyer`, au démarrage et toutes les 5 min), un fichier d'import analysé mais pas encore exécuté est à renvoyer.
+Sauvegarde du travail d'enregistrement hors de la base : `php artisan audio:exporter {dossier}` / `audio:importer {dossier}` (voir `api/README.md`).
+Volume : MP3 de 5 à 30 Ko (~220 clés × 5 langues ≈ 20 à 30 Mo au plus, archives comprises), très en deçà des 0,5 Go de Neon gratuit. Autres limites : un seul processus de chaque type ;
+CPU faible (premier affichage après réveil ≈ 1 min).
 
 ### 16.3 Exploitation
 

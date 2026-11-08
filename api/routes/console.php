@@ -9,8 +9,11 @@ use Illuminate\Support\Facades\Schedule;
 | - cours:rafraichir      chaque minute : médiane BTC/EUR de 3 sources → XOF, cache 60 s (CAHIER § 7.1)
 | - paiements:expirer     chaque minute : factures échues → expire, ventes sans tentative 30 min → expiree (§ 7.2)
 | - cours:rafraichir --purger  chaque nuit : historique > 30 jours supprimé
+| - audio:nettoyer       toutes les 5 min : traitements audio interrompus → erreur « à renvoyer »
 */
 
 Schedule::command('cours:rafraichir')->everyMinute()->withoutOverlapping(2)->runInBackground();
 Schedule::command('paiements:expirer')->everyMinute()->withoutOverlapping(2)->runInBackground();
 Schedule::command('cours:rafraichir --purger')->dailyAt('03:15')->withoutOverlapping(10);
+// Traitements audio interrompus (redémarrage, disque non persistant) → erreur « à renvoyer » ; sources orphelines supprimées.
+Schedule::command('audio:nettoyer')->everyFiveMinutes()->withoutOverlapping(5)->runInBackground();

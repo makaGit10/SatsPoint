@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * État des dépendances (base, Redis, Reverb, passerelle, cours) et, pour la console, des files et de l'espace audio.
@@ -104,7 +103,7 @@ class EtatSysteme
                 ->selectRaw('COUNT(*) AS fichiers, COALESCE(SUM(taille), 0) AS octets, SUM(CASE WHEN statut = ? THEN 1 ELSE 0 END) AS publies', [Audio::STATUT_PUBLIE])
                 ->first();
 
-            $disque = Storage::disk('public')->path('');
+            $disque = storage_path('app'); // cache audio + sources temporaires (le contenu est en base)
             $libre = @disk_free_space($disque);
 
             return [

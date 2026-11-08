@@ -47,6 +47,15 @@ return [
             'report' => false,
         ],
 
+        // Cache disque des fichiers audio : la source de vérité est la table audio_fichiers (CAHIER § 16.2).
+        // Jamais servi directement, effaçable à tout moment, reconstruit à la demande (App\Services\Audio\StockageAudio).
+        'cache-audio' => [
+            'driver' => 'local',
+            'root' => storage_path('app/cache-audio'),
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

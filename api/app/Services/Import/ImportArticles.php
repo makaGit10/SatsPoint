@@ -168,6 +168,12 @@ class ImportArticles
         $tolerant = $import->mode === Import::MODE_IGNORER_ERREURS;
 
         try {
+            // Disque non persistant (CAHIER § 16.2) : fichier déposé perdu par un redémarrage entre l'analyse et l'exécution.
+            // Le rapport, lui, est en base (imports.rapport, jsonb) : il survit à tout redémarrage.
+            if ($import->fichier === '' || ! is_file($chemin)) {
+                throw new ErreurMetier('IMPORT_FICHIER_PERDU', 'Le fichier importé n\'est plus disponible (redémarrage du serveur) : renvoyez-le.', 422);
+            }
+
             $lecture = $this->lecteur->lire($chemin, (string) ($import->analyse['format'] ?? 'csv'), (int) config('satspoint.import.lignes_max'));
             $colonnes = $this->entetes($lecture['lignes'][0] ?? []);
             $index = array_flip($colonnes);

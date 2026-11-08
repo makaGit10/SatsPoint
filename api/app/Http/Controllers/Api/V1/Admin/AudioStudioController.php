@@ -9,12 +9,12 @@ use App\Http\Requests\Admin\PublierAudioRequest;
 use App\Http\Resources\AudioResource;
 use App\Models\Audio;
 use App\Models\CleAudio;
+use App\Services\Audio\StockageAudio;
 use App\Services\Audio\StudioAudio;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Http\Response as ReponseVide;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -63,27 +63,29 @@ class AudioStudioController extends Controller
     }
 
     /** DELETE /admin/audio/{audio} → 204 (brouillon, archive ou erreur seulement). */
-    public function destroy(Request $request, Audio $audio): Response
+    public function destroy(Request $request, Audio $audio): ReponseVide
     {
         $this->studio->supprimer($audio, $request->user());
 
         return response()->noContent();
     }
 
-    /** GET /admin/audio/{audio}/ecouter — flux du fichier (brouillon compris), jamais mis en cache. */
-    public function ecouter(Audio $audio): BinaryFileResponse
+    /**
+     * GET /admin/audio/{audio}/ecouter — fichier traité (brouillon compris), lu depuis la base (cache disque
+     * reconstruit à la demande), jamais mis en cache par le navigateur ni par un intermédiaire.
+     */
+    public function ecouter(Request $request, Audio $audio, StockageAudio $stockage): Response
     {
-        $disque = Storage::disk('public');
-
-        if ($audio->chemin === '' || $audio->chemin === null || ! $disque->exists($audio->chemin)) {
+        if (! in_array($audio->statut, [Audio::STATUT_BROUILLON, Audio::STATUT_PUBLIE, Audio::STATUT_ARCHIVE], true)) {
             throw new NotFoundHttpException;
         }
 
         // public = false : jamais « public » dans Cache-Control (brouillon réservé au studio).
-        return new BinaryFileResponse($disque->path($audio->chemin), 200, [
+        return $stockage->reponse($request, $audio, [
             'Content-Type' => 'audio/mpeg',
             'Cache-Control' => 'no-store, private',
             'X-Content-Type-Options' => 'nosniff',
+            'Accept-Ranges' => 'bytes',
         ], false);
     }
 }

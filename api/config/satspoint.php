@@ -143,8 +143,12 @@ return [
         'ffprobe' => env('AUDIO_FFPROBE', 'ffprobe'),
         'delai_s' => 30,                  // délai maximal d'un traitement
         'debit' => '48k',                 // MP3 48 kb/s mono 48 kHz
-        'dossier_public' => 'audio',      // storage/app/public/audio/{langue}/{cle}.{empreinte8}.mp3
-        'dossier_sources' => 'audio-sources', // storage/app/private/audio-sources/{id}.{ext}
+        // Préfixe de l'URL publique /audio/{langue}/{cle}.{empreinte8}.mp3 (colonne audios.chemin = chemin LOGIQUE) ;
+        // le contenu est en base (audio_fichiers), le disque « cache-audio » n'est qu'un cache.
+        'dossier_public' => 'audio',
+        'dossier_sources' => 'audio-sources', // storage/app/private/audio-sources/{id}.{ext} : source temporaire jusqu'au traitement
+        // Au-delà, un audio encore « en_traitement » est considéré interrompu (redémarrage) : statut erreur, à renvoyer.
+        'traitement_interrompu_min' => 10,
     ],
 
     /*

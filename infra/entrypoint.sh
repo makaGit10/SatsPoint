@@ -57,7 +57,7 @@ if [ -z "${DATA_ENCRYPTION_KEY:-}" ]; then
   fi
 fi
 
-mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache storage/app/public
+mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache storage/app/public storage/app/cache-audio
 
 # --- Dépendances absentes (code monté en dev sans vendor) ---
 if [ ! -f vendor/autoload.php ]; then
@@ -93,8 +93,9 @@ until attendre_base; do
 done
 
 if [ "$ROLE" = "web" ] || [ "$ROLE" = "all" ]; then
-  # Pas de `storage:link` : storage/app/public (audios, brouillons compris) n'est JAMAIS servi directement ;
-  # les fichiers publiés passent par GET /audio/{langue}/{fichier}, qui vérifie le statut en base.
+  # Pas de `storage:link` : aucun fichier audio n'est servi directement depuis le disque ;
+  # les fichiers publiés passent par GET /audio/{langue}/{fichier}, qui vérifie le statut et lit le contenu EN BASE
+  # (audio_fichiers ; storage/app/cache-audio n'est qu'un cache reconstruit à la demande, disque non persistant).
   rm -f public/storage 2>/dev/null || true
   php artisan migrate --force --no-interaction
   # Registre des clés vocales (CAHIER § 6.12) : fichier du front (/app/cles-i18n/cles-vocales.json) s'il existe,
@@ -104,6 +105,8 @@ if [ "$ROLE" = "web" ] || [ "$ROLE" = "all" ]; then
   else
     php artisan db:seed --class=CleAudioSeeder --force --no-interaction || true
   fi
+  # Traitements audio interrompus par le redémarrage (source temporaire perdue) → erreur « à renvoyer ». Non bloquant.
+  php artisan audio:nettoyer --sans-signal --no-interaction || echo "[satspoint] nettoyage audio impossible (non bloquant)."
   if [ "${DEMO_SEED:-true}" = "true" ]; then
     php artisan db:seed --class=DemoSeeder --force --no-interaction
   fi
