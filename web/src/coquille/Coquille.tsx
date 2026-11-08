@@ -15,7 +15,7 @@ export function Coquille() {
       <div className="flex min-w-0 flex-1 flex-col">
         <BandeauDemo />
         <EnTete />
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-3 pb-[calc(var(--hauteur-barre-bas)+env(safe-area-inset-bottom,0px)+12px)] md:px-6 md:pt-4 md:pb-6">
+        <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pt-3 pb-[calc(var(--hauteur-barre-bas)+env(safe-area-inset-bottom,0px)+12px)] md:px-6 md:pt-4 md:pb-6">
           <Suspense fallback={<SqueletteEcran />}>
             <Outlet />
           </Suspense>

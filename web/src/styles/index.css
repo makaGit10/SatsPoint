@@ -56,6 +56,23 @@
 
   --color-anneau: var(--anneau);
 
+  --color-tuile-orange: var(--tuile-orange);
+  --color-tuile-orange-texte: var(--tuile-orange-texte);
+  --color-tuile-rouge: var(--tuile-rouge);
+  --color-tuile-rouge-texte: var(--tuile-rouge-texte);
+  --color-tuile-jaune: var(--tuile-jaune);
+  --color-tuile-jaune-texte: var(--tuile-jaune-texte);
+  --color-tuile-vert: var(--tuile-vert);
+  --color-tuile-vert-texte: var(--tuile-vert-texte);
+  --color-tuile-bleu: var(--tuile-bleu);
+  --color-tuile-bleu-texte: var(--tuile-bleu-texte);
+  --color-tuile-violet: var(--tuile-violet);
+  --color-tuile-violet-texte: var(--tuile-violet-texte);
+  --color-tuile-brun: var(--tuile-brun);
+  --color-tuile-brun-texte: var(--tuile-brun-texte);
+  --color-tuile-gris: var(--tuile-gris);
+  --color-tuile-gris-texte: var(--tuile-gris-texte);
+
   --radius-xs: var(--rayon-xs);
   --radius-sm: var(--rayon-sm);
   --radius-md: var(--rayon-md);

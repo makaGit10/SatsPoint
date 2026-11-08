@@ -12,6 +12,7 @@ import {
   Introuvable,
   Langue,
   MotDePasseOublie,
+  Paiement,
   Portefeuille,
   Recu,
   Reglages,
@@ -43,6 +44,11 @@ export const routeur = createBrowserRouter([
       {
         element: <RequiertSession />,
         children: [
+          // Écran de paiement plein écran (hors coquille : ni barre latérale ni barre du bas).
+          {
+            element: <RequiertBoutique />,
+            children: [{ path: '/caisse/paiement/:ulid', element: <Paiement /> }],
+          },
           {
             element: <Coquille />,
             children: [

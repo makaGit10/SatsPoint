@@ -169,3 +169,30 @@
   animation: sp-ondes 0.9s ease-in-out infinite;
   transform-origin: center;
 }
+
+/* Impression (reçu) : fond blanc, rien d'interactif. */
+@media print {
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+}
+
+/* Entrée de l'écran de succès : la coche « pousse » puis se stabilise. */
+@keyframes sp-coche {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+  }
+}
+@utility anim-coche {
+  animation: sp-coche 420ms var(--ease-sortie) both;
+}
