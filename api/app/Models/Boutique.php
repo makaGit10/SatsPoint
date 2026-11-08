@@ -33,7 +33,6 @@ class Boutique extends Model
     {
         return [
             'reglages' => 'array',
-            'sequence_vente' => 'integer',
         ];
     }
 

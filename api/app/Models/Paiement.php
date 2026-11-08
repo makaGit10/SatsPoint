@@ -12,7 +12,13 @@ class Paiement extends Model
 {
     use AppartientAUneBoutique, AUlid;
 
-    public const METHODES = ['lightning', 'paytech', 'wave_manuel'];
+    public const METHODE_LIGHTNING = 'lightning';
+
+    public const METHODE_PAYTECH = 'paytech';
+
+    public const METHODE_WAVE_MANUEL = 'wave_manuel';
+
+    public const METHODES = [self::METHODE_LIGHTNING, self::METHODE_PAYTECH, self::METHODE_WAVE_MANUEL];
 
     public const STATUT_EN_ATTENTE = 'en_attente';
 
@@ -40,7 +46,9 @@ class Paiement extends Model
         'expire_at',
         'paytech_token',
         'paytech_ref',
+        'paytech_redirect_url',
         'operateur',
+        'simule',
     ];
 
     protected $hidden = ['preimage', 'paytech_token'];
@@ -51,6 +59,7 @@ class Paiement extends Model
             'montant_xof' => 'integer',
             'montant_sats' => 'integer',
             'cours_xof_par_btc' => 'decimal:2',
+            'simule' => 'boolean',
             'expire_at' => 'datetime',
             'confirme_at' => 'datetime',
             'regle_at' => 'datetime',
@@ -70,5 +79,50 @@ class Paiement extends Model
     public function evenements(): HasMany
     {
         return $this->hasMany(EvenementPaiement::class);
+    }
+
+    // ------------------------------------------------------------- méthodes
+
+    public function estEnAttente(): bool
+    {
+        return $this->statut === self::STATUT_EN_ATTENTE;
+    }
+
+    public function estReussi(): bool
+    {
+        return $this->statut === self::STATUT_REUSSI;
+    }
+
+    public function estLightning(): bool
+    {
+        return $this->methode === self::METHODE_LIGHTNING;
+    }
+
+    public function estPaytech(): bool
+    {
+        return $this->methode === self::METHODE_PAYTECH;
+    }
+
+    public function estWaveManuel(): bool
+    {
+        return $this->methode === self::METHODE_WAVE_MANUEL;
+    }
+
+    /** Les 8 premiers caractères du hash : seule forme journalisée ou exposée. */
+    public function hashAbrege(): ?string
+    {
+        return $this->payment_hash === null ? null : substr($this->payment_hash, 0, 8);
+    }
+
+    /** Montant attendu en millisats (Lightning). */
+    public function montantMsats(): ?int
+    {
+        return $this->montant_sats === null ? null : (int) $this->montant_sats * 1000;
+    }
+
+    /** Cours figé, en entier XOF par BTC (le décimal en base garde deux décimales à zéro). */
+    public function coursEntier(): ?int
+    {
+        return $this->cours_xof_par_btc === null ? null : (int) round((float) $this->cours_xof_par_btc);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\BoutiqueCouranteAbsente;
+use App\Exceptions\ErreurMetier;
 use App\Http\Middleware\DiffuserEcritures;
 use App\Http\Middleware\EnTetesSecurite;
 use App\Http\Middleware\VerifierSessionRevoquee;
@@ -36,6 +37,9 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware(['api', 'throttle:sante'])
                 ->get('/sante', \App\Http\Controllers\SanteController::class)
                 ->name('sante');
+
+            // Reçu public, page de paiement simulé, webhooks PayTech : groupe « api » (sans CSRF), throttles dédiés.
+            Route::middleware(['api'])->group(base_path('routes/public.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -59,7 +63,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(function (Request $request) {
             return $request->is('api/*') || $request->is('internal/*') || $request->is('sante')
-                || $request->is('broadcasting/*') || $request->expectsJson();
+                || $request->is('broadcasting/*') || $request->is('webhooks/*') || $request->is('paiement-simule/*')
+                || ($request->is('r/*') && ! is_file(rtrim((string) config('satspoint.web_dist'), '/').'/index.html'))
+                || $request->expectsJson();
         });
 
         $json = fn (string $message, string $code, int $statut, array $extra = []) => response()->json(
@@ -98,6 +104,11 @@ return Application::configure(basePath: dirname(__DIR__))
             ? $json('Aucune boutique n\'est associée à ce compte.', 'BOUTIQUE_ABSENTE', 404)
             : null);
 
+        // Erreurs métier (cours indisponible, portefeuille, PayTech, transitions interdites…) : message utile + code stable.
+        $exceptions->render(fn (ErreurMetier $e, Request $request) => $request->expectsJson() || $request->is('api/*')
+            ? $json($e->getMessage(), $e->codeErreur, $e->statutHttp)
+            : null);
+
         // Toute autre erreur HTTP : message générique, détails dans les logs uniquement (règle n° 7).
         $exceptions->render(function (HttpExceptionInterface $e, Request $request) use ($json) {
             if (! ($request->expectsJson() || $request->is('api/*') || $request->is('internal/*'))) {
@@ -113,5 +124,5 @@ return Application::configure(basePath: dirname(__DIR__))
             )->withHeaders($e->getHeaders());
         });
 
-        $exceptions->dontReport([BoutiqueCouranteAbsente::class]);
+        $exceptions->dontReport([BoutiqueCouranteAbsente::class, ErreurMetier::class]);
     })->create();

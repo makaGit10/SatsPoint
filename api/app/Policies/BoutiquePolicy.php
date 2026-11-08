@@ -40,6 +40,24 @@ class BoutiquePolicy
         return $membre !== null && $membre->boutique_id === $boutique->id && $membre->peutAdministrer();
     }
 
+    /** Voir le solde et l'historique du portefeuille : propriétaire ou gérant. */
+    public function voirWallet(User $user, Boutique $boutique): bool
+    {
+        return $this->update($user, $boutique);
+    }
+
+    /** Envoyer des sats : propriétaire uniquement (avec mot de passe revérifié). */
+    public function envoyerSats(User $user, Boutique $boutique): bool
+    {
+        return $this->gererPaiements($user, $boutique);
+    }
+
+    /** Tableau de bord : tout membre actif (le caissier n'y voit que ses chiffres du jour). */
+    public function voirTableauDeBord(User $user, Boutique $boutique): bool
+    {
+        return $this->view($user, $boutique);
+    }
+
     /** Portefeuille, PayTech, suppression : propriétaire uniquement. */
     public function gererPaiements(User $user, Boutique $boutique): bool
     {

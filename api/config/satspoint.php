@@ -13,6 +13,9 @@ return [
 
     'frontend_url' => rtrim((string) env('FRONTEND_URL', env('APP_URL', 'http://localhost:8120')), '/'),
 
+    // Front compilé servi par PHP pour /r/{jeton} (Caddy route /r/* vers PHP). Absent en dev → JSON.
+    'web_dist' => env('WEB_DIST_PATH', '/app/web-dist'),
+
     // Clé de chiffrement des données sensibles (distincte de APP_KEY) : "base64:..." (32 octets).
     'cle_donnees' => env('DATA_ENCRYPTION_KEY'),
 
@@ -78,6 +81,8 @@ return [
 
     'demo' => [
         'seed' => filter_var(env('DEMO_SEED', true), FILTER_VALIDATE_BOOL),
+        // Autorise le mode simulé (mock://, POST /paiements/{ulid}/simuler) en production — même variable que la passerelle.
+        'mock_autorise_en_production' => filter_var(env('ALLOW_MOCK_WALLET', false), FILTER_VALIDATE_BOOL),
         'nwc_uri' => env('DEMO_NWC_URI'),
         'mot_de_passe' => env('DEMO_PASSWORD'),
         'email_proprietaire' => 'demo@satspoint.local',
@@ -94,6 +99,8 @@ return [
         'env' => env('PAYTECH_ENV', 'test'),
         'api_key' => env('PAYTECH_API_KEY'),
         'api_secret' => env('PAYTECH_API_SECRET'),
+        // Base publique HTTPS des IPN (PayTech refuse http). Vide = APP_URL. En local : URL du tunnel (cloudflared / ngrok).
+        'ipn_base_url' => env('PAYTECH_IPN_BASE_URL'),
     ],
 
     /*

@@ -2,12 +2,18 @@
 
 namespace App\Providers;
 
+use App\Models\Article;
 use App\Models\Boutique;
 use App\Models\Invitation;
 use App\Models\Membre;
+use App\Models\Paiement;
+use App\Models\Vente;
+use App\Policies\ArticlePolicy;
 use App\Policies\BoutiquePolicy;
 use App\Policies\InvitationPolicy;
 use App\Policies\MembrePolicy;
+use App\Policies\PaiementPolicy;
+use App\Policies\VentePolicy;
 use App\Services\BoutiqueCourante;
 use App\Services\ChiffrementDonnees;
 use App\Services\PasserelleLightning;
@@ -54,6 +60,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Boutique::class, BoutiquePolicy::class);
         Gate::policy(Membre::class, MembrePolicy::class);
         Gate::policy(Invitation::class, InvitationPolicy::class);
+        Gate::policy(Vente::class, VentePolicy::class);
+        Gate::policy(Paiement::class, PaiementPolicy::class);
+        Gate::policy(Article::class, ArticlePolicy::class);
 
         $this->definirLimitesDeDebit();
     }
@@ -109,10 +118,20 @@ class AppServiceProvider extends ServiceProvider
 
         // Limites prévues par le cahier pour les modules à venir (définies dès maintenant, règle n° 12).
         RateLimiter::for('ventes', fn (Request $request) => Limit::perMinute(30)->by('u:'.($request->user()?->id ?? $request->ip())));
-        RateLimiter::for('verification-paiement', fn (Request $request) => Limit::perMinute(20)->by('p:'.($request->route('paiement') ?? $request->ip())));
+        RateLimiter::for('verification-paiement', function (Request $request) {
+            $paiement = $request->route('paiement');
+            $cle = $paiement instanceof Model ? $paiement->getKey() : ($paiement ?? $request->ip());
+
+            return Limit::perMinute(20)->by('p:'.$cle);
+        });
         RateLimiter::for('webhook-paytech', fn (Request $request) => Limit::perMinute(60)->by('b:'.($request->route('boutique_ulid') ?? $request->ip())));
         RateLimiter::for('recherche', fn (Request $request) => Limit::perMinute(60)->by('u:'.($request->user()?->id ?? $request->ip())));
         RateLimiter::for('upload-audio', fn (Request $request) => Limit::perHour(120)->by('u:'.($request->user()?->id ?? $request->ip())));
         RateLimiter::for('recu-public', fn (Request $request) => Limit::perMinute(60)->by('ip:'.$request->ip()));
+
+        // Vague 2 : envois de sats (aperçu + envoi), configuration portefeuille / PayTech, exports.
+        RateLimiter::for('wallet-envoi', fn (Request $request) => Limit::perMinute(10)->by('u:'.($request->user()?->id ?? $request->ip())));
+        RateLimiter::for('configuration', fn (Request $request) => Limit::perMinute(10)->by('u:'.($request->user()?->id ?? $request->ip())));
+        RateLimiter::for('exports', fn (Request $request) => Limit::perMinute(6)->by('u:'.($request->user()?->id ?? $request->ip())));
     }
 }

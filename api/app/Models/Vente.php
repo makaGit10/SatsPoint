@@ -7,6 +7,7 @@ use App\Models\Concerns\AUlid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Vente extends Model
 {
@@ -22,7 +23,17 @@ class Vente extends Model
 
     public const STATUTS = [self::STATUT_EN_ATTENTE, self::STATUT_PAYEE, self::STATUT_ANNULEE, self::STATUT_EXPIREE];
 
-    public const ALERTES = ['trop_percu', 'payee_apres_annulation'];
+    public const ALERTE_TROP_PERCU = 'trop_percu';
+
+    public const ALERTE_PAYEE_APRES_ANNULATION = 'payee_apres_annulation';
+
+    public const ALERTES = [self::ALERTE_TROP_PERCU, self::ALERTE_PAYEE_APRES_ANNULATION];
+
+    /** Longueur du jeton de reçu public (caractères alphanumériques aléatoires). */
+    public const LONGUEUR_JETON_RECU = 32;
+
+    /** Délai sans tentative au-delà duquel une vente en attente expire (CAHIER § 7.2). */
+    public const EXPIRATION_SANS_TENTATIVE_MIN = 30;
 
     protected $fillable = [
         'numero',
@@ -61,5 +72,39 @@ class Vente extends Model
     public function paiementReussi(): BelongsTo
     {
         return $this->belongsTo(Paiement::class, 'paiement_reussi_id');
+    }
+
+    // ------------------------------------------------------------- méthodes
+
+    /** « V-000012 » */
+    public function numeroAffiche(): string
+    {
+        return self::formaterNumero((int) $this->numero);
+    }
+
+    public static function formaterNumero(int $numero): string
+    {
+        return 'V-'.str_pad((string) $numero, 6, '0', STR_PAD_LEFT);
+    }
+
+    public function estEnAttente(): bool
+    {
+        return $this->statut === self::STATUT_EN_ATTENTE;
+    }
+
+    public function estPayee(): bool
+    {
+        return $this->statut === self::STATUT_PAYEE;
+    }
+
+    /** Chemin public du reçu (relatif : le front le rend absolu), seulement si payée. */
+    public function recuUrl(): ?string
+    {
+        return ($this->estPayee() && $this->recu_jeton !== null) ? '/r/'.$this->recu_jeton : null;
+    }
+
+    public static function genererJetonRecu(): string
+    {
+        return Str::random(self::LONGUEUR_JETON_RECU);
     }
 }

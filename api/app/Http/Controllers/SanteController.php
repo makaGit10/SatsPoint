@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\CoursChange;
 use App\Services\PasserelleLightning;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
@@ -13,8 +14,14 @@ use Illuminate\Support\Facades\Http;
  */
 class SanteController extends Controller
 {
-    public function __invoke(PasserelleLightning $passerelle): JsonResponse
+    public function __invoke(PasserelleLightning $passerelle, CoursChange $cours): JsonResponse
     {
+        $coursActuel = null;
+        try {
+            $coursActuel = $cours->actuel();
+        } catch (\Throwable) {
+            // base indisponible : signalé plus bas
+        }
         $base = $this->verifier(fn () => DB::select('select 1') !== []);
         $redis = $this->verifier(function () {
             $cle = 'sante:'.bin2hex(random_bytes(4));
@@ -39,7 +46,7 @@ class SanteController extends Controller
             'redis' => $redis,
             'reverb' => $reverb,
             'passerelle' => $passerelleOk,
-            'cours' => ['age_s' => null],
+            'cours' => ['age_s' => $coursActuel['age_s'] ?? null, 'disponible' => (bool) ($coursActuel['disponible'] ?? false)],
             'version' => config('satspoint.version'),
             'horodatage' => now()->toIso8601String(),
         ], $base ? 200 : 503)->header('Cache-Control', 'no-store');

@@ -26,7 +26,7 @@ function routesParametreesAuthentifiees(): array
 }
 
 it('couvre bien des routes paramétrées (sinon le balayage est vide)', function () {
-    expect(count(routesParametreesAuthentifiees()))->toBeGreaterThanOrEqual(3);
+    expect(count(routesParametreesAuthentifiees()))->toBeGreaterThanOrEqual(12);
 });
 
 it('refuse l\'accès inter-boutiques sur chaque route paramétrée', function () {
@@ -41,13 +41,20 @@ it('refuse l\'accès inter-boutiques sur chaque route paramétrée', function ()
         return $inv;
     });
 
-    // Utilisateur de la boutique B (propriétaire : le rôle le plus puissant).
-    ['user' => $proprioB] = boutiqueAvec('proprietaire');
+    // Vague 2 : vente, tentative de paiement et article de la boutique A.
+    $articleA = avecBoutique($boutiqueA, fn () => \App\Models\Article::create(['nom' => 'Café', 'prix_xof' => 200]));
+    ['vente' => $venteA, 'paiement' => $paiementA] = venteAvecTentative($boutiqueA, $proprioA, 'wave_manuel');
+
+    // Utilisateur de la boutique B (propriétaire : le rôle le plus puissant), boutique prête à encaisser.
+    ['user' => $proprioB] = boutiquePrete();
 
     $valeurs = [
         'membre' => $membreA->ulid,
         'invitation' => $invitationA->ulid,
         'jeton' => $jetonA,
+        'vente' => $venteA->ulid,
+        'paiement' => $paiementA->ulid,
+        'article' => $articleA->ulid,
     ];
 
     $resultats = [];
@@ -63,8 +70,11 @@ it('refuse l\'accès inter-boutiques sur chaque route paramétrée', function ()
         }
 
         $methode = strtolower(array_values(array_diff($route->methods(), ['HEAD']))[0]);
-        $corps = match ($methode) {
-            'patch', 'put' => ['role' => 'gerant', 'actif' => true],
+        $corps = match (true) {
+            str_contains($uri, 'paiements') && str_ends_with($route->uri(), '{vente}/paiements') => ['methode' => 'wave_manuel'],
+            str_ends_with($route->uri(), 'confirmer-manuellement') => ['confirmation' => true],
+            str_contains($route->uri(), 'articles/') => ['nom' => 'Pirate', 'prix_xof' => 1],
+            in_array($methode, ['patch', 'put'], true) => ['role' => 'gerant', 'actif' => true],
             default => [],
         };
 
@@ -75,6 +85,9 @@ it('refuse l\'accès inter-boutiques sur chaque route paramétrée', function ()
     }
 
     // Les ressources de A existent toujours (aucune modification parasite).
+    expect($venteA->fresh()->statut)->toBe('en_attente')
+        ->and($paiementA->fresh()->statut)->toBe('en_attente')
+        ->and($articleA->fresh()->nom)->toBe('Café');
     expect(Membre::toutesBoutiques()->whereKey($membreA->id)->first()->role)->toBe('caissier');
     expect(Invitation::toutesBoutiques()->whereKey($invitationA->id)->first()?->acceptee_at)->toBeNull();
     expect(Invitation::toutesBoutiques()->whereKey($invitationA->id)->exists())->toBeTrue();
