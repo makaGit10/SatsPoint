@@ -795,7 +795,7 @@ Le MVP est **accepté** quand :
 | Dès que possible | WhatsApp à PayTech (+221 77 125 57 99) pour activer la production — non bloquant pour le hackathon | ⏳ |
 | Avant J4 (12 nov.) | Obtenir ~1 100 sats dans Wallet of Satoshi (Banxaas : bouton « Troc » grisé le 9 nov. à 2 h, réessayer en journée ; plan B : communauté du hackathon) | ⏳ |
 | J11 (19 nov.) | Enregistrer les audios wolof / sérère / pulaar / diola dans le studio (~1 h 30, clés essentielles d'abord) | ⏳ |
-| Avant la démo publique | Révoquer la connexion Coinos actuelle (passée dans le chat) et en recréer une, collée directement dans `.env` | ⏳ |
+| Avant la démo publique | Révoquer la connexion Coinos actuelle (passée dans le chat, et elle autorise `pay_invoice`) et en recréer une **avec le budget minimal** (idéalement sans droit d'envoi), collée directement dans `.env` | ⏳ |
 | Pendant toute la durée | Laisser le PC allumé avec Docker Desktop ouvert pendant que les agents travaillent | ⏳ |
 
 ### Réglés
