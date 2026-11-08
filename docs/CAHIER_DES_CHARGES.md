@@ -604,11 +604,15 @@ Application de [DIRECTIVES.md § 4](DIRECTIVES.md#4-tests-de-bout-en-bout-playwr
 - **Environnements** : local (Docker Compose), test (base dédiée, données `TEST-E2E-`), production.
 - **Production** : une machine allumée en permanence avec Docker Compose et Caddy (HTTPS automatique).
   Une URL publique en HTTPS est **obligatoire** pour l'IPN PayTech et pour que les juges testent ; un nom de domaine payant ne l'est **pas**.
-  Options par ordre de préférence (budget zéro d'abord) :
-  1. **Oracle Cloud « Always Free »** (machine virtuelle gratuite à vie ; carte bancaire demandée pour vérification, non débitée) + adresse gratuite (`<ip>.sslip.io` ou DuckDNS) ;
-  2. **GitHub Student Developer Pack** si éligible (crédits cloud et nom de domaine offerts) ;
-  3. **PC local + Cloudflare Tunnel** (gratuit, mais le PC doit rester allumé pendant toute la période de jugement) ;
-  4. VPS d'entrée de gamme (≈ 4 €/mois).
+  **Choix retenu (budget zéro)** :
+  - **Front (PWA)** sur **Netlify** → `satspoint.netlify.app` (CDN rapide) ; règle de proxy Netlify `/api/*`, `/broadcasting/*`, `/r/*`, `/webhooks/*` → Render,
+    pour que le navigateur reste sur une seule origine (cookies de session `SameSite`, pas de CORS).
+  - **Back** sur **Render (offre gratuite)**, **un seul conteneur Docker** qui regroupe API Laravel, Reverb (derrière un proxy interne, un seul port exposé),
+    worker de files, planificateur et passerelle Lightning → `satspoint-api.onrender.com`. Connexion WebSocket directe vers Render (l'autorisation des canaux passe par le proxy Netlify).
+  - **Base** sur **Neon (PostgreSQL gratuit, sans expiration)** ; cache, files et limitation de débit sur la base de données (pas de Redis en production gratuite).
+  - Render endort un service gratuit après 15 min d'inactivité → ping de `/sante` toutes les 10 min (cron-job.org, gratuit) pendant la période de jugement.
+  - Limites connues : 512 Mo de RAM et peu de CPU → budgets mémoire surveillés ; si c'est insuffisant, repli sur **Oracle Cloud « Always Free »** ou **GitHub Student Developer Pack** (la propriétaire est étudiante).
+  - Vercel écarté (même rôle que Netlify, déjà maîtrisé) ; Netlify et Vercel ne peuvent pas héberger le back (processus permanents, WebSocket).
 - **Développement** : tout tourne en local ; pour recevoir l'IPN PayTech pendant les tests, tunnel temporaire gratuit (Cloudflare Quick Tunnel).
 - Mise en ligne : `git pull` + `docker compose up -d --build` + migrations ; script `infra/deploy.sh`.
 - Comptes créés automatiquement par les seeders **à partir de variables d'environnement** (jamais de mot de passe dans le dépôt) :
@@ -715,10 +719,10 @@ Le MVP est **accepté** quand :
 ### Points ouverts (à trancher)
 | # | Question | Qui | Pour quand |
 |---|---|---|---|
-| 1 | Le compte PayTech est-il bien **en production** ? (vérifier dans le tableau de bord PayTech) | Propriétaire | J1 |
-| 2 | Portefeuille de la boutique de démo : **Alby Hub** (non-custodial) ou **Coinos** (rapide) ? | Propriétaire | J2 |
-| 3 | Hébergement de production : option gratuite retenue (voir section 16) | Propriétaire | J8 |
-| 4 | Éligibilité : confirmation écrite de l'organisateur (case « Students only » sur Devpost) | Propriétaire | Au plus tôt |
+| 1 | **Activation PayTech en production** : vérifié le 8 nov. — le mode test fonctionne, la production renvoie « contactez le support pour activer votre compte ». Contacter support@paytech.sn / WhatsApp. Développement en mode test en attendant. | Propriétaire | Au plus tôt |
+| 2 | Profil Devpost : passer de « Professional » à « Student (college / university) » | Propriétaire | Au plus tôt |
 
 ### Réglés
 - Adresse e-mail du compte super-admin : fournie (conservée **hors dépôt**, dans le `.env`, car le dépôt est public).
+- Portefeuille de développement et de démo : **Coinos** (connexion NWC) ; Alby Hub envisagé pour la démo finale.
+- Hébergement : Netlify (front) + Render (back) + Neon (base), voir section 16.
