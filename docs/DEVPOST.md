@@ -142,7 +142,7 @@ bitcoin, lightning-network, nostr, nostr-wallet-connect, laravel, php, postgresq
 
 ## Try it out links
 - `https://github.com/makaGit10/SatsPoint`
-- `[URL de la démo en ligne]`
+- `https://satspoint.onrender.com`
 
 ## Video demo link
 `[YouTube]` — 3 minutes, dans l'ordre exigé : problème → solution (démo réelle) → impact → prochaines étapes.

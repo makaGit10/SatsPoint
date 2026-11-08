@@ -69,7 +69,7 @@ Without any configuration the stack starts in **demo mode** (a banner says so): 
 
 ## 🎬 Demo
 
-- **Live:** `[URL — added at deployment]`
+- **Live:** https://satspoint.onrender.com (free tier: the first visit after 15 min of inactivity takes ~1 min to wake up)
 - **Video (3 min):** `[YouTube — added at submission]`
 - Screenshots: `[added when the UI lands]`
 
