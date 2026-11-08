@@ -71,7 +71,12 @@ CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
 # ---------- Tout-en-un (Render, offre gratuite : 512 Mo, un seul port) ----------
 FROM prod AS all
 # supervisord (5 processus) ; Node 22 = binaire officiel copié de node:22-alpine (musl, comme l'image PHP).
-RUN apk add --no-cache supervisor libstdc++ libgcc \
+# L'image FrankenPHP marque son binaire `cap_net_bind_service=ep` (ports < 1024 sans root). Les hébergeurs qui
+# retirent cette capability du conteneur (Render) REFUSENT alors de l'exécuter (« Operation not permitted », code 127
+# sous supervisord). On écoute sur $PORT ≥ 1024 : la marque est inutile, on la retire (moindre privilège).
+RUN apk add --no-cache supervisor libstdc++ libgcc libcap \
+ && setcap -r /usr/local/bin/frankenphp \
+ && apk del libcap \
  && rm -rf /var/cache/apk/*
 COPY --from=node:22-alpine /usr/local/bin/node /usr/local/bin/node
 COPY --from=gateway /gw/package.json /app/lightning-gateway/package.json
