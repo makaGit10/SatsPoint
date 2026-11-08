@@ -1,22 +1,30 @@
 {
   "name": "satspoint-lightning-gateway",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Passerelle Lightning de SatsPoint : Nostr Wallet Connect (NIP-47) pour l'API, portefeuille simulé pour la démonstration.",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "test": "vitest run",
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.typecheck.json",
+    "verifier-connexion": "tsx scripts/verifier-connexion.ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
-  "private": "true",
+  "license": "MIT",
   "dependencies": {
+    "@getalby/lightning-tools": "^5.2.1",
     "@getalby/sdk": "^5.1.2",
+    "@scure/base": "1.1.1",
+    "bolt11": "^1.4.2",
     "fastify": "^5.12.8",
+    "light-bolt11-decoder": "^3.2.0",
     "pino": "^10.4.0",
     "zod": "^4.6.7"
   },
