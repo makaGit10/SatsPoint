@@ -1,4 +1,4 @@
-import { ChevronDown, KeyRound, Mic, ScrollText, ShieldAlert, Store, Users, Wallet, Zap } from 'lucide-react'
+import { ArrowDownUp, ChevronDown, KeyRound, Mic, Package, ScrollText, ShieldAlert, Store, Users, Wallet, Zap } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useJournalAdmin, type FiltresJournal } from '@/api/admin'
@@ -11,7 +11,7 @@ import { SqueletteListe } from '@/composants/Squelette'
 import { cn } from '@/lib/cn'
 import { formaterDateHeure, type Locale } from '@/lib/format'
 
-const FAMILLES = ['auth', 'audio', 'boutique', 'plateforme', 'equipe', 'wallet', 'paytech', 'vente', 'paiement'] as const
+const FAMILLES = ['auth', 'audio', 'boutique', 'plateforme', 'equipe', 'wallet', 'paytech', 'vente', 'paiement', 'article', 'import', 'export'] as const
 
 const ICONES: Record<string, ReactNode> = {
   auth: <KeyRound />,
@@ -23,11 +23,14 @@ const ICONES: Record<string, ReactNode> = {
   vente: <ScrollText />,
   paiement: <ScrollText />,
   plateforme: <Store />,
+  article: <Package />,
+  import: <ArrowDownUp />,
+  export: <ArrowDownUp />,
 }
 
 /** Actions qui méritent l'œil (refus, échecs, suspensions). */
 function sensible(action: string) {
-  return /echec|refus|suspendue|2fa_desactivee/.test(action)
+  return /echec|refus|suspendue|2fa_desactivee|incoherent|insuffisant|apres_annulation|incertain/.test(action)
 }
 
 function details(valeur: EntreeJournal['details']): string | null {
@@ -93,7 +96,7 @@ export function JournalAdmin({ actif }: { actif: boolean }) {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="flex flex-wrap items-baseline gap-x-2 text-sm">
-                      <span className={cn('font-medium', alerte ? 'text-danger-texte' : 'text-texte')}>{t(`admin.journal.actions.${e.action.replace('.', '_')}`, { defaultValue: e.action })}</span>
+                      <span className={cn('font-medium', alerte ? 'text-danger-texte' : 'text-texte')}>{t(`admin.journal.actions.${e.action.replaceAll('.', '_')}`, { defaultValue: e.action })}</span>
                       <code className="font-mono text-2xs text-texte-3" data-technique>
                         {e.action}
                       </code>

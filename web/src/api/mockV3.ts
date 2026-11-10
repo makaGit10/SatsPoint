@@ -233,19 +233,19 @@ const boutiques: BoutiqueAdmin[] = NOMS_BOUTIQUES.map(([nom, ville], i) => ({
 
 const ACTIONS_JOURNAL = [
   'auth.connexion', 'auth.2fa_verifiee', 'audio.publie', 'boutique.creee', 'wallet.connecte', 'paytech.ipn_refusee',
-  'equipe.invitation', 'vente.confirmee_manuellement', 'auth.echec_connexion', 'boutique.suspendue', 'wallet.envoi', 'paytech.configure',
+  'equipe.invitation_creee', 'paiement.confirme_manuellement', 'auth.echec', 'plateforme.boutique_suspendue', 'wallet.envoi_reussi', 'paytech.configure',
 ]
 const journal: EntreeJournal[] = Array.from({ length: 64 }, (_, i) => {
   const action = ACTIONS_JOURNAL[(i * 5) % ACTIONS_JOURNAL.length]!
   const b = boutiques[(i * 7) % boutiques.length]!
-  const plateforme = action.startsWith('audio.') || action === 'boutique.suspendue' || action === 'auth.2fa_verifiee'
+  const plateforme = action.startsWith('audio.') || action === 'plateforme.boutique_suspendue' || action === 'auth.2fa_verifiee'
   return {
     id: 5000 - i,
     action,
     utilisateur: action === 'paytech.ipn_refusee' ? null : plateforme ? { ulid: '01JUSERSUPER00000000000000001', nom: 'Marème Makalou' } : { ulid: `01JUSERJ${i}`, nom: b.proprietaire?.nom ?? '—' },
-    boutique: plateforme && action !== 'boutique.suspendue' ? null : { ulid: b.ulid, nom: b.nom },
+    boutique: plateforme && action !== 'plateforme.boutique_suspendue' ? null : { ulid: b.ulid, nom: b.nom },
     ip: action === 'paytech.ipn_refusee' ? '41.82.12.7' : `196.207.${(i * 13) % 255}.${(i * 29) % 255}`,
-    details: action === 'audio.publie' ? { langue: 'wo', cles: 3 } : action === 'auth.echec_connexion' ? { motif: 'mot_de_passe' } : null,
+    details: action === 'audio.publie' ? { langue: 'wo', cles: 3 } : action === 'auth.echec' ? { motif: 'mot_de_passe' } : null,
     cree_le: ISO(Date.now() - i * 47 * MINUTE),
   }
 })
@@ -533,7 +533,7 @@ export async function repondreV3(ctx: ContexteMock): Promise<Response | null> {
       const corps = await lireJson(init)
       if (corps.statut !== 'active' && corps.statut !== 'suspendue') return json(422, { message: 'Statut invalide.', errors: { statut: ['Statut invalide.'] } })
       b.statut = corps.statut
-      journal.unshift({ id: Date.now(), action: b.statut === 'suspendue' ? 'boutique.suspendue' : 'boutique.reactivee', utilisateur: { ulid: session.ulid, nom: session.nom }, boutique: { ulid: b.ulid, nom: b.nom }, ip: '127.0.0.1', details: null, cree_le: new Date().toISOString() })
+      journal.unshift({ id: Date.now(), action: b.statut === 'suspendue' ? 'plateforme.boutique_suspendue' : 'plateforme.boutique_reactivee', utilisateur: { ulid: session.ulid, nom: session.nom }, boutique: { ulid: b.ulid, nom: b.nom }, ip: '127.0.0.1', details: null, cree_le: new Date().toISOString() })
       signal('boutiques', 'admin', session.ulid)
       return json(200, { boutique: b })
     }
