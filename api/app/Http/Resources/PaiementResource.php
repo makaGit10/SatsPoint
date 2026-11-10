@@ -36,10 +36,26 @@ class PaiementResource extends JsonResource
                 ? ['redirect_url' => $this->paytech_redirect_url, 'token' => (string) $this->paytech_token]
                 : null,
             'wave_lien' => $this->estWaveManuel() ? $this->lienWave() : null,
+            // CONTRAT_API § 14.4 : photographie du moyen du pays (nom, type, couleur, numéro / lien, instructions).
+            'moyen' => $this->estMoyenPays() && is_array($this->resource->moyen) ? $this->formeMoyen($this->resource->moyen) : null,
             'simule' => (bool) $this->simule,
             'cree_le' => $this->created_at?->toIso8601String(),
             'expire_le' => $this->expire_at?->toIso8601String(),
             'regle_le' => $this->regle_at?->toIso8601String(),
+        ];
+    }
+
+    /** Champs de la photographie, dans un ordre et une liste fixes (aucun champ inattendu exposé). */
+    private function formeMoyen(array $moyen): array
+    {
+        return [
+            'ulid' => $moyen['ulid'] ?? null,
+            'nom' => $moyen['nom'] ?? null,
+            'type' => $moyen['type'] ?? null,
+            'couleur' => $moyen['couleur'] ?? null,
+            'valeur' => $moyen['valeur'] ?? null,
+            'instructions_fr' => $moyen['instructions_fr'] ?? null,
+            'instructions_en' => $moyen['instructions_en'] ?? null,
         ];
     }
 

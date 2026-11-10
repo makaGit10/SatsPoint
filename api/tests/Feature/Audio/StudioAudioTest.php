@@ -55,7 +55,13 @@ it('renvoie la matrice avec couverture, ordre (essentielles d\'abord), filtres e
     Audio::create(['cle_audio_id' => $this->cle2->id, 'langue' => 'fr', 'chemin' => Audio::cheminPublic('fr', 'nav.ventes', str_repeat('c', 64)), 'empreinte' => str_repeat('c', 64), 'duree_ms' => 700, 'taille' => 3000, 'statut' => 'brouillon']);
 
     $m = $this->getJson('/api/v1/admin/audio/matrice')->assertOk()
-        ->assertJsonPath('langues', [['code' => 'wo', 'nom' => 'Wolof'], ['code' => 'srr', 'nom' => 'Sérère'], ['code' => 'ff', 'nom' => 'Pulaar'], ['code' => 'dyo', 'nom' => 'Diola'], ['code' => 'fr', 'nom' => 'Français']])
+        ->assertJsonPath('langues', [
+            ['code' => 'wo', 'nom' => 'Wolof', 'nom_local' => 'Wolof', 'pays' => ['SN']],
+            ['code' => 'srr', 'nom' => 'Sérère', 'nom_local' => 'Seereer', 'pays' => ['SN']],
+            ['code' => 'ff', 'nom' => 'Pulaar', 'nom_local' => 'Pulaar', 'pays' => ['SN']],
+            ['code' => 'dyo', 'nom' => 'Diola', 'nom_local' => 'Joola', 'pays' => ['SN']],
+            ['code' => 'fr', 'nom' => 'Français', 'nom_local' => 'Français', 'pays' => []],
+        ])
         ->assertJsonPath('ecrans', ['caisse', 'navigation'])
         ->assertJsonCount(2, 'cles')
         ->assertJsonPath('cles.0.cle', 'caisse.encaisser')   // essentielle d'abord

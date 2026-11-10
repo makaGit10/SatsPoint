@@ -61,7 +61,7 @@ class ExportTableaux
             $p->vente ? Vente::formaterNumero((int) $p->vente->numero) : '',
             $local->format('d/m/Y'),
             $local->format('H:i'),
-            ExportVentes::libelleMethode($p->methode),
+            ExportVentes::assainir($p->nomMoyen() ?? ExportVentes::libelleMethode($p->methode)),
             $p->operateur ? ExportVentes::libelleOperateur($p->operateur) : '',
             self::libelleStatutPaiement($p->statut),
             (int) $p->montant_xof,

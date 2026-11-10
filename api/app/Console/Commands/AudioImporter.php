@@ -8,7 +8,7 @@ use App\Models\Audio;
 use App\Models\CleAudio;
 use App\Services\Audio\InspecteurAudio;
 use App\Services\Audio\StockageAudio;
-use App\Services\Audio\StudioAudio;
+use App\Services\Catalogue;
 use App\Services\Diffuseur;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -78,7 +78,8 @@ class AudioImporter extends Command
         $cle = (string) ($entree['cle'] ?? '');
         $langue = (string) ($entree['langue'] ?? '');
 
-        if (! in_array($langue, StudioAudio::langues(), true) || ! CleAudio::estValide($cle)) {
+        // Toute langue existante (même désactivée : la sauvegarde doit pouvoir être restaurée intégralement).
+        if (! in_array($langue, Catalogue::codesLangues(), true) || ! CleAudio::estValide($cle)) {
             return 'cle_ou_langue_invalide';
         }
 

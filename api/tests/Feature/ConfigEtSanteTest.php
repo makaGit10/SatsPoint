@@ -17,6 +17,24 @@ it('expose /api/v1/config avec la forme exacte', function () {
             ['code' => 'dyo', 'nom' => 'Diola', 'nom_local' => 'Joola'],
             ['code' => 'fr', 'nom' => 'Français', 'nom_local' => 'Français'],
         ],
+        // CONTRAT_API § 14.1 : catalogue actif (pays triés par ordre, Sénégal d'abord ; langues triées par ordre).
+        'pays' => [
+            ['code' => 'SN', 'nom_fr' => 'Sénégal', 'nom_en' => 'Senegal', 'indicatif' => '+221'],
+            ['code' => 'BJ', 'nom_fr' => 'Bénin', 'nom_en' => 'Benin', 'indicatif' => '+229'],
+            ['code' => 'BF', 'nom_fr' => 'Burkina Faso', 'nom_en' => 'Burkina Faso', 'indicatif' => '+226'],
+            ['code' => 'CI', 'nom_fr' => "Côte d'Ivoire", 'nom_en' => "Côte d'Ivoire", 'indicatif' => '+225'],
+            ['code' => 'GW', 'nom_fr' => 'Guinée-Bissau', 'nom_en' => 'Guinea-Bissau', 'indicatif' => '+245'],
+            ['code' => 'ML', 'nom_fr' => 'Mali', 'nom_en' => 'Mali', 'indicatif' => '+223'],
+            ['code' => 'NE', 'nom_fr' => 'Niger', 'nom_en' => 'Niger', 'indicatif' => '+227'],
+            ['code' => 'TG', 'nom_fr' => 'Togo', 'nom_en' => 'Togo', 'indicatif' => '+228'],
+        ],
+        'langues' => [
+            ['code' => 'wo', 'nom_local' => 'Wolof', 'nom_fr' => 'Wolof', 'nom_en' => 'Wolof', 'pays' => ['SN'], 'ordre' => 1],
+            ['code' => 'srr', 'nom_local' => 'Seereer', 'nom_fr' => 'Sérère', 'nom_en' => 'Serer', 'pays' => ['SN'], 'ordre' => 2],
+            ['code' => 'ff', 'nom_local' => 'Pulaar', 'nom_fr' => 'Pulaar', 'nom_en' => 'Pulaar', 'pays' => ['SN'], 'ordre' => 3],
+            ['code' => 'dyo', 'nom_local' => 'Joola', 'nom_fr' => 'Diola', 'nom_en' => 'Jola', 'pays' => ['SN'], 'ordre' => 4],
+            ['code' => 'fr', 'nom_local' => 'Français', 'nom_fr' => 'Français', 'nom_en' => 'French', 'pays' => [], 'ordre' => 100],
+        ],
     ]);
 
     // La clé publique Reverb est exposée, jamais le secret.

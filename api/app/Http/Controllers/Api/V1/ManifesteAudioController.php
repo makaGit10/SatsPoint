@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Audio;
+use App\Services\Catalogue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
@@ -46,10 +47,10 @@ class ManifesteAudioController extends Controller
         }
     }
 
-    /** @return list<string> */
+    /** @return list<string> langues existantes (actives ou désactivées : les appareils qui l'avaient choisie gardent leurs audios) */
     public static function langues(): array
     {
-        return array_column(config('satspoint.langues_audio'), 'code');
+        return Catalogue::codesLangues();
     }
 
     private function construire(string $langue): array

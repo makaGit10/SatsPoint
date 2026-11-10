@@ -76,23 +76,25 @@ class PaiementController extends Controller
         return $this->reponse($paiement->refresh());
     }
 
-    /** POST /paiements/{paiement}/confirmer-manuellement { confirmation: true } — wave_manuel, propriétaire / gérant. */
+    /** POST /paiements/{paiement}/confirmer-manuellement { confirmation: true } — wave_manuel ou moyen_pays, propriétaire / gérant. */
     public function confirmerManuellement(ConfirmerManuellementRequest $request, Paiement $paiement): JsonResponse
     {
         $this->authorize('confirmerManuellement', $paiement);
 
-        if (! $paiement->estWaveManuel()) {
-            throw new ErreurMetier('CONFIRMATION_IMPOSSIBLE', 'Seul un paiement Wave direct se confirme manuellement.', 409);
+        // Wave direct et moyens du pays (CONTRAT_API § 14.4) : aucune confirmation automatique possible.
+        if (! $paiement->seConfirmeManuellement()) {
+            throw new ErreurMetier('CONFIRMATION_IMPOSSIBLE', 'Seul un paiement Wave direct ou par un moyen du pays se confirme manuellement.', 409);
         }
 
         $resultat = $this->machine->reussir($paiement, MachineEtatPaiement::SOURCE_MANUEL, 'confirmation_manuelle', [
             'paiement' => $paiement->ulid, 'par' => $request->user()->ulid,
-        ], ['confirme_par' => $request->user(), 'operateur' => 'wave']);
+        ], ['confirme_par' => $request->user(), 'operateur' => $paiement->estWaveManuel() ? 'wave' : null]);
 
         if ($resultat['effet'] !== 'deja_regle' && $resultat['effet'] !== 'deja_traite') {
             Audit::enregistrer('paiement.confirme_manuellement', $paiement, [
                 'vente' => $resultat['vente']->ulid, 'numero' => $resultat['vente']->numeroAffiche(),
                 'montant_xof' => $paiement->montant_xof, 'effet' => $resultat['effet'],
+                'methode' => $paiement->methode, 'moyen' => $paiement->nomMoyen(),
             ]);
         }
 

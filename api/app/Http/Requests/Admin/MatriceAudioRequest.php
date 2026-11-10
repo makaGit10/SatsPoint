@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Services\Catalogue;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -16,7 +17,7 @@ class MatriceAudioRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'langue' => ['sometimes', 'nullable', 'string', Rule::in(config('satspoint.audio.langues'))],
+            'langue' => ['sometimes', 'nullable', 'string', Rule::in(Catalogue::codesLanguesActives())],
             'ecran' => ['sometimes', 'nullable', 'string', 'max:60', 'regex:/^[a-zA-Z0-9_-]+$/'],
             'manquants' => ['sometimes', 'nullable', 'boolean'],
             'q' => ['sometimes', 'nullable', 'string', 'max:60'],

@@ -26,6 +26,8 @@ class VenteCourteResource extends JsonResource
             'statut' => $this->statut,
             'methode_reussie' => $reussi?->methode,
             'operateur_reussi' => $reussi?->operateur,
+            // CONTRAT_API § 14.4 : nom du moyen du pays de la tentative réussie.
+            'moyen_reussi' => $reussi?->nomMoyen(),
             'montant_sats_reussi' => $reussi?->montant_sats === null ? null : (int) $reussi->montant_sats,
             'caissier' => $this->caissier === null ? null : ['ulid' => $this->caissier->ulid, 'nom' => $this->caissier->nom],
             'note' => $this->note,

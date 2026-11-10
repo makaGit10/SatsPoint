@@ -4,6 +4,7 @@ use App\Http\Controllers\FichierAudioController;
 use App\Http\Controllers\PaiementSimuleController;
 use App\Http\Controllers\RecuController;
 use App\Http\Controllers\Webhooks\PaytechWebhookController;
+use App\Models\Langue;
 use App\Models\Membre;
 use Illuminate\Support\Facades\Route;
 
@@ -27,7 +28,7 @@ Route::get('paiement-simule/{ulid}', PaiementSimuleController::class)
 
 // Fichier audio publié : /audio/{langue}/{cle}.{empreinte8}.mp3 (CAHIER § 6.12). Nom strictement contraint.
 Route::get('audio/{langue}/{fichier}', FichierAudioController::class)
-    ->where('langue', '[a-z]{2,3}')
+    ->where('langue', Langue::CODE_REGEX)
     ->where('fichier', '[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+\.[a-f0-9]{8}\.mp3')
     ->middleware('throttle:public')
     ->name('audio.fichier');

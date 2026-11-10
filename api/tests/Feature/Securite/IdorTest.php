@@ -6,6 +6,7 @@ use App\Models\CleAudio;
 use App\Models\Import;
 use App\Models\Invitation;
 use App\Models\Membre;
+use App\Models\MoyenPaiement;
 use Illuminate\Routing\Route as RouteInstance;
 use Illuminate\Support\Facades\Route;
 
@@ -67,6 +68,10 @@ it('refuse l\'accès inter-boutiques sur chaque route paramétrée', function ()
         'import' => $importA->ulid,
         'boutique' => $boutiqueA->ulid,
         'audio' => (string) $audio->id,
+        // Catalogues (CONTRAT_API § 14) : console réservée au super-admin ; moyen d'un AUTRE pays que la boutique B (SN).
+        'langue' => 'wo',
+        'pays' => 'SN',
+        'moyen' => MoyenPaiement::query()->where('pays', 'CI')->value('ulid'),
     ];
 
     $resultats = [];

@@ -29,7 +29,7 @@ class RecuController extends Controller
         $vente = Vente::toutesBoutiques()
             ->with([
                 'boutique:id,nom,ville,reglages',
-                'paiementReussi' => fn ($q) => $q->withoutGlobalScope(BoutiqueScope::class)->select(['id', 'boutique_id', 'methode', 'operateur', 'montant_sats']),
+                'paiementReussi' => fn ($q) => $q->withoutGlobalScope(BoutiqueScope::class)->select(['id', 'boutique_id', 'methode', 'operateur', 'montant_sats', 'moyen']),
             ])
             ->where('recu_jeton', $jeton)
             ->where('statut', Vente::STATUT_PAYEE)
@@ -47,6 +47,7 @@ class RecuController extends Controller
             'montant_sats' => $paiement?->montant_sats === null ? null : (int) $paiement->montant_sats,
             'methode' => $paiement?->methode,
             'operateur' => $paiement?->operateur,
+            'moyen' => $paiement?->nomMoyen(),
             'statut' => Vente::STATUT_PAYEE,
             'paye_le' => $vente->payee_at?->toIso8601String(),
             'boutique' => ['nom' => $vente->boutique->nom, 'ville' => $vente->boutique->ville],

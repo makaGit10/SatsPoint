@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Caisse;
 
+use App\Models\Boutique;
 use App\Models\Paiement;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -17,6 +18,7 @@ class NouvelleTentativeRequest extends FormRequest
         return [
             'methode' => ['required', 'string', 'in:'.implode(',', Paiement::METHODES)],
             'operateur' => ['sometimes', 'nullable', 'string', 'in:'.implode(',', Paiement::OPERATEURS)],
+            'moyen' => ['required_if:methode,'.Paiement::METHODE_MOYEN_PAYS, 'nullable', 'string', 'regex:/^'.Boutique::ULID_REGEX.'$/'],
         ];
     }
 }

@@ -18,7 +18,16 @@ class Paiement extends Model
 
     public const METHODE_WAVE_MANUEL = 'wave_manuel';
 
-    public const METHODES = [self::METHODE_LIGHTNING, self::METHODE_PAYTECH, self::METHODE_WAVE_MANUEL];
+    /** Moyen de paiement du pays de la boutique (catalogue, CONTRAT_API § 14.4) : confirmation manuelle, comme Wave direct. */
+    public const METHODE_MOYEN_PAYS = 'moyen_pays';
+
+    public const METHODES = [self::METHODE_LIGHTNING, self::METHODE_PAYTECH, self::METHODE_WAVE_MANUEL, self::METHODE_MOYEN_PAYS];
+
+    /** Méthodes confirmées à la main par le propriétaire / gérant (aucune confirmation automatique possible). */
+    public const METHODES_MANUELLES = [self::METHODE_WAVE_MANUEL, self::METHODE_MOYEN_PAYS];
+
+    /** Méthodes rangées dans « mobile money » (tableau de bord, console). */
+    public const METHODES_MOBILE_MONEY = [self::METHODE_PAYTECH, self::METHODE_WAVE_MANUEL, self::METHODE_MOYEN_PAYS];
 
     public const STATUT_EN_ATTENTE = 'en_attente';
 
@@ -48,6 +57,8 @@ class Paiement extends Model
         'paytech_ref',
         'paytech_redirect_url',
         'operateur',
+        'moyen_paiement_id',
+        'moyen',
         'simule',
     ];
 
@@ -60,6 +71,7 @@ class Paiement extends Model
             'montant_sats' => 'integer',
             'cours_xof_par_btc' => 'decimal:2',
             'simule' => 'boolean',
+            'moyen' => 'array',
             'expire_at' => 'datetime',
             'confirme_at' => 'datetime',
             'regle_at' => 'datetime',
@@ -106,6 +118,25 @@ class Paiement extends Model
     public function estWaveManuel(): bool
     {
         return $this->methode === self::METHODE_WAVE_MANUEL;
+    }
+
+    public function estMoyenPays(): bool
+    {
+        return $this->methode === self::METHODE_MOYEN_PAYS;
+    }
+
+    /** Wave direct ou moyen du pays : seule une confirmation humaine clôt la tentative. */
+    public function seConfirmeManuellement(): bool
+    {
+        return in_array($this->methode, self::METHODES_MANUELLES, true);
+    }
+
+    /** Nom du moyen du pays (photographie), sinon null. */
+    public function nomMoyen(): ?string
+    {
+        $moyen = $this->moyen;
+
+        return $this->estMoyenPays() && is_array($moyen) && isset($moyen['nom']) ? (string) $moyen['nom'] : null;
     }
 
     /** Les 8 premiers caractères du hash : seule forme journalisée ou exposée. */

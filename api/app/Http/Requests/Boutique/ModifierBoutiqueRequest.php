@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\Boutique;
 
+use App\Services\Catalogue;
 use App\Support\Identifiant;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Réglages de la boutique (CAHIER § 6.2, CONTRAT_API § 8) : champs partiels, bornes strictes, listes fermées.
@@ -21,6 +23,8 @@ class ModifierBoutiqueRequest extends FormRequest
         return [
             'nom' => ['sometimes', 'string', 'min:2', 'max:120'],
             'ville' => ['sometimes', 'string', 'min:2', 'max:80'],
+            // Pays (propriétaire seulement : vérifié par la Policy « changerPays » dans le contrôleur).
+            'pays' => ['sometimes', 'string', 'size:2', Rule::in(Catalogue::codesPaysActifs())],
             'telephone' => ['sometimes', 'nullable', 'string', 'max:30', function (string $attribute, mixed $value, \Closure $fail) {
                 if ($value !== null && $value !== '' && Identifiant::normaliserTelephone((string) $value) === null) {
                     $fail('Le numéro de téléphone de la boutique est invalide.');

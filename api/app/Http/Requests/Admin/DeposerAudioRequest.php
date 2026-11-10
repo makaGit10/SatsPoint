@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\CleAudio;
+use App\Services\Catalogue;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\File;
@@ -27,7 +28,7 @@ class DeposerAudioRequest extends FormRequest
     {
         return [
             'cle' => ['required', 'string', 'max:120', 'regex:'.CleAudio::REGEX, Rule::exists('cles_audio', 'cle')],
-            'langue' => ['required', 'string', Rule::in(config('satspoint.audio.langues'))],
+            'langue' => ['required', 'string', Rule::in(Catalogue::codesLanguesActives())],
             // Type MIME détecté sur le CONTENU (fileinfo), jamais l'extension : mp3, wav, m4a, ogg, webm.
             'fichier' => [
                 'required',

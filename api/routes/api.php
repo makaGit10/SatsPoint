@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Admin\AudioStudioController;
+use App\Http\Controllers\Api\V1\Admin\CatalogueController;
 use App\Http\Controllers\Api\V1\Admin\ConsoleController;
 use App\Http\Controllers\Api\V1\ArticleController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BoutiqueController;
+use App\Http\Controllers\Api\V1\BoutiqueMoyensPaysController;
 use App\Http\Controllers\Api\V1\BoutiquePaytechController;
 use App\Http\Controllers\Api\V1\BoutiqueWalletController;
 use App\Http\Controllers\Api\V1\ConfigController;
@@ -22,7 +24,9 @@ use App\Http\Controllers\Api\V1\RechercheController;
 use App\Http\Controllers\Api\V1\TableauDeBordController;
 use App\Http\Controllers\Api\V1\VenteController;
 use App\Http\Controllers\Api\V1\WalletController;
+use App\Models\Langue;
 use App\Models\Membre;
+use App\Models\Pays;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -40,7 +44,10 @@ Route::pattern('import', Membre::ULID_REGEX);
 Route::pattern('boutique', Membre::ULID_REGEX);
 Route::pattern('audio', '[0-9]{1,12}');
 Route::pattern('jeton', '[A-Za-z0-9]{40,64}');
-Route::pattern('langue', '[a-z]{2,3}');
+// Code de langue du catalogue (CONTRAT_API § 14) : wo, srr, bm, dyu, ff-ml…
+Route::pattern('langue', Langue::CODE_REGEX);
+Route::pattern('pays', Pays::CODE_REGEX);
+Route::pattern('moyen', Membre::ULID_REGEX);
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
 
@@ -139,6 +146,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::delete('boutique/paytech', [BoutiquePaytechController::class, 'destroy'])->name('boutique.paytech.destroy');
         Route::post('boutique/paytech/verifier', [BoutiquePaytechController::class, 'verifier'])->middleware('throttle:configuration')->name('boutique.paytech.verifier');
 
+        // ---- Moyens de paiement du pays (CONTRAT_API § 14.3) : propriétaire / gérant
+        Route::get('boutique/moyens-pays', [BoutiqueMoyensPaysController::class, 'index'])->name('boutique.moyens-pays.index');
+        Route::put('boutique/moyens-pays/{moyen}', [BoutiqueMoyensPaysController::class, 'update'])->middleware('throttle:configuration')->name('boutique.moyens-pays.update');
+
         // ---- Articles (CONTRAT_API § 9) ----------------------------------
         Route::get('articles', [ArticleController::class, 'index'])->name('articles.index');
         Route::post('articles', [ArticleController::class, 'store'])->name('articles.store');
@@ -161,5 +172,17 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('sante', [ConsoleController::class, 'sante'])->name('sante');
         Route::get('journal', [ConsoleController::class, 'journal'])->name('journal');
         Route::get('statistiques', [ConsoleController::class, 'statistiques'])->name('statistiques');
+
+        // Catalogues : pays, langues, moyens de paiement par pays (CONTRAT_API § 14.2) — écritures 30 / min.
+        Route::get('pays', [CatalogueController::class, 'pays'])->name('pays.index');
+        Route::patch('pays/{pays}', [CatalogueController::class, 'modifierPays'])->middleware('throttle:catalogue')->name('pays.update');
+        Route::get('langues', [CatalogueController::class, 'langues'])->name('langues.index');
+        Route::post('langues', [CatalogueController::class, 'creerLangue'])->middleware('throttle:catalogue')->name('langues.store');
+        Route::patch('langues/{langue}', [CatalogueController::class, 'modifierLangue'])->middleware('throttle:catalogue')->name('langues.update');
+        Route::delete('langues/{langue}', [CatalogueController::class, 'supprimerLangue'])->middleware('throttle:catalogue')->name('langues.destroy');
+        Route::get('moyens-paiement', [CatalogueController::class, 'moyens'])->name('moyens-paiement.index');
+        Route::post('moyens-paiement', [CatalogueController::class, 'creerMoyen'])->middleware('throttle:catalogue')->name('moyens-paiement.store');
+        Route::patch('moyens-paiement/{moyen}', [CatalogueController::class, 'modifierMoyen'])->middleware('throttle:catalogue')->name('moyens-paiement.update');
+        Route::delete('moyens-paiement/{moyen}', [CatalogueController::class, 'supprimerMoyen'])->middleware('throttle:catalogue')->name('moyens-paiement.destroy');
     });
 });

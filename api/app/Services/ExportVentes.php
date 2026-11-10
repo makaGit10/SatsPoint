@@ -100,7 +100,7 @@ class ExportVentes
                 'heure' => $local->format('H:i'),
                 'montant' => (int) $v->montant_xof,
                 'statut' => self::libelleStatut($v->statut),
-                'moyen' => $p ? self::libelleMethode($p->methode) : '',
+                'moyen' => $p ? ($p->nomMoyen() ?? self::libelleMethode($p->methode)) : '',
                 'sats' => $p?->montant_sats,
                 'caissier' => $v->caissier?->nom ?? '',
                 'note' => $v->note,
@@ -128,7 +128,7 @@ class ExportVentes
 
     private function preparer(Builder $requete): Builder
     {
-        return $requete->with(['caissier:id,ulid,nom', 'paiementReussi:id,methode,operateur,montant_sats,cours_xof_par_btc'])
+        return $requete->with(['caissier:id,ulid,nom', 'paiementReussi:id,methode,operateur,montant_sats,cours_xof_par_btc,moyen'])
             ->reorder()->orderBy('ventes.created_at')->orderBy('ventes.id');
     }
 
@@ -143,7 +143,7 @@ class ExportVentes
             $local->format('H:i'),
             (int) $vente->montant_xof,
             self::libelleStatut($vente->statut),
-            $p ? self::libelleMethode($p->methode) : '',
+            $p ? self::assainir($p->nomMoyen() ?? self::libelleMethode($p->methode)) : '',
             $p?->operateur ? self::libelleOperateur($p->operateur) : '',
             $p?->montant_sats ?? '',
             $p?->cours_xof_par_btc !== null ? (int) round((float) $p->cours_xof_par_btc) : '',
@@ -179,6 +179,7 @@ class ExportVentes
             'lightning' => 'Lightning',
             'paytech' => 'Mobile money (PayTech)',
             'wave_manuel' => 'Wave (confirmation manuelle)',
+            'moyen_pays' => 'Mobile money du pays (confirmation manuelle)',
             default => $methode,
         };
     }

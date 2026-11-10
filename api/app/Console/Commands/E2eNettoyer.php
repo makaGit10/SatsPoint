@@ -54,9 +54,17 @@ class E2eNettoyer extends Command
             $ventes = DB::table('ventes')->where('note', 'like', $motif)->whereNotIn('boutique_id', $boutiques)->delete();
             $nbBoutiques = DB::table('boutiques')->whereIn('id', $boutiques)->delete();
             $nbUsers = DB::table('users')->whereIn('id', $users)->delete();
+            // Moyens de paiement de test créés à la console (CONTRAT_API § 14.2) : leurs activations d'abord.
+            $moyens = DB::table('moyens_paiement')->where('nom', 'like', $motif)->pluck('id');
+            DB::table('moyens_paiement_boutique')->whereIn('moyen_paiement_id', $moyens)->delete();
+            $nbMoyens = DB::table('moyens_paiement')->whereIn('id', $moyens)->delete();
 
-            return ['boutiques' => $nbBoutiques, 'comptes' => $nbUsers, 'audios' => $audios, 'ventes' => $ventes];
+            return ['boutiques' => $nbBoutiques, 'comptes' => $nbUsers, 'audios' => $audios, 'ventes' => $ventes, 'moyens' => $nbMoyens];
         });
+
+        if ($bilan['moyens'] > 0) {
+            \App\Services\Catalogue::invalider();
+        }
 
         if ($bilan['audios'] > 0) {
             ManifesteAudioController::invaliderCache();

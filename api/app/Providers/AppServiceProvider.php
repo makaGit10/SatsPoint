@@ -158,5 +158,8 @@ class AppServiceProvider extends ServiceProvider
         ]);
         RateLimiter::for('invitation-publique', fn (Request $request) => Limit::perMinute(20)->by('ip:'.$request->ip()));
         RateLimiter::for('imports', fn (Request $request) => Limit::perMinute(10)->by('u:'.($request->user()?->id ?? $request->ip())));
+
+        // Catalogues de la plateforme (pays, langues, moyens de paiement) : écritures du super-admin, 30 / min.
+        RateLimiter::for('catalogue', fn (Request $request) => Limit::perMinute(30)->by('u:'.($request->user()?->id ?? $request->ip())));
     }
 }

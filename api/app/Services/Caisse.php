@@ -7,6 +7,8 @@ use App\Models\Article;
 use App\Models\Boutique;
 use App\Models\ConnexionWallet;
 use App\Models\LigneVente;
+use App\Models\MoyenPaiement;
+use App\Models\MoyenPaiementBoutique;
 use App\Models\Paiement;
 use App\Models\SequenceVente;
 use App\Models\User;
@@ -27,11 +29,11 @@ class Caisse
     ) {}
 
     /**
-     * @param  array{montant_xof: int, note?: ?string, lignes?: list<array{article_ulid?: ?string, libelle: string, quantite: int, prix_unitaire_xof: int}>, methode: string, operateur?: ?string}  $donnees
+     * @param  array{montant_xof: int, note?: ?string, lignes?: list<array{article_ulid?: ?string, libelle: string, quantite: int, prix_unitaire_xof: int}>, methode: string, operateur?: ?string, moyen?: ?string}  $donnees
      */
     public function creerVente(Boutique $boutique, User $caissier, array $donnees): Vente
     {
-        $this->verifierMoyenActif($boutique, $donnees['methode']);
+        $moyenPays = $this->verifierMoyenActif($boutique, $donnees['methode'], $donnees['moyen'] ?? null);
 
         // Résolution des articles AVANT la transaction (scope boutique : un ulid étranger est simplement introuvable).
         $lignes = $this->preparerLignes($donnees['lignes'] ?? []);
@@ -51,18 +53,18 @@ class Caisse
                 LigneVente::create($ligne + ['vente_id' => $vente->id]);
             }
 
-            $this->creerTentative($boutique, $vente, $donnees['methode'], $donnees['operateur'] ?? null);
+            $this->creerTentative($boutique, $vente, $donnees['methode'], $donnees['operateur'] ?? null, $moyenPays);
 
             return $vente;
         });
     }
 
     /** Nouvelle tentative sur une vente en attente : les tentatives en attente passent à « annule ». */
-    public function nouvelleTentative(Boutique $boutique, Vente $vente, string $methode, ?string $operateur): Paiement
+    public function nouvelleTentative(Boutique $boutique, Vente $vente, string $methode, ?string $operateur, ?string $moyen = null): Paiement
     {
-        $this->verifierMoyenActif($boutique, $methode);
+        $moyenPays = $this->verifierMoyenActif($boutique, $methode, $moyen);
 
-        return DB::transaction(function () use ($boutique, $vente, $methode, $operateur) {
+        return DB::transaction(function () use ($boutique, $vente, $methode, $operateur, $moyenPays) {
             $vente = Vente::query()->whereKey($vente->id)->lockForUpdate()->firstOrFail();
 
             if (! $vente->estEnAttente()) {
@@ -71,18 +73,22 @@ class Caisse
 
             $this->machine->annulerTentativesEnAttente($vente);
 
-            return $this->creerTentative($boutique, $vente, $methode, $operateur);
+            return $this->creerTentative($boutique, $vente, $methode, $operateur, $moyenPays);
         });
     }
 
     // ---------------------------------------------------------------- interne
 
-    private function creerTentative(Boutique $boutique, Vente $vente, string $methode, ?string $operateur): Paiement
+    /** @param  array{0: MoyenPaiement, 1: string}|null  $moyenPays  moyen du catalogue et valeur de la boutique (moyen_pays) */
+    private function creerTentative(Boutique $boutique, Vente $vente, string $methode, ?string $operateur, ?array $moyenPays = null): Paiement
     {
         return match ($methode) {
             Paiement::METHODE_LIGHTNING => $this->lightning->creerTentative($vente, $boutique, $this->connexionWallet($boutique)),
             Paiement::METHODE_PAYTECH => $this->tentativePaytech($boutique, $vente, $operateur),
             Paiement::METHODE_WAVE_MANUEL => $this->tentativeWaveManuel($boutique, $vente),
+            Paiement::METHODE_MOYEN_PAYS => $moyenPays !== null
+                ? $this->tentativeMoyenPays($vente, $moyenPays[0], $moyenPays[1])
+                : throw new ErreurMetier('MOYEN_INACTIF', 'Ce moyen de paiement n\'est pas activé pour la boutique.', 409),
             default => throw new ErreurMetier('METHODE_INCONNUE', 'Moyen de paiement inconnu.'),
         };
     }
@@ -133,6 +139,25 @@ class Caisse
         ]);
     }
 
+    /**
+     * Moyen du pays (CONTRAT_API § 14.4) : comme le Wave direct, aucune confirmation automatique ni expiration ;
+     * photographie du moyen (nom, type, couleur, numéro / lien, instructions) prise maintenant.
+     */
+    private function tentativeMoyenPays(Vente $vente, MoyenPaiement $moyen, string $valeur): Paiement
+    {
+        return Paiement::create([
+            'vente_id' => $vente->id,
+            'methode' => Paiement::METHODE_MOYEN_PAYS,
+            'statut' => Paiement::STATUT_EN_ATTENTE,
+            'montant_xof' => $vente->montant_xof,
+            'operateur' => null,
+            'moyen_paiement_id' => $moyen->id,
+            'moyen' => $moyen->photographie($valeur),
+            'expire_at' => null,
+            'simule' => false,
+        ]);
+    }
+
     /** Lien Wave de la boutique avec le montant (`?amount=`), pour une tentative wave_manuel. */
     public static function lienWave(Boutique $boutique, int $montantXof): ?string
     {
@@ -156,13 +181,42 @@ class Caisse
         return $connexion;
     }
 
-    private function verifierMoyenActif(Boutique $boutique, string $methode): void
+    /**
+     * Vérifie que le moyen est activé. Pour `moyen_pays`, le moyen doit être actif au catalogue, du pays de la boutique
+     * et activé par elle avec une valeur ; sinon 409 MOYEN_INACTIF (identique pour un moyen inconnu ou d'un autre pays).
+     *
+     * @return array{0: MoyenPaiement, 1: string}|null
+     */
+    private function verifierMoyenActif(Boutique $boutique, string $methode, ?string $moyenUlid = null): ?array
     {
+        $inactif = fn () => new ErreurMetier('MOYEN_INACTIF', 'Ce moyen de paiement n\'est pas activé pour la boutique.', 409);
+
+        if ($methode === Paiement::METHODE_MOYEN_PAYS) {
+            $moyen = $moyenUlid === null ? null : MoyenPaiement::query()
+                ->where('ulid', $moyenUlid)
+                ->where('actif', true)
+                ->where('pays', $boutique->pays ?? 'SN')
+                ->first();
+
+            $config = $moyen === null ? null : MoyenPaiementBoutique::pourBoutique($boutique)
+                ->where('moyen_paiement_id', $moyen->id)
+                ->where('active', true)
+                ->first(['id', 'valeur']);
+
+            if ($moyen === null || $config === null || blank($config->valeur)) {
+                throw $inactif();
+            }
+
+            return [$moyen, (string) $config->valeur];
+        }
+
         $moyens = $boutique->reglagesComplets()['moyens'];
 
         if (empty($moyens[$methode])) {
-            throw new ErreurMetier('MOYEN_INACTIF', 'Ce moyen de paiement n\'est pas activé pour la boutique.', 409);
+            throw $inactif();
         }
+
+        return null;
     }
 
     /** @return list<array{article_id: ?int, libelle: string, quantite: int, prix_unitaire_xof: int}> */

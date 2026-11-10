@@ -28,6 +28,8 @@ class CreerVenteRequest extends FormRequest
             'note' => ['sometimes', 'nullable', 'string', 'max:200'],
             'methode' => ['required', 'string', 'in:'.implode(',', Paiement::METHODES)],
             'operateur' => ['sometimes', 'nullable', 'string', 'in:'.implode(',', Paiement::OPERATEURS)],
+            // Moyen du pays (CONTRAT_API § 14.4) : ulid du moyen du catalogue, requis avec la méthode moyen_pays.
+            'moyen' => ['required_if:methode,'.Paiement::METHODE_MOYEN_PAYS, 'nullable', 'string', 'regex:/^'.Boutique::ULID_REGEX.'$/'],
             'lignes' => ['sometimes', 'array', 'max:100'],
             'lignes.*' => ['array:article_ulid,libelle,quantite,prix_unitaire_xof'],
             'lignes.*.article_ulid' => ['sometimes', 'nullable', 'string', 'regex:/^'.Boutique::ULID_REGEX.'$/'],

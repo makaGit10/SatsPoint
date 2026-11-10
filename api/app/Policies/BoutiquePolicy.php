@@ -64,6 +64,18 @@ class BoutiquePolicy
         return $membre !== null && $membre->boutique_id === $boutique->id && $membre->estProprietaire();
     }
 
+    /** Changer le pays de la boutique (CONTRAT_API § 14.3) : propriétaire uniquement. */
+    public function changerPays(User $user, Boutique $boutique): bool
+    {
+        return $this->gererPaiements($user, $boutique);
+    }
+
+    /** Moyens de paiement du pays (activation, numéro / lien marchand) : propriétaire ou gérant. */
+    public function gererMoyensPays(User $user, Boutique $boutique): bool
+    {
+        return $this->update($user, $boutique);
+    }
+
     public function delete(User $user, Boutique $boutique): bool
     {
         return $this->gererPaiements($user, $boutique);

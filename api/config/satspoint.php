@@ -21,6 +21,8 @@ return [
 
     'locales' => ['fr', 'en'],
 
+    // Repli UNIQUEMENT si la table `langues` est absente (avant migration) : la source est le catalogue en base
+    // (App\Services\Catalogue, CONTRAT_API § 14). Ne plus modifier cette liste pour ajouter une langue.
     'langues_audio' => [
         ['code' => 'wo', 'nom' => 'Wolof', 'nom_local' => 'Wolof'],
         ['code' => 'srr', 'nom' => 'Sérère', 'nom_local' => 'Seereer'],
@@ -126,6 +128,12 @@ return [
             // La PUBLICATION émet en plus « audios » sur le canal public « plateforme » (Diffuseur, AudioStudioController).
             'audios' => ['rubrique' => 'audio', 'canal' => 'admin'],
             'cles_audio' => ['rubrique' => 'audio', 'canal' => 'admin'],
+            // Catalogues de la plateforme (CONTRAT_API § 14.6) : signal public, sans donnée ; les écrans relisent /config.
+            'pays' => ['rubrique' => 'catalogues', 'canal' => 'plateforme'],
+            'langues' => ['rubrique' => 'catalogues', 'canal' => 'plateforme'],
+            'moyens_paiement' => ['rubrique' => 'catalogues', 'canal' => 'plateforme'],
+            // Activation d'un moyen du pays par une boutique : réglages de CETTE boutique.
+            'moyens_paiement_boutique' => ['rubrique' => 'parametres', 'canal' => 'boutique'],
         ],
     ],
 
@@ -135,6 +143,7 @@ return [
     'audio' => [
         // Fichier produit par le front (web/src/voix/cles-vocales.json), monté / copié dans l'image.
         'fichier_cles' => env('AUDIO_FICHIER_CLES', '/app/cles-i18n/cles-vocales.json'),
+        // Obsolète : les langues du studio viennent du catalogue (table `langues`, App\Services\Catalogue).
         'langues' => ['wo', 'srr', 'ff', 'dyo', 'fr'],
         'extensions' => ['mp3', 'wav', 'm4a', 'ogg', 'webm'],
         'taille_max_ko' => 2048,          // 2 Mo

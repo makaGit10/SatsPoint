@@ -9,6 +9,7 @@ use App\Jobs\TraiterAudio;
 use App\Models\Audio;
 use App\Models\CleAudio;
 use App\Models\User;
+use App\Services\Catalogue;
 use App\Services\Diffuseur;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
@@ -26,10 +27,10 @@ class StudioAudio
         private readonly StockageAudio $stockage,
     ) {}
 
-    /** @return list<string> */
+    /** @return list<string> langues ACTIVES du catalogue (CONTRAT_API § 14.5), triées par ordre */
     public static function langues(): array
     {
-        return (array) config('satspoint.audio.langues');
+        return Catalogue::codesLanguesActives();
     }
 
     /**
@@ -134,8 +135,10 @@ class StudioAudio
         }
         unset($c);
 
-        $noms = array_column((array) config('satspoint.langues_audio'), 'nom', 'code');
-        $languesExposees = array_map(fn (string $code) => ['code' => $code, 'nom' => $noms[$code] ?? $code], $langues);
+        // Colonnes de la matrice : une par langue active ({ code, nom, nom_local, pays }), filtrables par pays côté studio.
+        $languesExposees = array_map(fn (array $l) => [
+            'code' => $l['code'], 'nom' => $l['nom_fr'], 'nom_local' => $l['nom_local'], 'pays' => $l['pays'],
+        ], Catalogue::languesActives());
 
         return ['langues' => $languesExposees, 'ecrans' => $ecrans, 'couverture' => $couverture, 'cles' => $lignes];
     }

@@ -6,7 +6,7 @@ use App\Facades\Audit;
 use App\Models\Audio;
 use App\Models\CleAudio;
 use App\Services\Audio\StockageAudio;
-use App\Services\Audio\StudioAudio;
+use App\Services\Catalogue;
 use Illuminate\Console\Command;
 
 /**
@@ -27,7 +27,7 @@ class AudioExporter extends Command
     public function handle(StockageAudio $stockage): int
     {
         $dossier = rtrim((string) $this->argument('dossier'), '/\\');
-        $langues = array_values(array_intersect((array) $this->option('langue') ?: StudioAudio::langues(), StudioAudio::langues()));
+        $langues = array_values(array_intersect((array) $this->option('langue') ?: Catalogue::codesLangues(), Catalogue::codesLangues()));
 
         if ($dossier === '' || (! is_dir($dossier) && ! @mkdir($dossier, 0775, true) && ! is_dir($dossier)) || ! is_writable($dossier)) {
             $this->error('[audio] dossier de destination inutilisable.');

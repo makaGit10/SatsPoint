@@ -254,3 +254,25 @@ function contenuReponse(TestResponse $reponse): string
 
     return (string) ob_get_clean();
 }
+
+/*
+|--------------------------------------------------------------------------
+| Pays, langues et moyens de paiement par pays (CONTRAT_API § 14)
+|--------------------------------------------------------------------------
+*/
+
+/** Moyen du catalogue (graines de la migration) par pays et nom. */
+function moyenCatalogue(string $pays = 'CI', string $nom = 'Orange Money'): App\Models\MoyenPaiement
+{
+    return App\Models\MoyenPaiement::query()->where('pays', $pays)->where('nom', $nom)->firstOrFail();
+}
+
+/** Place la boutique dans un pays et y active un moyen avec sa valeur (directement en base). */
+function activerMoyenPays(Boutique $boutique, App\Models\MoyenPaiement $moyen, ?string $valeur = '+2250701020304', bool $active = true): App\Models\MoyenPaiementBoutique
+{
+    $boutique->forceFill(['pays' => $moyen->pays])->save();
+
+    return avecBoutique($boutique, fn () => App\Models\MoyenPaiementBoutique::create([
+        'moyen_paiement_id' => $moyen->id, 'valeur' => $valeur, 'active' => $active,
+    ]));
+}

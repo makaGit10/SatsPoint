@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\CleAudio;
+use App\Models\Langue;
 use App\Services\Diffuseur;
 use Database\Seeders\CleAudioSeeder;
 use Illuminate\Console\Command;
@@ -116,9 +117,13 @@ class AudioSynchroniser extends Command
                 }
             }
 
+            // Noms des langues du catalogue (`langue.{code}`) : ajoutés par la console, absents du code du front
+            // pour les langues créées après coup — jamais retirés tant que la langue existe (CONTRAT_API § 14.5).
+            $clesLangues = array_map(fn (string $code) => 'langue.'.$code, Langue::query()->pluck('code')->all());
+
             // Clés disparues du code : conservées (avec leurs audios) mais signalées.
             foreach ($existantes as $cle => $existante) {
-                if (! isset($vues[$cle]) && $existante->presente_dans_code) {
+                if (! isset($vues[$cle]) && $existante->presente_dans_code && ! in_array($cle, $clesLangues, true)) {
                     $existante->forceFill(['presente_dans_code' => false])->save();
                     $stats['retirees']++;
                 }

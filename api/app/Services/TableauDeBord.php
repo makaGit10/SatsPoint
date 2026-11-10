@@ -51,7 +51,8 @@ class TableauDeBord
 
         $lightning = $repartitionBrute->get(Paiement::METHODE_LIGHTNING);
         $mobile = ['nombre' => 0, 'montant_xof' => 0];
-        foreach ([Paiement::METHODE_PAYTECH, Paiement::METHODE_WAVE_MANUEL] as $m) {
+        // Mobile money = PayTech + Wave direct + moyens du pays (CONTRAT_API § 14.4).
+        foreach (Paiement::METHODES_MOBILE_MONEY as $m) {
             if ($ligne = $repartitionBrute->get($m)) {
                 $mobile['nombre'] += (int) $ligne->nombre;
                 $mobile['montant_xof'] += (int) $ligne->montant;
@@ -74,7 +75,7 @@ class TableauDeBord
         }
 
         $dernieres = $base()
-            ->with(['caissier:id,ulid,nom', 'paiementReussi:id,methode,operateur,montant_sats'])
+            ->with(['caissier:id,ulid,nom', 'paiementReussi:id,methode,operateur,montant_sats,moyen'])
             ->where('ventes.created_at', '>=', $bornes['du'])->where('ventes.created_at', '<', $bornes['au'])
             ->orderByDesc('ventes.created_at')->orderByDesc('ventes.id')
             ->limit(10)

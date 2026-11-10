@@ -38,7 +38,7 @@ class VenteController extends Controller
 
         // Le total est déjà connu par les totaux (même ensemble filtré) : pas de second COUNT.
         $page = (clone $requete)
-            ->with(['caissier:id,ulid,nom', 'paiementReussi:id,methode,operateur,montant_sats'])
+            ->with(['caissier:id,ulid,nom', 'paiementReussi:id,methode,operateur,montant_sats,moyen'])
             ->orderByDesc('ventes.created_at')->orderByDesc('ventes.id')
             ->paginate($parPage, ['ventes.*'], 'page', $numero, $totaux['nombre']);
 
@@ -74,7 +74,7 @@ class VenteController extends Controller
         $boutique = $this->courante->exiger(Boutique::class);
         $this->authorize('payer', $vente);
 
-        $paiement = $this->caisse->nouvelleTentative($boutique, $vente, $request->input('methode'), $request->input('operateur'));
+        $paiement = $this->caisse->nouvelleTentative($boutique, $vente, $request->input('methode'), $request->input('operateur'), $request->input('moyen'));
 
         return (new PaiementResource($paiement))->response()->setStatusCode(201);
     }

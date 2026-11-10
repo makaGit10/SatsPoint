@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\ConnexionWallet;
+use App\Services\Catalogue;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 
@@ -15,6 +16,7 @@ class ConfigController extends Controller
     public function __invoke(): JsonResponse
     {
         $reverb = config('satspoint.reverb_public');
+        $catalogue = Catalogue::publique();
 
         return response()->json([
             'app' => [
@@ -30,7 +32,11 @@ class ConfigController extends Controller
                 'schema' => $reverb['schema'],
             ],
             'locales' => config('satspoint.locales'),
-            'langues_audio' => config('satspoint.langues_audio'),
+            // Ancienne forme conservée (dérivée des langues actives du catalogue) : { code, nom, nom_local }.
+            'langues_audio' => Catalogue::languesAudio(),
+            // CONTRAT_API § 14.1 : catalogue actif, léger, mis en cache (invalidé à chaque écriture).
+            'pays' => $catalogue['pays'],
+            'langues' => $catalogue['langues'],
         ]);
     }
 

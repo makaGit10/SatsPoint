@@ -10,6 +10,9 @@ use App\Http\Resources\BoutiqueResource;
 use App\Http\Resources\UtilisateurResource;
 use App\Models\Boutique;
 use App\Models\Membre;
+use App\Models\MoyenPaiement;
+use App\Models\MoyenPaiementBoutique;
+use App\Models\Pays;
 use App\Services\BoutiqueCourante;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,6 +38,7 @@ class BoutiqueController extends Controller
                 'telephone' => $request->telephoneNormalise(),
                 'fuseau' => config('satspoint.boutique.fuseau'),
                 'devise' => config('satspoint.boutique.devise'),
+                'pays' => $request->input('pays') ?: Pays::SENEGAL,
                 'reglages' => config('satspoint.boutique.reglages_defaut'),
             ]);
             $boutique->forceFill(['statut' => Boutique::STATUT_ACTIVE, 'cree_par' => $utilisateur->id])->save();
@@ -49,7 +53,7 @@ class BoutiqueController extends Controller
         $membre->setRelation('boutique', $boutique);
         $this->courante->definir($boutique, $membre);
 
-        Audit::enregistrer('boutique.creee', $boutique, ['nom' => $boutique->nom, 'ville' => $boutique->ville]);
+        Audit::enregistrer('boutique.creee', $boutique, ['nom' => $boutique->nom, 'ville' => $boutique->ville, 'pays' => $boutique->pays]);
 
         $boutique->load(['connexionWallet', 'comptePaytech']);
 
@@ -79,7 +83,13 @@ class BoutiqueController extends Controller
 
         $this->authorize('update', $boutique);
 
+        // Le pays (moyens de paiement, langues proposées) ne se change que par le propriétaire (CONTRAT_API § 14.3).
+        if ($request->has('pays')) {
+            $this->authorize('changerPays', $boutique);
+        }
+
         $avant = ['nom' => $boutique->nom, 'ville' => $boutique->ville, 'reglages' => $boutique->reglagesComplets()];
+        $ancienPays = $boutique->pays;
 
         $donnees = $request->safe()->only(['nom', 'ville']);
         if ($request->has('telephone')) {
@@ -103,7 +113,26 @@ class BoutiqueController extends Controller
         }
         $donnees['reglages'] = $reglages;
 
-        $boutique->fill($donnees)->save();
+        $nouveauPays = $request->has('pays') ? (string) $request->validated('pays') : $ancienPays;
+        if ($nouveauPays !== $ancienPays) {
+            $donnees['pays'] = $nouveauPays;
+        }
+
+        DB::transaction(function () use ($boutique, $donnees, $ancienPays, $nouveauPays) {
+            $boutique->fill($donnees)->save();
+
+            // Changement de pays : les moyens de l'ancien pays ne sont plus proposés (désactivés, numéros conservés).
+            if ($nouveauPays !== $ancienPays) {
+                MoyenPaiementBoutique::pourBoutique($boutique)
+                    ->where('active', true)
+                    ->whereIn('moyen_paiement_id', MoyenPaiement::query()->where('pays', '!=', $nouveauPays)->select('id'))
+                    ->update(['active' => false, 'updated_at' => now()]);
+            }
+        });
+
+        if ($nouveauPays !== $ancienPays) {
+            Audit::enregistrer('boutique.pays_modifie', $boutique, ['avant' => $ancienPays, 'apres' => $nouveauPays]);
+        }
 
         Audit::enregistrer('boutique.reglages_modifies', $boutique, [
             'avant' => $avant,

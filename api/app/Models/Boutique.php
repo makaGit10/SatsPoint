@@ -26,6 +26,7 @@ class Boutique extends Model
         'ville',
         'fuseau',
         'devise',
+        'pays',
         'reglages',
     ];
 
@@ -74,7 +75,45 @@ class Boutique extends Model
         return $this->hasMany(Paiement::class)->withoutGlobalScope(BoutiqueScope::class);
     }
 
+    public function moyensPaiementBoutique(): HasMany
+    {
+        return $this->hasMany(MoyenPaiementBoutique::class)->withoutGlobalScope(BoutiqueScope::class);
+    }
+
     // ------------------------------------------------------------- méthodes
+
+    /**
+     * Moyens du pays ACTIVÉS par la boutique (CONTRAT_API § 14.3) : actifs au catalogue, du pays courant de la boutique,
+     * avec une valeur (numéro ou lien marchand). Une seule requête (jointure), triés par ordre puis nom.
+     *
+     * @return list<array{ulid: string, nom: string, type: string, couleur: string, instructions_fr: ?string, instructions_en: ?string, active: bool, valeur: ?string}>
+     */
+    public function moyensPaysActives(): array
+    {
+        return MoyenPaiementBoutique::pourBoutique($this)
+            ->join('moyens_paiement', 'moyens_paiement.id', '=', 'moyens_paiement_boutique.moyen_paiement_id')
+            ->where('moyens_paiement_boutique.active', true)
+            ->whereNotNull('moyens_paiement_boutique.valeur')
+            ->where('moyens_paiement.actif', true)
+            ->where('moyens_paiement.pays', $this->pays ?? Pays::SENEGAL)
+            ->orderBy('moyens_paiement.ordre')->orderBy('moyens_paiement.nom')
+            ->get([
+                'moyens_paiement.ulid', 'moyens_paiement.nom', 'moyens_paiement.type', 'moyens_paiement.couleur',
+                'moyens_paiement.instructions_fr', 'moyens_paiement.instructions_en', 'moyens_paiement_boutique.valeur',
+            ])
+            ->map(fn ($l) => [
+                'ulid' => $l->ulid,
+                'nom' => $l->nom,
+                'type' => $l->type,
+                'couleur' => $l->couleur,
+                'instructions_fr' => $l->instructions_fr,
+                'instructions_en' => $l->instructions_en,
+                'active' => true,
+                'valeur' => $l->valeur,
+            ])
+            ->values()
+            ->all();
+    }
 
     public function estActive(): bool
     {
