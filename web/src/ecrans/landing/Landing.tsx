@@ -26,7 +26,7 @@ import { SelecteurLangue, SelecteurTheme } from '@/coquille/Selecteurs'
 import { cn } from '@/lib/cn'
 import { annoncer } from '@/voix/annoncer'
 import { HautParleur } from '@/voix/HautParleur'
-import { LANGUES_LOCALES, useVoix } from '@/voix/store'
+import { LANGUES_AUDIO, useVoix } from '@/voix/store'
 /** Logo unique de l'appli (public/logo.svg). */
 const logo = '/logo.svg'
 import './landing.css'
@@ -109,7 +109,7 @@ function ChoixVoix() {
         {t('landing.voix.titre')}
       </span>
       <div className="choix-voix-langues">
-        {LANGUES_LOCALES.map((code) => {
+        {LANGUES_AUDIO.map((code) => {
           const actif = activee && langue === code
           return (
             <span key={code} className={cn('choix-voix-langue', actif && 'actif')}>
