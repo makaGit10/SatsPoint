@@ -8,7 +8,12 @@ test.describe('01 · Premier lancement et langue', () => {
   test('choix de la langue, accueil, langue d’interface et thème', async ({ ouvrir }) => {
     const { page } = await ouvrir(undefined, { premierLancement: true });
 
+    // Visiteur sur « / » : page de présentation, dont l'appel principal mène à l'inscription (donc à la langue).
     await page.goto('/');
+    await expect(page.locator('[data-ecran="landing"]')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'La caisse qui encaisse tout.', level: 1 })).toBeVisible();
+    await capturer(page, '01-landing');
+    await page.getByRole('link', { name: /^Créer ma boutique gratuitement/ }).click();
     await expect(page).toHaveURL(/\/langue$/);
     await expect(page.locator('[data-ecran="langue"]')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Choisissez votre langue', level: 1 })).toBeVisible();

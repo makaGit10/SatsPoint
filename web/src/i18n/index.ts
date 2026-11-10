@@ -83,6 +83,11 @@ const PAQUETS = {
     fr: () => import('./gestion.fr.json').then((m) => m.default as Record<string, unknown>),
     en: () => import('./gestion.en.json').then((m) => m.default as Record<string, unknown>),
   },
+  // Page de présentation publique (« / » pour les visiteurs).
+  landing: {
+    fr: () => import('./landing.fr.json').then((m) => m.default as Record<string, unknown>),
+    en: () => import('./landing.en.json').then((m) => m.default as Record<string, unknown>),
+  },
   // Recherche globale, invitation, menus d'export.
   extras: {
     fr: () => import('./extras.fr.json').then((m) => m.default as Record<string, unknown>),

@@ -9,6 +9,7 @@ function avecPaquet<T extends ComponentType>(paquet: NomPaquet, chargeur: () => 
 // Écrans et coquille chargés à la demande (un morceau de JavaScript par route).
 export const Coquille = lazy(() => import('@/coquille/Coquille').then((m) => ({ default: m.Coquille })))
 export const Langue = lazy(() => import('@/ecrans/Langue'))
+export const Landing = avecPaquet('landing', () => import('@/ecrans/landing/Landing'))
 export const Accueil = lazy(() => import('@/ecrans/Accueil'))
 export const Connexion = lazy(() => import('@/ecrans/auth/Connexion'))
 export const Inscription = lazy(() => import('@/ecrans/auth/Inscription'))

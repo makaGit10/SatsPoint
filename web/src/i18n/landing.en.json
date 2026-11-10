@@ -1,0 +1,125 @@
+{
+  "landing": {
+    "nav": {
+      "comment": "How it works",
+      "fonctions": "Features",
+      "securite": "Security",
+      "faq": "FAQ",
+      "connexion": "Sign in",
+      "creer": "Create my shop",
+      "menu": "Main navigation"
+    },
+    "hero": {
+      "badge": "New",
+      "badgeTexte": "Bitcoin + mobile money, one checkout",
+      "titreDebut": "The checkout that accepts",
+      "titreOr": "everything",
+      "texte": "Set your prices in CFA francs. Your customers pay with bitcoin, Wave, Orange Money or Free Money. The money lands in seconds, straight to you.",
+      "creer": "Create my shop for free",
+      "connexion": "I already have an account",
+      "confiance1": "Your funds stay yours",
+      "confiance2": "No SatsPoint fees",
+      "confiance3": "Open source"
+    },
+    "maquette": {
+      "caisse": "Checkout",
+      "sats": "≈ 23,324 sats",
+      "encaisser": "Charge 15,000 CFA",
+      "recu": "Payment received",
+      "recuDetail": "15,000 CFA · Bitcoin",
+      "wave": "Wave accepted",
+      "waveDetail": "Sale V-000102 · 7,500 CFA",
+      "voix": "“Charge”",
+      "voixDetail": "Voice help in Wolof",
+      "alt": "Preview of the SatsPoint checkout on a phone"
+    },
+    "moyens": {
+      "titre": "One screen, every way to pay",
+      "lightning": "Bitcoin Lightning"
+    },
+    "etapes": {
+      "surTitre": "How it works",
+      "titre": "Three taps.",
+      "titreOr": "Paid.",
+      "e1Titre": "Type the amount",
+      "e1Texte": "In CFA francs, as usual. SatsPoint converts it to sats at the live rate.",
+      "e2Titre": "The customer scans",
+      "e2Texte": "With their bitcoin wallet or mobile money app. One QR code, nothing to set up.",
+      "e3Titre": "The screen turns green",
+      "e3Texte": "The payment is confirmed in seconds, the receipt is ready, the sale is recorded."
+    },
+    "fonctions": {
+      "surTitre": "Features",
+      "titre": "Built for",
+      "titreOr": "local commerce",
+      "voixTitre": "A checkout that speaks your language",
+      "voixTexte": "Every button has a speaker: listen in Wolof, Serer, Pulaar or Jola. Nobody is left out, even without reading.",
+      "vitesseTitre": "Paid in an instant",
+      "vitesseTexte": "The Lightning network confirms a bitcoin payment in seconds.",
+      "vitesseChiffre": "Instant",
+      "fondsTitre": "Your funds stay yours",
+      "fondsTexte": "Your wallet connects through Nostr Wallet Connect. SatsPoint never holds your money.",
+      "directTitre": "Live on every screen",
+      "directTexte": "The manager sees the cashier's sale within a second, without reloading.",
+      "tableauTitre": "Your business at a glance",
+      "tableauTexte": "Revenue, sales, average basket, Excel export in one click.",
+      "equipeTitre": "Your whole team",
+      "equipeTexte": "Owner, manager, cashier: each with their own rights, invited by link."
+    },
+    "securite": {
+      "surTitre": "Security",
+      "titre": "Your money,",
+      "titreOr": "your rules",
+      "texte": "SatsPoint is designed so that nobody, not even us, can touch your funds.",
+      "s1Titre": "Non-custodial",
+      "s1Texte": "Bitcoin payments land directly in your own wallet.",
+      "s2Titre": "Encrypted keys",
+      "s2Texte": "Your wallet and mobile money credentials are encrypted (AES-256).",
+      "s3Titre": "Two-factor sign-in",
+      "s3Texte": "A one-time code protects sensitive accounts.",
+      "s4Titre": "Open code",
+      "s4Texte": "All the code is public: anyone can check it."
+    },
+    "impact": {
+      "surTitre": "Why SatsPoint",
+      "titre": "Lower fees.",
+      "titreOr": "More customers.",
+      "texte": "Small merchants lose sales for lack of change, or pay fees on every transaction. SatsPoint opens their shop to digital payments, with no terminal to buy.",
+      "c1": "0 CFA",
+      "c1Texte": "of hardware: a phone is enough.",
+      "c2": "3 min",
+      "c2Texte": "to create a shop and make the first sale.",
+      "c3": "4",
+      "c3Texte": "national languages with voice, plus French and English."
+    },
+    "faq": {
+      "surTitre": "Frequently asked questions",
+      "titre": "Everything you",
+      "titreOr": "want to know",
+      "q1": "Do I need a bank account?",
+      "r1": "No. A phone and a free bitcoin wallet are enough. Mobile money goes through your PayTech account or your Wave link.",
+      "q2": "How much does it cost?",
+      "r2": "SatsPoint takes no fee. Only the very low Lightning network fees, or those of your mobile money provider, apply.",
+      "q3": "Where does the money go?",
+      "r3": "Bitcoin payments go straight to your wallet, mobile money payments to your merchant account. SatsPoint never touches the funds.",
+      "q4": "Do my customers need to know bitcoin?",
+      "r4": "No. Customers with Wave or Orange Money pay as usual; those with a bitcoin wallet scan the QR code.",
+      "q5": "What if I can't read well?",
+      "r5": "Every button has a speaker: listen to the explanation in Wolof, Serer, Pulaar or Jola.",
+      "q6": "Does the price change with the bitcoin rate?",
+      "r6": "Your price stays in CFA francs. SatsPoint converts it to sats at the live rate, based on three sources, and locks it for the whole payment."
+    },
+    "cta": {
+      "titre": "Your shop,",
+      "titreOr": "open to every payment",
+      "texte": "Free, no commitment. Ready in three minutes.",
+      "creer": "Create my shop",
+      "connexion": "Sign in"
+    },
+    "pied": {
+      "fait": "Made in Dakar · Dakar Bitcoin Hack 2026",
+      "code": "Source code",
+      "connexion": "Sign in"
+    }
+  }
+}

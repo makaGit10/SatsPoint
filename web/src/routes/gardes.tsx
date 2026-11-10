@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, Outlet, useLocation, useSearchParams } from 'react-router-dom'
 import type { RoleBoutique } from '@/api/types'
@@ -7,14 +7,25 @@ import { notifier } from '@/composants/toastStore'
 import { cheminAccueil } from '@/coquille/navigation'
 import { SqueletteApplication } from '@/coquille/SqueletteEcran'
 import { langueChoisie } from '@/lib/stockage'
+import { Landing } from './ecrans'
 import { suiteSure } from './navigation'
 
-/** `/` : aiguille vers la langue, l'accueil ou l'espace de la personne. */
+/**
+ * `/` : page de présentation pour les visiteurs ; une personne connectée va directement à son espace
+ * (en passant par le choix de la langue si elle ne l'a pas encore fait).
+ */
 export function Aiguillage() {
   const { statut, utilisateur } = useAuth()
-  if (!langueChoisie()) return <Navigate to="/langue" replace />
   if (statut === 'inconnu') return <SqueletteApplication />
-  return <Navigate to={cheminAccueil(utilisateur)} replace />
+  if (statut === 'connecte') {
+    if (!langueChoisie()) return <Navigate to="/langue" replace />
+    return <Navigate to={cheminAccueil(utilisateur)} replace />
+  }
+  return (
+    <Suspense fallback={<SqueletteApplication />}>
+      <Landing />
+    </Suspense>
+  )
 }
 
 /** Écrans réservés aux personnes non connectées (connexion, inscription…). */

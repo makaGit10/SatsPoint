@@ -1,17 +1,124 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="SatsPoint">
-  <!-- Logo PROVISOIRE (pièce d'or + éclair). Pour le remplacer : écraser ce fichier (public/logo.svg),
-       puis `node scripts/generer-icones.mjs` pour régénérer favicon et icônes PWA. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="SatsPoint">
   <defs>
-    <linearGradient id="piece" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffd76a"/>
-      <stop offset="1" stop-color="#d99a14"/>
+    <!-- Fond crème satiné + liseré or -->
+    <linearGradient id="fond" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fdfaf2"/>
+      <stop offset="1" stop-color="#efe5cf"/>
     </linearGradient>
-    <linearGradient id="lisere" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fff3c4"/>
-      <stop offset="1" stop-color="#f0b52e"/>
+    <linearGradient id="liseré" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6dc8e"/>
+      <stop offset=".5" stop-color="#c99a2e"/>
+      <stop offset="1" stop-color="#f2d27a"/>
     </linearGradient>
+    <!-- Or métallique : demi-coque gauche (lumière venant du haut à gauche) -->
+    <linearGradient id="orG" x1="0.1" y1="0" x2="0.75" y2="1">
+      <stop offset="0" stop-color="#fff6cf"/>
+      <stop offset=".18" stop-color="#f7d56e"/>
+      <stop offset=".42" stop-color="#d9a12a"/>
+      <stop offset=".62" stop-color="#f3cc5c"/>
+      <stop offset=".82" stop-color="#b67f12"/>
+      <stop offset="1" stop-color="#7c5207"/>
+    </linearGradient>
+    <!-- Demi-coque droite, un peu plus sombre (côté ombre) -->
+    <linearGradient id="orD" x1="0.9" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#fbe7a1"/>
+      <stop offset=".22" stop-color="#e8b843"/>
+      <stop offset=".48" stop-color="#b9821a"/>
+      <stop offset=".7" stop-color="#e9bd4c"/>
+      <stop offset="1" stop-color="#6e4806"/>
+    </linearGradient>
+    <!-- Reflet spéculaire -->
+    <radialGradient id="reflet" cx=".3" cy=".22" r=".45">
+      <stop offset="0" stop-color="#fffdf2" stop-opacity=".95"/>
+      <stop offset=".5" stop-color="#fff3c4" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#fff3c4" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="volume" cx=".5" cy=".42" r=".62">
+      <stop offset="0" stop-color="#5a3a04" stop-opacity="0"/>
+      <stop offset=".68" stop-color="#5a3a04" stop-opacity="0"/>
+      <stop offset="1" stop-color="#4a2f02" stop-opacity=".55"/>
+    </radialGradient>
+    <!-- Lumière de la fente -->
+    <linearGradient id="lueur" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe27a" stop-opacity=".2"/>
+      <stop offset=".25" stop-color="#ffd23f"/>
+      <stop offset=".55" stop-color="#fff4c0"/>
+      <stop offset=".8" stop-color="#ffcf3a"/>
+      <stop offset="1" stop-color="#ffe27a" stop-opacity=".25"/>
+    </linearGradient>
+    <filter id="flou-lueur" x="-50%" y="-20%" width="200%" height="140%"><feGaussianBlur stdDeviation="9"/></filter>
+    <filter id="flou-fin" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2"/></filter>
+    <filter id="ombre" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter>
+    <!-- Formes -->
+    <path id="gauche" d="M256 80 C182 80 150 170 150 262 C150 362 190 436 256 436 C230 376 282 316 256 258 C230 200 282 146 256 80 Z"/>
+    <path id="droite" d="M256 80 C282 146 230 200 256 258 C282 316 230 376 256 436 C322 436 362 362 362 262 C362 170 330 80 256 80 Z"/>
+    <path id="fente" d="M256 94 C282 146 230 200 256 258 C282 316 230 376 256 422"/>
+    <clipPath id="clipG"><use href="#gauche"/></clipPath>
+    <clipPath id="clipD"><use href="#droite"/></clipPath>
+    <!-- Brossage circulaire -->
+    <g id="brossage" fill="none" stroke="#fff8dc" stroke-width="1.2">
+      <circle cx="256" cy="262" r="40" opacity=".18"/><circle cx="256" cy="262" r="56" opacity=".12"/>
+      <circle cx="256" cy="262" r="72" opacity=".18"/><circle cx="256" cy="262" r="88" opacity=".1"/>
+      <circle cx="256" cy="262" r="104" opacity=".16"/><circle cx="256" cy="262" r="120" opacity=".1"/>
+      <circle cx="256" cy="262" r="136" opacity=".14"/><circle cx="256" cy="262" r="152" opacity=".08"/>
+      <circle cx="256" cy="262" r="168" opacity=".12"/>
+    </g>
   </defs>
-  <circle cx="48" cy="48" r="44" fill="url(#piece)"/>
-  <circle cx="48" cy="48" r="35" fill="none" stroke="url(#lisere)" stroke-width="3" opacity="0.9"/>
-  <path d="M53 22 33 52h14l-5 22 22-31H50l3-21Z" fill="#ffffff"/>
+
+  <!-- Carré de l'icône -->
+  <rect width="512" height="512" rx="114" fill="url(#fond)"/>
+  <rect x="18" y="18" width="476" height="476" rx="98" fill="none" stroke="url(#liseré)" stroke-width="4"/>
+
+  <!-- Ombre portée douce -->
+  <ellipse cx="262" cy="446" rx="100" ry="18" fill="#7a5410" opacity=".28" filter="url(#ombre)"/>
+
+  <!-- Lumière qui sort de la fente (sous les coques) -->
+  <use href="#fente" fill="none" stroke="#ffd23f" stroke-width="60" stroke-linecap="round" opacity=".55" filter="url(#flou-lueur)"/>
+  <use href="#fente" fill="none" stroke="#6b4304" stroke-width="34" stroke-linecap="round"/>
+  <use href="#fente" fill="none" stroke="#c98a10" stroke-width="24" stroke-linecap="round" filter="url(#flou-fin)"/>
+  <use href="#fente" fill="none" stroke="url(#lueur)" stroke-width="14" stroke-linecap="round" filter="url(#flou-fin)"/>
+  <use href="#fente" fill="none" stroke="#fffbe8" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Demi-coque gauche -->
+  <g transform="translate(-14 0)">
+    <use href="#gauche" fill="url(#orG)"/>
+    <g clip-path="url(#clipG)">
+      <use href="#brossage"/>
+      <rect x="140" y="70" width="240" height="380" fill="url(#volume)"/>
+      <ellipse cx="205" cy="185" rx="55" ry="105" fill="url(#reflet)"/>
+      <!-- biseau lumineux le long de la fente -->
+      <use href="#fente" fill="none" stroke="#fff3bf" stroke-width="9" transform="translate(14 0)" opacity=".85" filter="url(#flou-fin)"/>
+    </g>
+    <use href="#gauche" fill="none" stroke="#8a5c0c" stroke-opacity=".35" stroke-width="2"/>
+  </g>
+
+  <!-- Demi-coque droite -->
+  <g transform="translate(14 0)">
+    <use href="#droite" fill="url(#orD)"/>
+    <g clip-path="url(#clipD)">
+      <use href="#brossage"/>
+      <rect x="132" y="70" width="240" height="380" fill="url(#volume)"/>
+      <ellipse cx="318" cy="195" rx="30" ry="85" fill="url(#reflet)" opacity=".55"/>
+      <use href="#fente" fill="none" stroke="#ffe48a" stroke-width="9" transform="translate(-14 0)" opacity=".8" filter="url(#flou-fin)"/>
+    </g>
+    <use href="#droite" fill="none" stroke="#6e4806" stroke-opacity=".35" stroke-width="2"/>
+  </g>
+
+  <!-- Traînées de lumière (paiement qui part) -->
+  <g fill="none" stroke-linecap="round">
+    <path d="M70 380 C150 360 210 340 262 300" stroke="#f6cf5a" stroke-width="2" opacity=".55"/>
+    <path d="M60 404 C160 384 220 358 266 318" stroke="#ffe7a0" stroke-width="1.4" opacity=".45"/>
+    <path d="M262 300 C320 262 380 250 452 262" stroke="#f6cf5a" stroke-width="2" opacity=".5"/>
+    <path d="M266 318 C330 292 392 290 460 300" stroke="#ffe7a0" stroke-width="1.4" opacity=".4"/>
+  </g>
+  <!-- Paillettes -->
+  <g fill="#fff2b8">
+    <circle cx="318" cy="150" r="3.2" opacity=".9"/><circle cx="338" cy="128" r="2" opacity=".8"/>
+    <circle cx="356" cy="168" r="2.4" opacity=".7"/><circle cx="300" cy="120" r="1.6" opacity=".7"/>
+    <circle cx="376" cy="138" r="1.6" opacity=".6"/><circle cx="330" cy="190" r="1.8" opacity=".6"/>
+    <circle cx="190" cy="408" r="2" opacity=".6"/><circle cx="214" cy="430" r="1.4" opacity=".5"/>
+  </g>
+  <g fill="#fffbe8" filter="url(#flou-fin)">
+    <circle cx="318" cy="150" r="5" opacity=".6"/><circle cx="356" cy="168" r="4" opacity=".4"/>
+  </g>
 </svg>

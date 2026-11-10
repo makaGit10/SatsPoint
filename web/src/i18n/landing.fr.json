@@ -1,0 +1,125 @@
+{
+  "landing": {
+    "nav": {
+      "comment": "Comment ça marche",
+      "fonctions": "Fonctionnalités",
+      "securite": "Sécurité",
+      "faq": "Questions",
+      "connexion": "Me connecter",
+      "creer": "Créer ma boutique",
+      "menu": "Navigation principale"
+    },
+    "hero": {
+      "badge": "Nouveau",
+      "badgeTexte": "Bitcoin + mobile money, une seule caisse",
+      "titreDebut": "La caisse qui encaisse",
+      "titreOr": "tout",
+      "texte": "Fixez vos prix en FCFA. Vos clients paient en bitcoin, Wave, Orange Money ou Free Money. L'argent arrive en quelques secondes, directement chez vous.",
+      "creer": "Créer ma boutique gratuitement",
+      "connexion": "J'ai déjà un compte",
+      "confiance1": "Vos fonds restent à vous",
+      "confiance2": "Aucune commission SatsPoint",
+      "confiance3": "Code source ouvert"
+    },
+    "maquette": {
+      "caisse": "Caisse",
+      "sats": "≈ 23 324 sats",
+      "encaisser": "Encaisser 15 000 FCFA",
+      "recu": "Paiement reçu",
+      "recuDetail": "15 000 FCFA · Bitcoin",
+      "wave": "Wave accepté",
+      "waveDetail": "Vente V-000102 · 7 500 FCFA",
+      "voix": "« Encaisser »",
+      "voixDetail": "Aide vocale en wolof",
+      "alt": "Aperçu de la caisse SatsPoint sur un téléphone"
+    },
+    "moyens": {
+      "titre": "Un seul écran, tous les moyens de paiement",
+      "lightning": "Bitcoin Lightning"
+    },
+    "etapes": {
+      "surTitre": "Comment ça marche",
+      "titre": "Trois gestes.",
+      "titreOr": "C'est payé.",
+      "e1Titre": "Tapez le montant",
+      "e1Texte": "En FCFA, comme d'habitude. SatsPoint calcule l'équivalent en sats au cours du moment.",
+      "e2Titre": "Le client scanne",
+      "e2Texte": "Avec son portefeuille bitcoin ou son appli mobile money. Un seul QR code, aucune manipulation.",
+      "e3Titre": "L'écran devient vert",
+      "e3Texte": "Le paiement est confirmé en quelques secondes, le reçu est prêt, la vente est enregistrée."
+    },
+    "fonctions": {
+      "surTitre": "Fonctionnalités",
+      "titre": "Pensée pour le",
+      "titreOr": "commerce d'ici",
+      "voixTitre": "Une caisse qui parle votre langue",
+      "voixTexte": "Chaque bouton a son haut-parleur : on l'écoute en wolof, seereer, pulaar ou joola. Personne n'est laissé de côté, même sans savoir lire.",
+      "vitesseTitre": "Payé en un instant",
+      "vitesseTexte": "Le réseau Lightning confirme un paiement bitcoin en quelques secondes.",
+      "vitesseChiffre": "Instantané",
+      "fondsTitre": "Vos fonds restent à vous",
+      "fondsTexte": "Votre portefeuille se connecte par Nostr Wallet Connect. SatsPoint ne détient jamais votre argent.",
+      "directTitre": "En direct sur tous les écrans",
+      "directTexte": "Le gérant voit la vente du caissier à la seconde, sans recharger la page.",
+      "tableauTitre": "Votre activité en un coup d'œil",
+      "tableauTexte": "Chiffre d'affaires, ventes, panier moyen, export Excel en un clic.",
+      "equipeTitre": "Toute votre équipe",
+      "equipeTexte": "Propriétaire, gérant, caissier : chacun ses droits, invitation par lien."
+    },
+    "securite": {
+      "surTitre": "Sécurité",
+      "titre": "Votre argent,",
+      "titreOr": "vos règles",
+      "texte": "SatsPoint a été conçu pour qu'aucune personne, pas même nous, ne puisse toucher à vos fonds.",
+      "s1Titre": "Non-custodial",
+      "s1Texte": "Les paiements bitcoin arrivent directement dans votre portefeuille.",
+      "s2Titre": "Clés chiffrées",
+      "s2Texte": "Vos accès de portefeuille et de mobile money sont chiffrés (AES-256).",
+      "s3Titre": "Double authentification",
+      "s3Texte": "Un code à usage unique protège les comptes sensibles.",
+      "s4Titre": "Code ouvert",
+      "s4Texte": "Tout le code est public : chacun peut le vérifier."
+    },
+    "impact": {
+      "surTitre": "Pourquoi SatsPoint",
+      "titre": "Moins de frais.",
+      "titreOr": "Plus de clients.",
+      "texte": "Les petits commerçants perdent des ventes faute de monnaie, ou paient des frais sur chaque transaction. SatsPoint ouvre leur boutique aux paiements numériques, sans terminal à acheter.",
+      "c1": "0 FCFA",
+      "c1Texte": "de matériel : un téléphone suffit.",
+      "c2": "3 min",
+      "c2Texte": "pour créer sa boutique et faire sa première vente.",
+      "c3": "4",
+      "c3Texte": "langues nationales avec la voix, plus le français et l'anglais."
+    },
+    "faq": {
+      "surTitre": "Questions fréquentes",
+      "titre": "Tout ce que vous",
+      "titreOr": "voulez savoir",
+      "q1": "Faut-il un compte bancaire ?",
+      "r1": "Non. Un téléphone et un portefeuille bitcoin gratuit suffisent. Le mobile money passe par votre compte PayTech ou votre lien Wave.",
+      "q2": "Combien ça coûte ?",
+      "r2": "SatsPoint ne prend aucune commission. Seuls les frais du réseau Lightning, très faibles, ou ceux de votre fournisseur mobile money s'appliquent.",
+      "q3": "Où va l'argent ?",
+      "r3": "Les paiements bitcoin arrivent directement dans votre portefeuille, les paiements mobile money sur votre compte marchand. SatsPoint ne touche jamais aux fonds.",
+      "q4": "Mes clients doivent-ils connaître le bitcoin ?",
+      "r4": "Non. Ceux qui ont Wave ou Orange Money paient comme d'habitude ; ceux qui ont un portefeuille bitcoin scannent le QR code.",
+      "q5": "Et si je ne sais pas bien lire ?",
+      "r5": "Chaque bouton a un haut-parleur : on écoute l'explication en wolof, seereer, pulaar ou joola.",
+      "q6": "Le prix change-t-il avec le cours du bitcoin ?",
+      "r6": "Votre prix reste en FCFA. SatsPoint calcule l'équivalent en sats au cours du moment, à partir de trois sources, et le fixe pendant toute la durée du paiement."
+    },
+    "cta": {
+      "titre": "Votre boutique,",
+      "titreOr": "ouverte à tous les paiements",
+      "texte": "Gratuit, sans engagement. Prêt en trois minutes.",
+      "creer": "Créer ma boutique",
+      "connexion": "Me connecter"
+    },
+    "pied": {
+      "fait": "Fait à Dakar · Dakar Bitcoin Hack 2026",
+      "code": "Code source",
+      "connexion": "Connexion"
+    }
+  }
+}

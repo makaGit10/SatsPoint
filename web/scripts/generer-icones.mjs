@@ -17,18 +17,20 @@ const logo = await readFile(resolve(racine, 'public/logo.svg'), 'utf8')
 const logoDataUri = `data:image/svg+xml;base64,${Buffer.from(logo).toString('base64')}`
 
 function svg(taille, { maskable }) {
-  const rayon = maskable ? 0 : Math.round(taille * 0.24)
-  const echelle = maskable ? 0.6 : 0.74
+  // Le logo est déjà un carré arrondi complet : icône classique = logo plein cadre ;
+  // maskable = fond crème plein cadre, logo réduit pour que le coquillage reste dans la zone sûre.
+  const rayon = 0
+  const echelle = maskable ? 0.8 : 1
   const cote = Math.round(taille * echelle)
   const decalage = Math.round((taille - cote) / 2)
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${taille}" height="${taille}" viewBox="0 0 ${taille} ${taille}">
   <defs>
     <radialGradient id="halo" cx="0.75" cy="0.1" r="0.9">
       <stop offset="0" stop-color="#ffe7a6"/>
-      <stop offset="1" stop-color="#fffdf8"/>
+      <stop offset="1" stop-color="#f6eedc"/>
     </radialGradient>
   </defs>
-  <rect width="${taille}" height="${taille}" rx="${rayon}" fill="url(#halo)"/>
+  ${maskable ? `<rect width="${taille}" height="${taille}" rx="${rayon}" fill="url(#halo)"/>` : ''}
   <image href="${logoDataUri}" x="${decalage}" y="${decalage}" width="${cote}" height="${cote}"/>
 </svg>`
 }

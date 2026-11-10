@@ -80,6 +80,7 @@ const taper15000 = async (page) => {
  * Les identifiants `01PDEMO…` sont des tentatives stables du mock (Lightning, PayTech, Wave direct, expirée, payée).
  */
 const ECRANS = [
+  { nom: '00-landing', chemin: '/', attendre: '[data-ecran="landing"]', langueChoisie: false, bandeau: false },
   { nom: '01-langue', chemin: '/langue', attendre: '[data-ecran="langue"] [data-haut-parleur="langue.wo"]', langueChoisie: false, bandeau: false },
   { nom: '02-accueil', chemin: '/accueil', attendre: '[data-ecran="accueil"]' },
   { nom: '03-connexion', chemin: '/connexion', attendre: '[data-ecran="connexion"]' },
