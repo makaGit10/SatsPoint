@@ -272,7 +272,7 @@ export function PanneauEnregistrement({ cle, langue, nomLangue, rafale, onValide
           <span className="block truncate text-2xs text-texte-3">{t('studio.deposerAide', { formats: EXTENSIONS_AUDIO.join(', ') })}</span>
         </span>
         <HautParleur cle="studio.deposer" />
-        <input ref={entreeFichier} type="file" accept="audio/*,.mp3,.wav,.m4a,.ogg,.webm" className="sr-only" onChange={(e) => void deposer(e.target.files?.[0]).finally(() => { if (entreeFichier.current) entreeFichier.current.value = '' })} />
+        <input ref={entreeFichier} type="file" accept="audio/*,.mp3,.wav,.m4a,.ogg,.opus,.webm" className="sr-only" onChange={(e) => void deposer(e.target.files?.[0]).finally(() => { if (entreeFichier.current) entreeFichier.current.value = '' })} />
       </label>
       {refus && (
         <p role="alert" className="-mt-1.5 text-xs text-danger-texte">
