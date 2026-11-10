@@ -95,11 +95,11 @@ export function Menu({ libelle, icone, voix, elements, variante = 'secondaire', 
           id={id}
           role="menu"
           aria-label={titre ?? libelle}
-          className={cn('anim-apparition absolute top-full z-40 mt-1 w-56 rounded-lg border border-bordure bg-surface p-1 shadow-md', alignement === 'droite' ? 'right-0' : 'left-0')}
+          className={cn('anim-apparition verre-fort absolute top-full z-40 mt-2 w-60 rounded-xl p-1.5 shadow-lg', alignement === 'droite' ? 'right-0' : 'left-0')}
         >
           {titre && <p className="px-2 pt-1 pb-1.5 text-2xs font-semibold tracking-wide text-texte-3 uppercase">{titre}</p>}
           {elements.map((el, i) => (
-            <div key={el.id} className="flex items-center rounded-md hover:bg-surface-2 focus-within:bg-surface-2">
+            <div key={el.id} className="flex items-center rounded-md hover:bg-accent-doux focus-within:bg-accent-doux">
               <button
                 type="button"
                 role="menuitem"
@@ -110,7 +110,7 @@ export function Menu({ libelle, icone, voix, elements, variante = 'secondaire', 
                   setOuvert(false)
                   el.onChoisir()
                 }}
-                className="flex min-w-0 flex-1 items-center gap-2.5 px-2 py-2 text-left text-sm text-texte outline-none disabled:opacity-50"
+                className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-left text-sm font-medium text-texte outline-none disabled:opacity-50"
               >
                 {el.icone && (
                   <span className="inline-flex shrink-0 text-texte-2 [&>svg]:size-4" aria-hidden="true">

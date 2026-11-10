@@ -30,7 +30,7 @@ test.describe('01 · Premier lancement et langue', () => {
     expect(stockage['satspoint.langue-choisie']).toBe('wo');
     expect(stockage['satspoint.langue-audio']).toBe('wo');
     expect(stockage['satspoint.aide-vocale']).toBe('1');
-    await expect(page.getByRole('heading', { name: 'Bienvenue sur SatsPoint', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'La caisse qui encaisse tout.', level: 1 })).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
     await capturer(page, '01-accueil');
 
@@ -48,16 +48,16 @@ test.describe('01 · Premier lancement et langue', () => {
     await page.getByRole('button', { name: 'English en' }).click();
     await expect(page).toHaveURL(/\/accueil$/);
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Welcome to SatsPoint/);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(/The till that takes everything/);
     const anglais = await page.evaluate(() => ({ ...localStorage }));
     expect(anglais['satspoint.aide-vocale']).toBe('0');
     expect(anglais['satspoint.langue-audio']).toBeUndefined();
 
     // Retour au français par le sélecteur d'interface, conservé après rechargement.
     await page.getByRole('combobox', { name: /Interface language|Langue de l'interface/ }).selectOption({ label: 'Français' });
-    await expect(page.getByRole('heading', { name: 'Bienvenue sur SatsPoint', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'La caisse qui encaisse tout.', level: 1 })).toBeVisible();
     await page.reload();
-    await expect(page.getByRole('heading', { name: 'Bienvenue sur SatsPoint', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'La caisse qui encaisse tout.', level: 1 })).toBeVisible();
 
     // Thème : sombre puis automatique, appliqué sans rechargement et conservé.
     const theme = page.getByRole('combobox', { name: 'Thème' });

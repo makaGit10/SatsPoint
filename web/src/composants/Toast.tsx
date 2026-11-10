@@ -36,7 +36,7 @@ export function Toasts() {
             if (!ouvert) retirer(toast.id)
           }}
           className={cn(
-            'anim-glisser-droite pointer-events-auto flex w-full items-start gap-2.5 rounded-lg border border-bordure border-l-4 bg-surface p-3 shadow-lg',
+            'anim-glisser-droite verre-fort pointer-events-auto flex w-full items-start gap-3 rounded-xl border-l-4 p-4 shadow-lg',
             'data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=end]:translate-x-full data-[swipe=end]:opacity-0 data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-transform',
             BORDURES[toast.type],
           )}

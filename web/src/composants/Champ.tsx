@@ -31,15 +31,15 @@ export const Champ = forwardRef<HTMLInputElement, PropsChamp>(function Champ(
   const decrit = [erreur ? idErreur : null, aide ? idAide : null].filter(Boolean).join(' ') || undefined
 
   return (
-    <div className={cn('flex flex-col gap-1', classeConteneur)}>
-      <label htmlFor={idChamp} className="flex items-baseline justify-between text-sm font-medium text-texte-2">
+    <div className={cn('flex flex-col gap-1.5', classeConteneur)}>
+      <label htmlFor={idChamp} className="flex items-baseline justify-between text-sm font-semibold text-texte-2">
         <span>{libelle}</span>
         {mentionOptionnel && <span className="text-xs font-normal text-texte-3">{mentionOptionnel}</span>}
       </label>
       <div className="relative flex items-center">
-        {prefixe && <span className="absolute inset-y-0 left-0 z-[1] inline-flex items-center">{prefixe}</span>}
+        {prefixe && <span className="absolute inset-y-0 left-0 z-[2] inline-flex items-center">{prefixe}</span>}
         {icone && !prefixe && (
-          <span className="pointer-events-none absolute left-3 inline-flex text-texte-3 [&>svg]:size-4" aria-hidden="true">
+          <span className="pointer-events-none absolute left-4 z-[2] inline-flex text-texte-3 [&>svg]:size-[18px]" aria-hidden="true">
             {icone}
           </span>
         )}
@@ -49,19 +49,15 @@ export const Champ = forwardRef<HTMLInputElement, PropsChamp>(function Champ(
           aria-invalid={erreur ? true : undefined}
           aria-describedby={decrit}
           className={cn(
-            'h-11 w-full rounded-md border bg-surface px-3 text-base text-texte shadow-xs outline-none md:h-10',
-            'transition-[border-color,box-shadow] duration-150',
-            'focus:border-accent focus:ring-2 focus:ring-accent/25',
-            'disabled:bg-surface-2 disabled:text-texte-3',
-            erreur ? 'border-danger focus:border-danger focus:ring-danger/20' : 'border-bordure hover:border-bordure-forte',
-            icone && !prefixe && 'pl-9',
+            'champ-verre h-13 w-full px-4 text-base md:h-12',
+            icone && !prefixe && 'pl-11',
             prefixe && 'pl-[4.75rem]',
-            suffixe && 'pr-11',
+            suffixe && 'pr-12',
             className,
           )}
           {...reste}
         />
-        {suffixe && <span className="absolute right-1 inline-flex items-center">{suffixe}</span>}
+        {suffixe && <span className="absolute right-1.5 z-[2] inline-flex items-center">{suffixe}</span>}
       </div>
       {erreur ? (
         <p id={idErreur} role="alert" className="flex items-start gap-1 text-sm text-danger-texte">

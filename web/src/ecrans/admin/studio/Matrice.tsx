@@ -35,7 +35,7 @@ export function MatriceBureau({ cles, langues, langue, selection, onChoisir }: P
   const { t } = useTranslation()
   const libelleEcran = useLibelleEcran()
   return (
-    <div className="overflow-hidden rounded-lg border border-bordure bg-surface" data-matrice>
+    <div className="overflow-hidden verre rounded-xl" data-matrice>
       <table className="w-full table-fixed border-collapse text-sm">
         <caption className="sr-only">{t('studio.matrice')}</caption>
         <thead className="sticky top-0 z-10 bg-surface">
@@ -107,7 +107,7 @@ export function MatriceMobile({ cles, langues, langue, selection, onChoisir }: P
   const libelleEcran = useLibelleEcran()
   const nomLangue = langues.find((l) => l.code === langue)?.nom ?? langue
   return (
-    <div className="overflow-hidden rounded-lg border border-bordure bg-surface" data-matrice>
+    <div className="overflow-hidden verre rounded-xl" data-matrice>
       {parEcran(cles).map((g) => (
         <section key={`${g.ecran}-${g.cles[0]?.cle}`} aria-label={libelleEcran(g.ecran)}>
           <h3 className="border-b border-bordure bg-fond-2 px-3 py-1 text-2xs font-semibold tracking-wide text-texte-3 uppercase">

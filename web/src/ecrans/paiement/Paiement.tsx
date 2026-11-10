@@ -183,12 +183,12 @@ export default function Paiement() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-fond" data-ecran="paiement" data-etat={etat}>
+    <div className="flex min-h-dvh flex-col" data-ecran="paiement" data-etat={etat}>
       <BandeauDemo />
-      <header className="flex h-[var(--hauteur-entete)] shrink-0 items-center gap-2 border-b border-bordure px-3 md:px-5">
+      <header className="flex h-[var(--hauteur-entete)] shrink-0 items-center gap-3 barre-verre border-b px-4 md:px-8">
         <Marque taille="sm" sansTexte />
         <div className="min-w-0 flex-1">
-          <h1 className="flex items-center gap-1.5 truncate text-base font-semibold text-texte">
+          <h1 className="flex items-center gap-1.5 truncate text-lg titre-serre text-texte">
             {t('paiement.titre')}
             <HautParleur cle="paiement.titre" />
           </h1>
@@ -199,7 +199,7 @@ export default function Paiement() {
         )}
       </header>
 
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pt-4 pb-[calc(env(safe-area-inset-bottom,0px)+16px)] md:max-w-lg md:pt-6">
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pt-6 pb-[calc(env(safe-area-inset-bottom,0px)+20px)] md:max-w-lg md:pt-10">
         {etat === 'introuvable' || etat === 'erreur' ? (
           <EtatVide
             ton="neutre"
@@ -223,8 +223,8 @@ export default function Paiement() {
             <div className="text-center">
               {paiement ? (
                 <>
-                  <p className="text-4xl font-semibold tracking-tight text-texte tabulaire md:text-5xl">{formaterFCFA(paiement.montant_xof)}</p>
-                  <p className="mt-1 min-h-5 text-base text-texte-2 tabulaire">{paiement.montant_sats !== null && formaterSats(paiement.montant_sats)}</p>
+                  <p className="text-5xl titre-serre text-texte tabulaire md:text-6xl">{formaterFCFA(paiement.montant_xof)}</p>
+                  <p className="mt-2 min-h-6 text-base font-semibold text-texte-2 tabulaire">{paiement.montant_sats !== null && formaterSats(paiement.montant_sats)}</p>
                 </>
               ) : (
                 <>
@@ -234,7 +234,7 @@ export default function Paiement() {
               )}
             </div>
 
-            <Onglets value={ongletCourant} onValueChange={changerOnglet} className="mt-4 flex flex-1 flex-col">
+            <Onglets value={ongletCourant} onValueChange={changerOnglet} className="mt-6 flex flex-1 flex-col">
               <OngletsListe className="md:w-full">
                 <Onglet value="lightning" icone={<Zap />} voix="paiement.lightning" disabled={!lightningOk || tentative.isPending}>
                   {t('paiement.lightning')}
@@ -422,13 +422,13 @@ function PanneauTentative(p: PropsPanneau) {
   return (
     <div className="flex flex-1 flex-col items-center">
       {contenuQr && <QrCode valeur={contenuQr} libelle={t('paiement.qrAria')} taille={248} className="md:size-[272px]" />}
-      <p className="mt-3 max-w-xs text-center text-sm text-texte-2">{lightning ? t('paiement.scanner') : waveManuel ? t('paiement.waveTexte') : t('paiement.scannerMobileMoney')}</p>
+      <p className="mt-5 max-w-xs text-center text-base leading-relaxed text-texte-2">{lightning ? t('paiement.scanner') : waveManuel ? t('paiement.waveTexte') : t('paiement.scannerMobileMoney')}</p>
 
-      <div className="mt-3 flex items-center gap-2" aria-live="polite">
-        <span className="inline-flex size-2 rounded-full bg-attente anim-pulsation" aria-hidden="true" />
-        <span className="text-sm font-medium text-attente-texte">{waveManuel ? t('paiement.enAttenteConfirmation') : t('paiement.enAttente')}</span>
+      <div className="verre mt-4 flex items-center gap-2.5 rounded-full py-1.5 pr-1.5 pl-4" aria-live="polite">
+        <span className="inline-flex size-2.5 rounded-full bg-attente shadow-[0_0_0_4px_var(--attente-doux)] anim-pulsation" aria-hidden="true" />
+        <span className="text-sm font-bold text-attente-texte">{waveManuel ? t('paiement.enAttenteConfirmation') : t('paiement.enAttente')}</span>
         {p.secondes !== null && (
-          <span className={cn('inline-flex items-center gap-1 rounded-md bg-surface-2 px-2 py-0.5 text-sm font-semibold text-texte tabulaire', p.secondes <= 30 && 'bg-danger-doux text-danger-texte')}>
+          <span className={cn('inline-flex items-center gap-1 rounded-full bg-surface px-3 py-1 text-sm font-bold text-texte tabulaire', p.secondes <= 30 && 'bg-danger-doux text-danger-texte')}>
             <Clock size={13} aria-hidden="true" />
             <span className="sr-only">{t('paiement.expireDans')} </span>
             {formaterCompteARebours(p.secondes)}
@@ -441,20 +441,20 @@ function PanneauTentative(p: PropsPanneau) {
           href={lienExterne}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-3 inline-flex h-11 w-full max-w-xs items-center justify-center gap-2 rounded-md bg-mm px-4 text-base font-medium text-white shadow-xs hover:brightness-105 md:h-10"
+          className="mt-4 inline-flex h-13 w-full max-w-xs items-center justify-center gap-2 rounded-full bg-mm px-5 text-base font-bold text-white ombre-mm hover:brightness-105"
         >
           <ExternalLink size={16} aria-hidden="true" />
           {waveManuel ? t('paiement.ouvrirWave') : t('paiement.ouvrir')}
         </a>
       )}
 
-      <div className="mt-4 flex items-center justify-center gap-3">
+      <div className="mt-5 flex items-center justify-center gap-3">
         <BoutonIcone libelle={t('paiement.copier')} icone={<Copy />} voix="paiement.copier" variante="secondaire" taille="lg" onClick={() => void copierDemande()} />
         {peutPartager() && <BoutonIcone libelle={t('paiement.partager')} icone={<Share2 />} voix="paiement.partager" variante="secondaire" taille="lg" onClick={partagerDemande} />}
         <BoutonIcone libelle={t('paiement.verifier')} icone={<RefreshCw className={cn(p.verificationEnCours && 'animate-spin')} />} voix="paiement.verifier" variante="secondaire" taille="lg" disabled={p.verificationEnCours} onClick={p.onVerifier} />
       </div>
 
-      <div className="mt-auto flex w-full max-w-xs flex-col gap-2 pt-4">
+      <div className="mt-auto flex w-full max-w-xs flex-col gap-3 pt-6">
         {waveManuel && p.gestion && (
           <Bouton taille="lg" pleineLargeur icone={<BadgeCheck />} voix="paiement.confirmerManuellement" onClick={p.onConfirmer}>
             {t('paiement.confirmerManuellement')}
@@ -474,15 +474,15 @@ function PanneauEtat({ ton, icone, titre, texte, voix, children }: { ton: 'atten
   const tons = { attente: 'bg-attente-doux text-attente-texte', neutre: 'bg-neutre-doux text-neutre-texte', danger: 'bg-danger-doux text-danger-texte' }
   return (
     <div className="flex flex-1 flex-col items-center pt-6 text-center" role="status" aria-live="polite">
-      <span className={cn('inline-flex size-16 items-center justify-center rounded-full [&>svg]:size-8', tons[ton])} aria-hidden="true">
+      <span className={cn('inline-flex size-20 items-center justify-center rounded-full [&>svg]:size-9', tons[ton])} aria-hidden="true">
         {icone}
       </span>
-      <h2 className="mt-4 flex items-center gap-1.5 text-lg font-semibold text-texte">
+      <h2 className="mt-5 flex items-center gap-1.5 text-xl titre-serre text-texte">
         {titre}
         <HautParleur cle={voix} />
       </h2>
       {texte && <p className="mt-1 max-w-xs text-sm text-texte-2">{texte}</p>}
-      <div className="mt-6 flex w-full max-w-xs flex-col gap-2">{children}</div>
+      <div className="mt-8 flex w-full max-w-xs flex-col gap-3">{children}</div>
     </div>
   )
 }

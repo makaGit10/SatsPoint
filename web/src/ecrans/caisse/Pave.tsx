@@ -50,7 +50,7 @@ export function Pave({ valeur, onChange, desactive, className }: PropsPave) {
   }
 
   return (
-    <div role="group" aria-label={t('caisse.pave')} className={cn('grid grid-cols-3 gap-2', className)} data-pave>
+    <div role="group" aria-label={t('caisse.pave')} className={cn('grid grid-cols-3 gap-2.5', className)} data-pave>
       {TOUCHES.map((touche) => {
         const effacer = touche === 'effacer'
         return (
@@ -66,12 +66,12 @@ export function Pave({ valeur, onChange, desactive, className }: PropsPave) {
             onPointerCancel={effacer ? finAppui : undefined}
             onContextMenu={effacer ? (e) => e.preventDefault() : undefined}
             className={cn(
-              'flex h-16 items-center justify-center rounded-lg border text-2xl font-medium select-none tabulaire',
+              'flex h-16 items-center justify-center rounded-full border text-2xl font-bold select-none tabulaire md:h-[3.75rem]',
               'transition-[background-color,transform,border-color] duration-100 active:scale-[0.97] disabled:opacity-45',
               'touch-manipulation',
               effacer
-                ? 'border-bordure bg-surface-2 text-texte-2 hover:bg-surface-3 active:bg-surface-3'
-                : 'border-bordure bg-surface text-texte shadow-xs hover:bg-surface-2 active:bg-surface-2',
+                ? 'border-transparent bg-accent-doux text-accent-texte hover:brightness-95 active:brightness-90'
+                : 'border-verre-bordure bg-verre text-texte shadow-xs backdrop-blur-md hover:bg-surface active:bg-surface',
               touche === '000' && 'text-xl',
             )}
           >

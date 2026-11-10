@@ -27,7 +27,7 @@ export function Segment<T extends string>({ valeur, options, onChange, libelle, 
     <div
       role="radiogroup"
       aria-label={libelle}
-      className={cn('inline-flex w-full items-stretch gap-0.5 rounded-md bg-surface-2 p-0.5', taille === 'md' ? 'h-10 md:h-9' : 'h-9 md:h-8', className)}
+      className={cn('verre inline-flex w-full max-w-full items-stretch gap-1 overflow-x-auto rounded-full p-1 [scrollbar-width:none]', taille === 'md' ? 'h-12 md:h-11' : 'h-10 md:h-9', className)}
     >
       {options.map((o) => {
         const actif = o.valeur === valeur
@@ -40,9 +40,10 @@ export function Segment<T extends string>({ valeur, options, onChange, libelle, 
             disabled={o.desactive}
             onClick={() => onChange(o.valeur)}
             className={cn(
-              'relative inline-flex flex-1 items-center justify-center gap-1.5 rounded-sm px-2 font-medium whitespace-nowrap text-texte-2 transition-colors duration-150 hover:text-texte disabled:opacity-45 disabled:hover:text-texte-2',
-              taille === 'md' ? 'text-sm' : 'text-xs',
-              actif && 'bg-surface text-texte shadow-xs',
+              'relative inline-flex flex-1 items-center justify-center gap-1.5 rounded-full font-semibold whitespace-nowrap transition-colors duration-150 disabled:opacity-45',
+              taille === 'md' ? 'px-3 text-sm' : 'px-2 text-xs',
+              // Couleur du texte posée d'un seul côté : deux utilitaires de couleur se départageraient par l'ordre du CSS généré.
+              actif ? 'bg-inverse text-inverse-texte shadow-sm' : 'text-texte-2 hover:text-texte disabled:hover:text-texte-2',
             )}
           >
             {o.icone && <span className={cn('inline-flex', taille === 'md' ? '[&>svg]:size-[15px]' : '[&>svg]:size-3.5')} aria-hidden="true">{o.icone}</span>}

@@ -1,218 +1,280 @@
-/* Inter (variable, sous-ensemble latin), auto-hébergée. Chiffres tabulaires pour les montants via `.tabulaire`. */
+/* Plus Jakarta Sans (variable, sous-ensembles latin + latin étendu), auto-hébergée. Chiffres tabulaires pour les montants via `.tabulaire`.
+   U+202F (espace fine insécable des milliers) est absente de Plus Jakarta : elle vient d'une micro-police maison (1 glyphe vide, 0,21 em)
+   (« Espace Fine », src/styles/polices), placée en tête de la pile de polices et limitée à ce seul caractère. */
 @font-face {
-  font-family: 'Inter Variable';
+  font-family: 'Espace Fine';
+  font-style: normal;
+  font-display: block;
+  font-weight: 100 900;
+  src: url('./polices/espace-fine.woff2') format('woff2');
+  unicode-range: U+202F;
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans Variable';
   font-style: normal;
   font-display: swap;
-  font-weight: 100 900;
-  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 200 800;
+  src: url('@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2') format('woff2-variations');
   unicode-range:
-    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F,
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-202E, U+2030-206F,
     U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url('@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
 /* ---------- Jetons communs ---------- */
 :root {
-  --rayon-xs: 4px;
-  --rayon-sm: 6px;
-  --rayon-md: 10px;
-  --rayon-lg: 14px;
-  --rayon-xl: 20px;
+  /* Rayons généreux (direction « Lumière ») : champs ~14 px, cartes ~22-28 px, boutons et touches en pilule. */
+  --rayon-xs: 8px;
+  --rayon-sm: 10px;
+  --rayon-md: 14px;
+  --rayon-lg: 22px;
+  --rayon-xl: 28px;
 
-  --hauteur-entete: 52px;
-  --hauteur-barre-bas: 60px;
-  --largeur-laterale: 232px;
-  --largeur-laterale-repliee: 64px;
+  --hauteur-entete: 64px;
+  --hauteur-barre-bas: 68px;
+  --largeur-laterale: 252px;
+  --largeur-laterale-repliee: 76px;
 
-  --duree: 150ms;
+  --duree: 160ms;
 }
 
-/* ---------- Thème clair (par défaut) : blanc et or ---------- */
-/* Fond blanc cassé très léger, surfaces blanches, bordures gris chaud, texte encre ; l'or est réservé à l'action principale
-   et aux détails. Contrastes vérifiés (WCAG AA) : voir les ratios en commentaire. */
+/* ---------- Thème clair (par défaut) : « Lumière », blanc chaud, halos dorés et verre dépoli ---------- */
+/* Contrastes vérifiés (WCAG AA) : ratios en commentaire, calculés sur le fond #fffdf8 ou sur blanc. */
 :root {
   color-scheme: light;
 
-  --fond: #faf9f6;
-  --fond-2: #f4f2ec;
+  --fond: #fffdf8;
+  --fond-2: #fbf6ea;
   --surface: #ffffff;
-  --surface-2: #f6f4ef;
-  --surface-3: #ece9e2;
-  --bordure: #e8e4db;
-  --bordure-forte: #d5cfc3;
-  --texte: #1a1814; /* 16,8:1 sur le fond */
-  --texte-2: #57524a; /* 7,4:1 */
-  --texte-3: #6e685d; /* 5,3:1 sur le fond, 4,5:1 sur surface-3 */
-  --inverse: #1a1814;
-  --inverse-texte: #ffffff;
+  --surface-2: #f8f2e4;
+  --surface-3: #efe6d2;
+  --bordure: #f0e7d4;
+  --bordure-forte: #e2d4b6;
+  --texte: #1b1710; /* 17,6:1 sur le fond */
+  --texte-2: #5e5546; /* 7,2:1 sur le fond */
+  --texte-3: #6f6553; /* 5,6:1 sur le fond, 4,6:1 sur surface-3 */
+  --inverse: #1b1710; /* pilule active des segments et onglets */
+  --inverse-texte: #ffffff; /* 17,9:1 */
 
-  /* Or : surfaces d'accent avec texte encre (7,6:1) ; en texte ou lien sur blanc, or foncé (6,0:1). */
-  --accent: #c9a227;
-  --accent-fort: #b8902a; /* survol : 6,2:1 avec --sur-accent */
-  --accent-texte: #7d5e0e; /* 6,0:1 sur blanc, 5,4:1 sur --accent-doux */
-  --accent-doux: rgba(201, 162, 39, 0.14);
-  --accent-trait: #a07c17; /* traits, courbes, icônes, interrupteur : 3,9:1 sur blanc (éléments graphiques ≥ 3:1) */
-  --sur-accent: #1a1408;
-  --degrade-accent: linear-gradient(180deg, #d9b443 0%, #c29b2c 100%); /* texte encre : 9,2:1 en haut, 6,9:1 en bas */
-  --degrade-accent-survol: linear-gradient(180deg, #cfa935 0%, #b48d25 100%);
-  --ombre-accent: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 1px 2px rgba(122, 92, 16, 0.28);
+  /* Verre : blanc translucide + flou + liseré blanc + ombre dorée douce (cartes, panneaux, en-tête, barres). */
+  --verre: rgba(255, 255, 255, 0.66);
+  --verre-fort: rgba(255, 255, 255, 0.86);
+  --verre-bordure: rgba(255, 255, 255, 0.95);
+  --verre-trait: rgba(226, 200, 150, 0.45);
+  --ombre-verre: 0 10px 30px -12px rgba(150, 110, 20, 0.22), 0 1px 2px rgba(120, 90, 20, 0.05);
+  --flou-verre: 18px;
+
+  /* Halos dorés fixes derrière l'interface. */
+  --halos:
+    radial-gradient(60% 40% at 88% 4%, rgba(255, 205, 90, 0.42), transparent 70%),
+    radial-gradient(50% 36% at 0% 42%, rgba(255, 228, 160, 0.5), transparent 70%),
+    radial-gradient(60% 40% at 100% 100%, rgba(245, 190, 80, 0.26), transparent 70%);
+
+  /* Or : surfaces d'accent avec texte #2a1c00 (10,1:1 en haut du dégradé, 7,4:1 en bas) ; en texte ou lien, or foncé. */
+  --accent: #eab02e;
+  --accent-fort: #d99a14;
+  --accent-texte: #8a5a00; /* 5,8:1 sur le fond, 5,3:1 sur --accent-doux */
+  --accent-doux: rgba(240, 181, 46, 0.16);
+  --accent-trait: #b07a0a; /* traits, courbes, icônes, interrupteur : 3,7:1 sur blanc (éléments graphiques ≥ 3:1) */
+  --sur-accent: #2a1c00;
+  --degrade-accent: linear-gradient(180deg, #f6c34a 0%, #e0a21f 100%);
+  --degrade-accent-survol: linear-gradient(180deg, #f8cb5c 0%, #e6a826 100%);
+  --degrade-texte-or: linear-gradient(100deg, #b87d0a, #e9a92a 50%, #b87d0a); /* grands titres seulement (≥ 24 px gras) */
+  --ombre-accent: 0 12px 26px -10px rgba(224, 162, 31, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.6);
 
   /* Mobile money : bleu (Wave) distinct de l'or. */
   --mm: #1fa8e0;
-  --mm-texte: #0b6f99;
-  --mm-doux: rgba(31, 168, 224, 0.14);
+  --mm-texte: #0b6f99; /* 5,6:1 sur blanc */
+  --mm-doux: rgba(31, 168, 224, 0.13);
 
-  /* Statuts sémantiques : vert payé, ambre en attente (plus chaud et plus soutenu que l'or), rouge problème, gris annulé. */
-  --succes: #19a34a;
-  --succes-texte: #137a38;
-  --succes-doux: rgba(25, 163, 74, 0.13);
-  --attente: #d97706;
-  --attente-texte: #a24a07; /* 6,0:1 sur blanc, 5,3:1 sur --attente-doux */
-  --attente-doux: rgba(217, 119, 6, 0.12);
+  /* Statuts : vert payé, ambre doré en attente (pas d'orange), rouge problème, gris annulé. */
+  --succes: #16a34a;
+  --succes-texte: #137a38; /* 5,4:1 sur blanc, 4,7:1 sur --succes-doux */
+  --succes-doux: rgba(22, 163, 74, 0.13);
+  --attente: #d99a0b;
+  --attente-texte: #8a5a00; /* 5,9:1 sur blanc, 5,3:1 sur --attente-doux */
+  --attente-doux: rgba(217, 154, 11, 0.14);
   --danger: #dc2f2f;
-  --danger-texte: #b31f1f;
-  --danger-doux: rgba(220, 47, 47, 0.12);
-  --neutre: #8e887d;
-  --neutre-texte: #5e594f;
-  --neutre-doux: rgba(142, 136, 125, 0.16);
+  --danger-texte: #b31f1f; /* 6,7:1 sur blanc */
+  --danger-doux: rgba(220, 47, 47, 0.11);
+  --neutre: #948a78;
+  --neutre-texte: #5e5546;
+  --neutre-doux: rgba(148, 138, 120, 0.16);
 
-  --anneau: #a07c17; /* focus : 3,9:1 sur blanc */
+  --anneau: #b07a0a; /* focus : 3,7:1 sur blanc */
 
   /* Tuiles d'articles (caisse) : couleurs choisies par le commerçant, fonds doux + texte lisible (AA). */
-  --tuile-orange: #fde7cf; --tuile-orange-texte: #8a4b00;
+  --tuile-orange: #fde6cf; --tuile-orange-texte: #8a4b00;
   --tuile-rouge: #fbdcdc; --tuile-rouge-texte: #9b1c1c;
-  --tuile-jaune: #fbefc3; --tuile-jaune-texte: #7a5a00;
-  --tuile-vert: #d4f1de; --tuile-vert-texte: #156a35;
-  --tuile-bleu: #d6ecf8; --tuile-bleu-texte: #0b5f85;
-  --tuile-violet: #e6dcf8; --tuile-violet-texte: #5b2ea6;
-  --tuile-brun: #ebdfd3; --tuile-brun-texte: #6b4423;
-  --tuile-gris: #e9e7e2; --tuile-gris-texte: #4a463f;
+  --tuile-jaune: #fcefc4; --tuile-jaune-texte: #7a5a00;
+  --tuile-vert: #d6f2df; --tuile-vert-texte: #156a35;
+  --tuile-bleu: #d8edf9; --tuile-bleu-texte: #0b5f85;
+  --tuile-violet: #e8def9; --tuile-violet-texte: #5b2ea6;
+  --tuile-brun: #efe3d5; --tuile-brun-texte: #6b4423;
+  --tuile-gris: #ece8e0; --tuile-gris-texte: #4a463f;
 
-  --ombre-xs: 0 1px 2px rgba(26, 24, 20, 0.05);
-  --ombre-sm: 0 1px 3px rgba(26, 24, 20, 0.07), 0 1px 2px rgba(26, 24, 20, 0.04);
-  --ombre-md: 0 4px 14px rgba(26, 24, 20, 0.08), 0 1px 3px rgba(26, 24, 20, 0.05);
-  --ombre-lg: 0 14px 36px rgba(26, 24, 20, 0.14), 0 2px 6px rgba(26, 24, 20, 0.06);
+  --ombre-xs: 0 1px 2px rgba(120, 90, 20, 0.06);
+  --ombre-sm: 0 2px 8px -2px rgba(120, 90, 20, 0.12), 0 1px 2px rgba(120, 90, 20, 0.05);
+  --ombre-md: 0 10px 30px -12px rgba(150, 110, 20, 0.24), 0 2px 6px rgba(120, 90, 20, 0.06);
+  --ombre-lg: 0 24px 60px -20px rgba(120, 85, 10, 0.32), 0 4px 12px rgba(120, 90, 20, 0.08);
 }
 
-/* ---------- Thème sombre (option) : anthracite chaud, or en accent, texte ivoire ---------- */
+/* ---------- Thème sombre (option) : anthracite chaud, halos dorés discrets, verre sombre ---------- */
 :root[data-theme='sombre'] {
   color-scheme: dark;
 
-  --fond: #141311;
-  --fond-2: #181715;
-  --surface: #1c1a17;
-  --surface-2: #24221e;
-  --surface-3: #2e2b26;
-  --bordure: #2c2924;
-  --bordure-forte: #3d3932;
-  --texte: #f3eee3; /* ivoire : 16,1:1 sur le fond */
-  --texte-2: #b8b0a2; /* 8,1:1 sur la surface */
-  --texte-3: #968e81; /* 5,4:1 sur la surface, 4,9:1 sur surface-2 */
-  --inverse: #f3eee3;
-  --inverse-texte: #141311;
+  --fond: #12100c;
+  --fond-2: #17140f;
+  --surface: #1d1913;
+  --surface-2: #26211a;
+  --surface-3: #2f2920;
+  --bordure: #2e281e;
+  --bordure-forte: #3f372a;
+  --texte: #f6f0e2; /* 16,7:1 sur le fond */
+  --texte-2: #c2b8a5; /* 8,5:1 sur la surface */
+  --texte-3: #9d927f; /* 5,5:1 sur la surface, 4,8:1 sur surface-3 */
+  --inverse: #f6f0e2;
+  --inverse-texte: #1b1710;
 
-  --accent: #d4af37;
-  --accent-fort: #e0be52;
-  --accent-texte: #ddb84e; /* 9,1:1 sur la surface, 6,7:1 sur --accent-doux */
-  --accent-doux: rgba(212, 175, 55, 0.16);
-  --accent-trait: #d4af37;
-  --sur-accent: #1a1408; /* 8,7:1 sur l'or */
-  --degrade-accent: linear-gradient(180deg, #e2c25c 0%, #cfa834 100%);
-  --degrade-accent-survol: linear-gradient(180deg, #e8ca68 0%, #d6b040 100%);
-  --ombre-accent: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 1px 2px rgba(0, 0, 0, 0.5);
+  --verre: rgba(34, 29, 22, 0.62);
+  --verre-fort: rgba(34, 29, 22, 0.86);
+  --verre-bordure: rgba(255, 236, 190, 0.08);
+  --verre-trait: rgba(255, 236, 190, 0.1);
+  --ombre-verre: 0 14px 36px -14px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 240, 200, 0.05);
+  --flou-verre: 18px;
+
+  --halos:
+    radial-gradient(60% 40% at 88% 4%, rgba(240, 180, 50, 0.16), transparent 70%),
+    radial-gradient(50% 36% at 0% 42%, rgba(240, 190, 80, 0.09), transparent 70%),
+    radial-gradient(60% 40% at 100% 100%, rgba(230, 170, 40, 0.1), transparent 70%);
+
+  --accent: #f0b93a;
+  --accent-fort: #f6c34a;
+  --accent-texte: #f3c55a; /* 10,3:1 sur la surface, 8,6:1 sur --accent-doux */
+  --accent-doux: rgba(240, 185, 58, 0.16);
+  --accent-trait: #f0b93a;
+  --sur-accent: #2a1c00; /* 9,3:1 sur l'or */
+  --degrade-accent: linear-gradient(180deg, #f6c34a 0%, #e0a21f 100%);
+  --degrade-accent-survol: linear-gradient(180deg, #f8cb5c 0%, #e6a826 100%);
+  --degrade-texte-or: linear-gradient(100deg, #e9a92a, #ffd76a 50%, #e9a92a);
+  --ombre-accent: 0 12px 28px -12px rgba(240, 175, 40, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.45);
 
   --mm: #35b8ea;
   --mm-texte: #6fd0f6;
-  --mm-doux: rgba(53, 184, 234, 0.18);
+  --mm-doux: rgba(53, 184, 234, 0.16);
 
   --succes: #2fc064;
   --succes-texte: #62d98b;
-  --succes-doux: rgba(47, 192, 100, 0.16);
-  --attente: #f59e0b;
-  --attente-texte: #fcc27a; /* 10,9:1 sur la surface */
-  --attente-doux: rgba(245, 158, 11, 0.16);
+  --succes-doux: rgba(47, 192, 100, 0.15);
+  --attente: #f0b93a;
+  --attente-texte: #f3c55a; /* 10,3:1 sur la surface */
+  --attente-doux: rgba(240, 185, 58, 0.15);
   --danger: #f05252;
-  --danger-texte: #ff7b7b;
-  --danger-doux: rgba(240, 82, 82, 0.16);
-  --neutre: #8e887d;
-  --neutre-texte: #b8b0a2;
-  --neutre-doux: rgba(142, 136, 125, 0.2);
+  --danger-texte: #ff8080;
+  --danger-doux: rgba(240, 82, 82, 0.15);
+  --neutre: #948a78;
+  --neutre-texte: #c2b8a5;
+  --neutre-doux: rgba(148, 138, 120, 0.2);
 
-  --anneau: #d4af37; /* 8,8:1 sur le fond */
+  --anneau: #f0b93a;
 
-  --tuile-orange: #4a2e0f; --tuile-orange-texte: #ffc27a;
+  --tuile-orange: #4a2e10; --tuile-orange-texte: #ffc98a;
   --tuile-rouge: #4a1f1f; --tuile-rouge-texte: #ff9b9b;
   --tuile-jaune: #46380d; --tuile-jaune-texte: #f7d774;
   --tuile-vert: #163d26; --tuile-vert-texte: #7fe0a4;
   --tuile-bleu: #11384a; --tuile-bleu-texte: #86d4f7;
   --tuile-violet: #2e1f4f; --tuile-violet-texte: #c9aefc;
   --tuile-brun: #3e2c1f; --tuile-brun-texte: #e0b996;
-  --tuile-gris: #2e2b26; --tuile-gris-texte: #c9c1b3;
+  --tuile-gris: #2f2920; --tuile-gris-texte: #c9c1b3;
 
   --ombre-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --ombre-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
-  --ombre-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
-  --ombre-lg: 0 12px 32px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --ombre-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --ombre-md: 0 12px 30px -12px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --ombre-lg: 0 24px 60px -20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-/* Thème « auto » : suit le système quand aucun thème explicite n'est posé (le thème par défaut est « clair »). */
+/* Thème « auto » : suit le système quand aucun thème explicite n'est posé (le thème par défaut est « clair »).
+   Copie exacte du bloc sombre ci-dessus — à garder synchronisée. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
 
-    --fond: #141311;
-    --fond-2: #181715;
-    --surface: #1c1a17;
-    --surface-2: #24221e;
-    --surface-3: #2e2b26;
-    --bordure: #2c2924;
-    --bordure-forte: #3d3932;
-    --texte: #f3eee3; /* ivoire : 16,1:1 sur le fond */
-    --texte-2: #b8b0a2; /* 8,1:1 sur la surface */
-    --texte-3: #968e81; /* 5,4:1 sur la surface, 4,9:1 sur surface-2 */
-    --inverse: #f3eee3;
-    --inverse-texte: #141311;
+    --fond: #12100c;
+    --fond-2: #17140f;
+    --surface: #1d1913;
+    --surface-2: #26211a;
+    --surface-3: #2f2920;
+    --bordure: #2e281e;
+    --bordure-forte: #3f372a;
+    --texte: #f6f0e2;
+    --texte-2: #c2b8a5;
+    --texte-3: #9d927f;
+    --inverse: #f6f0e2;
+    --inverse-texte: #1b1710;
 
-    --accent: #d4af37;
-    --accent-fort: #e0be52;
-    --accent-texte: #ddb84e; /* 9,1:1 sur la surface, 6,7:1 sur --accent-doux */
-    --accent-doux: rgba(212, 175, 55, 0.16);
-    --accent-trait: #d4af37;
-    --sur-accent: #1a1408; /* 8,7:1 sur l'or */
-    --degrade-accent: linear-gradient(180deg, #e2c25c 0%, #cfa834 100%);
-    --degrade-accent-survol: linear-gradient(180deg, #e8ca68 0%, #d6b040 100%);
-    --ombre-accent: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 1px 2px rgba(0, 0, 0, 0.5);
+    --verre: rgba(34, 29, 22, 0.62);
+    --verre-fort: rgba(34, 29, 22, 0.86);
+    --verre-bordure: rgba(255, 236, 190, 0.08);
+    --verre-trait: rgba(255, 236, 190, 0.1);
+    --ombre-verre: 0 14px 36px -14px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 240, 200, 0.05);
+    --flou-verre: 18px;
+
+    --halos:
+      radial-gradient(60% 40% at 88% 4%, rgba(240, 180, 50, 0.16), transparent 70%),
+      radial-gradient(50% 36% at 0% 42%, rgba(240, 190, 80, 0.09), transparent 70%),
+      radial-gradient(60% 40% at 100% 100%, rgba(230, 170, 40, 0.1), transparent 70%);
+
+    --accent: #f0b93a;
+    --accent-fort: #f6c34a;
+    --accent-texte: #f3c55a;
+    --accent-doux: rgba(240, 185, 58, 0.16);
+    --accent-trait: #f0b93a;
+    --sur-accent: #2a1c00;
+    --degrade-accent: linear-gradient(180deg, #f6c34a 0%, #e0a21f 100%);
+    --degrade-accent-survol: linear-gradient(180deg, #f8cb5c 0%, #e6a826 100%);
+    --degrade-texte-or: linear-gradient(100deg, #e9a92a, #ffd76a 50%, #e9a92a);
+    --ombre-accent: 0 12px 28px -12px rgba(240, 175, 40, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.45);
 
     --mm: #35b8ea;
     --mm-texte: #6fd0f6;
-    --mm-doux: rgba(53, 184, 234, 0.18);
+    --mm-doux: rgba(53, 184, 234, 0.16);
 
     --succes: #2fc064;
     --succes-texte: #62d98b;
-    --succes-doux: rgba(47, 192, 100, 0.16);
-    --attente: #f59e0b;
-    --attente-texte: #fcc27a; /* 10,9:1 sur la surface */
-    --attente-doux: rgba(245, 158, 11, 0.16);
+    --succes-doux: rgba(47, 192, 100, 0.15);
+    --attente: #f0b93a;
+    --attente-texte: #f3c55a;
+    --attente-doux: rgba(240, 185, 58, 0.15);
     --danger: #f05252;
-    --danger-texte: #ff7b7b;
-    --danger-doux: rgba(240, 82, 82, 0.16);
-    --neutre: #8e887d;
-    --neutre-texte: #b8b0a2;
-    --neutre-doux: rgba(142, 136, 125, 0.2);
+    --danger-texte: #ff8080;
+    --danger-doux: rgba(240, 82, 82, 0.15);
+    --neutre: #948a78;
+    --neutre-texte: #c2b8a5;
+    --neutre-doux: rgba(148, 138, 120, 0.2);
 
-    --anneau: #d4af37; /* 8,8:1 sur le fond */
+    --anneau: #f0b93a;
 
-    --tuile-orange: #4a2e0f; --tuile-orange-texte: #ffc27a;
+    --tuile-orange: #4a2e10; --tuile-orange-texte: #ffc98a;
     --tuile-rouge: #4a1f1f; --tuile-rouge-texte: #ff9b9b;
     --tuile-jaune: #46380d; --tuile-jaune-texte: #f7d774;
     --tuile-vert: #163d26; --tuile-vert-texte: #7fe0a4;
     --tuile-bleu: #11384a; --tuile-bleu-texte: #86d4f7;
     --tuile-violet: #2e1f4f; --tuile-violet-texte: #c9aefc;
     --tuile-brun: #3e2c1f; --tuile-brun-texte: #e0b996;
-    --tuile-gris: #2e2b26; --tuile-gris-texte: #c9c1b3;
+    --tuile-gris: #2f2920; --tuile-gris-texte: #c9c1b3;
 
     --ombre-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --ombre-sm: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
-    --ombre-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
-    --ombre-lg: 0 12px 32px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+    --ombre-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --ombre-md: 0 12px 30px -12px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.35);
+    --ombre-lg: 0 24px 60px -20px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.4);
   }
 }

@@ -229,7 +229,7 @@ function Colonnes({ analyse, nomFichier, correspondance, onChange }: { analyse: 
           {t('import.correspondance')}
           <HautParleur cle="import.correspondance" />
         </h3>
-        <ul className="divide-y divide-bordure rounded-lg border border-bordure bg-surface" data-correspondance>
+        <ul className="divide-y divide-bordure verre rounded-xl" data-correspondance>
           {analyse.colonnes.map((colonne, i) => {
             const champ = correspondance[colonne] ?? null
             const suggere = champ !== null && analyse.suggestions[colonne] === champ
@@ -400,7 +400,7 @@ function Progression({ ulid, onTerminer }: { ulid: string; onTerminer: () => voi
       <div className="h-2 overflow-hidden rounded-full bg-surface-3" aria-hidden="true">
         <div className={cn('h-full rounded-full transition-[width] duration-300', imp.statut === 'echoue' ? 'bg-danger' : imp.statut === 'termine' ? 'bg-succes' : 'bg-accent')} style={{ width: `${pct}%` }} />
       </div>
-      <dl className="grid grid-cols-3 divide-x divide-bordure rounded-lg border border-bordure bg-surface py-2 text-center">
+      <dl className="grid grid-cols-3 divide-x divide-bordure verre rounded-xl py-2 text-center">
         <div>
           <dt className="text-xs text-texte-3">{t('import.creees')}</dt>
           <dd className="text-lg font-semibold text-succes-texte tabulaire">{imp.creees}</dd>
@@ -424,7 +424,7 @@ function Progression({ ulid, onTerminer }: { ulid: string; onTerminer: () => voi
               </Bouton>
             )}
           </div>
-          <ul className="max-h-40 divide-y divide-bordure overflow-y-auto rounded-lg border border-bordure bg-surface text-sm">
+          <ul className="max-h-40 divide-y divide-bordure overflow-y-auto verre rounded-xl text-sm">
             {imp.erreurs.map((e) => (
               <li key={`${e.ligne}-${e.message}`} className="flex gap-2 px-3 py-1.5">
                 <Pastille ton="danger">{t('import.ligne', { n: e.ligne })}</Pastille>

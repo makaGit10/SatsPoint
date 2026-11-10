@@ -113,7 +113,7 @@ export function BoutiquesAdmin({ actif }: { actif: boolean }) {
         <EtatVide ton="neutre" icone={<Store />} titre={t('admin.boutiques.vide')} />
       ) : (
         <>
-          <ul className="divide-y divide-bordure rounded-lg border border-bordure bg-surface" aria-label={t('admin.onglets.boutiques')}>
+          <ul className="divide-y divide-bordure verre rounded-xl" aria-label={t('admin.onglets.boutiques')}>
             {boutiques.map((b) => {
               const derniere = b.activite.derniere_vente_le ? tempsRelatif(b.activite.derniere_vente_le) : null
               return (

@@ -19,7 +19,7 @@ export function SqueletteTexte({ lignes = 3, className }: { lignes?: number; cla
 /** Squelette d'une liste (lignes avec avatar + deux textes + montant). */
 export function SqueletteListe({ lignes = 4, className }: { lignes?: number; className?: string }) {
   return (
-    <div className={cn('divide-y divide-bordure rounded-lg border border-bordure bg-surface', className)} aria-hidden="true">
+    <div className={cn('divide-y divide-bordure verre rounded-xl', className)} aria-hidden="true">
       {Array.from({ length: lignes }, (_, i) => (
         <div key={i} className="flex items-center gap-3 px-3 py-2.5">
           <Squelette className="size-8 rounded-full" />
@@ -39,7 +39,7 @@ export function SqueletteIndicateurs({ nombre = 3, className }: { nombre?: numbe
   return (
     <div className={cn('grid grid-cols-2 gap-2 md:grid-cols-3', className)} aria-hidden="true">
       {Array.from({ length: nombre }, (_, i) => (
-        <div key={i} className="rounded-lg border border-bordure bg-surface p-3">
+        <div key={i} className="verre rounded-xl p-3">
           <Squelette className="mb-2 h-3 w-20" />
           <Squelette className="h-6 w-28" />
         </div>

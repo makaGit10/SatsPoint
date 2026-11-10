@@ -8,16 +8,16 @@ export interface PropsCarte extends HTMLAttributes<HTMLDivElement> {
   interactive?: boolean
 }
 
-const REMBOURRAGE = { none: '', sm: 'p-3', md: 'p-4' } as const
+const REMBOURRAGE = { none: '', sm: 'p-4', md: 'p-5 md:p-6' } as const
 
-/** Surface délimitée, compacte, sans marge excessive. */
+/** Carte en verre dépoli (direction « Lumière »). */
 export function Carte({ rembourrage = 'md', interactive, className, ...reste }: PropsCarte) {
   return (
     <div
       className={cn(
-        'rounded-lg border border-bordure bg-surface shadow-xs',
+        'verre rounded-xl',
         REMBOURRAGE[rembourrage],
-        interactive && 'cursor-pointer transition-[border-color,box-shadow] duration-150 hover:border-bordure-forte hover:shadow-sm',
+        interactive && 'cursor-pointer transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-md',
         className,
       )}
       {...reste}
@@ -34,10 +34,10 @@ export interface PropsCarteEnTete {
 
 export function CarteEnTete({ titre, sousTitre, actions, className }: PropsCarteEnTete) {
   return (
-    <div className={cn('mb-3 flex items-start justify-between gap-3', className)}>
+    <div className={cn('mb-4 flex items-start justify-between gap-3', className)}>
       <div className="min-w-0">
-        <h2 className="truncate text-base font-semibold text-texte">{titre}</h2>
-        {sousTitre && <p className="mt-0.5 text-sm text-texte-3">{sousTitre}</p>}
+        <h2 className="truncate text-lg font-bold text-texte">{titre}</h2>
+        {sousTitre && <p className="mt-1 text-sm text-texte-3">{sousTitre}</p>}
       </div>
       {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}
     </div>

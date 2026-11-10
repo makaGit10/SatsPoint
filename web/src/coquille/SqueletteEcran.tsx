@@ -14,7 +14,7 @@ export function SqueletteEcran() {
 /** Écran d'attente plein cadre (session inconnue au tout premier rendu). */
 export function SqueletteApplication() {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-fond" aria-busy="true" data-chargement="application">
+    <div className="flex min-h-dvh items-center justify-center" aria-busy="true" data-chargement="application">
       <div className="flex flex-col items-center gap-3">
         <Squelette className="size-12 rounded-xl" />
         <Squelette className="h-3 w-24" />

@@ -21,7 +21,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icones/apple-touch-icon.png'],
+      includeAssets: ['favicon.svg', 'logo.svg', 'icones/apple-touch-icon.png'],
       manifest: {
         id: '/',
         name: 'SatsPoint',
@@ -33,8 +33,8 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#ffffff',
-        theme_color: '#faf9f6',
+        background_color: '#fffdf8',
+        theme_color: '#fffdf8',
         categories: ['finance', 'business'],
         icons: [
           { src: '/icones/icone-192.png', sizes: '192x192', type: 'image/png' },

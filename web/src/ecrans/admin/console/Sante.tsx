@@ -107,7 +107,7 @@ export function SanteAdmin({ actif }: { actif: boolean }) {
           onClick={() => void requete.refetch()}
         />
       </Carte>
-      <ul className="divide-y divide-bordure rounded-lg border border-bordure bg-surface" aria-label={t('admin.onglets.sante')}>
+      <ul className="divide-y divide-bordure verre rounded-xl" aria-label={t('admin.onglets.sante')}>
         {lignes.map((l) => (
           <Ligne key={l.libelle} {...l} />
         ))}

@@ -107,7 +107,7 @@ export default function Equipe() {
       {membres.length > 0 && (
         <section aria-label={t('equipe.membres')}>
           <h2 className="mb-1.5 text-xs font-semibold tracking-wide text-texte-3 uppercase">{t('equipe.membres')}</h2>
-          <ul className="divide-y divide-bordure rounded-lg border border-bordure bg-surface">
+          <ul className="divide-y divide-bordure verre rounded-xl">
             {membres.map((m) => (
               <LigneMembre
                 key={m.ulid}

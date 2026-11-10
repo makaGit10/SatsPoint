@@ -66,7 +66,7 @@ export function LigneVente({ vente, onOuvrir, sansCaissier, compacte, className 
 /** Conteneur de lignes (bordure, séparateurs). `compacte` : liste imbriquée dans une carte, sans bordure propre. */
 export function ListeVentes({ children, className, compacte, ...reste }: HTMLAttributes<HTMLUListElement> & { compacte?: boolean }) {
   return (
-    <ul className={cn('divide-y divide-bordure overflow-hidden', compacte ? '-mx-3 [&>li>button]:px-3' : 'rounded-lg border border-bordure bg-surface', className)} {...reste}>
+    <ul className={cn('divide-y divide-bordure overflow-hidden', compacte ? '-mx-3 [&>li>button]:px-3' : 'verre rounded-xl', className)} {...reste}>
       {children}
     </ul>
   )

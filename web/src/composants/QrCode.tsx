@@ -39,7 +39,7 @@ export function QrCode({ valeur, libelle, taille = 240, className }: PropsQrCode
       role="img"
       aria-label={libelle}
       data-qr={svg ? 'pret' : 'chargement'}
-      className={cn('inline-flex items-center justify-center rounded-lg bg-white p-3 shadow-xs', className)}
+      className={cn('inline-flex items-center justify-center rounded-xl border border-verre-bordure bg-white p-4 shadow-verre', className)}
       style={{ width: taille, height: taille }}
     >
       {svg ? (

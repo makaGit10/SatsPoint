@@ -53,7 +53,7 @@ describe('Bouton', () => {
         X
       </Bouton>,
     )
-    expect(screen.getByRole('button')).toHaveClass('bg-surface', 'h-16', 'w-full')
+    expect(screen.getByRole('button')).toHaveClass('verre-fort', 'h-16', 'w-full')
   })
 
   it('affiche le haut-parleur si un audio existe, et le clic sur celui-ci ne déclenche pas le bouton', () => {

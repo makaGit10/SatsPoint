@@ -18,8 +18,8 @@ export function Selection({ libelle, libelleVisible = true, options, aide, erreu
   const idAuto = useId()
   const idChamp = id ?? idAuto
   return (
-    <div className={cn('flex flex-col gap-1', classeConteneur)}>
-      <label htmlFor={idChamp} className={cn('text-sm font-medium text-texte-2', !libelleVisible && 'sr-only')}>
+    <div className={cn('flex flex-col gap-1.5', classeConteneur)}>
+      <label htmlFor={idChamp} className={cn('text-sm font-semibold text-texte-2', !libelleVisible && 'sr-only')}>
         {libelle}
       </label>
       <div className="relative">
@@ -27,10 +27,8 @@ export function Selection({ libelle, libelleVisible = true, options, aide, erreu
           id={idChamp}
           aria-invalid={erreur ? true : undefined}
           className={cn(
-            'w-full appearance-none rounded-md border bg-surface pr-8 pl-3 text-texte shadow-xs outline-none transition-[border-color,box-shadow] duration-150',
-            'focus:border-accent focus:ring-2 focus:ring-accent/25 disabled:bg-surface-2 disabled:text-texte-3',
-            taille === 'md' ? 'h-11 text-base md:h-10' : 'h-9 text-sm md:h-8',
-            erreur ? 'border-danger' : 'border-bordure hover:border-bordure-forte',
+            'champ-verre w-full appearance-none pr-10 pl-4',
+            taille === 'md' ? 'h-13 text-base md:h-12' : 'h-10 rounded-full text-sm md:h-9',
             className,
           )}
           {...reste}
@@ -41,7 +39,7 @@ export function Selection({ libelle, libelleVisible = true, options, aide, erreu
             </option>
           ))}
         </select>
-        <ChevronDown size={14} className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-texte-3" aria-hidden="true" />
+        <ChevronDown size={14} className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-texte-3" aria-hidden="true" />
       </div>
       {erreur ? <p role="alert" className="text-sm text-danger-texte">{erreur}</p> : aide && <p className="text-xs text-texte-3">{aide}</p>}
     </div>

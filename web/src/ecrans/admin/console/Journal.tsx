@@ -81,7 +81,7 @@ export function JournalAdmin({ actif }: { actif: boolean }) {
         <EtatVide ton="neutre" icone={<ScrollText />} titre={t('admin.journal.vide')} />
       ) : (
         <>
-          <ol className="divide-y divide-bordure rounded-lg border border-bordure bg-surface" aria-label={t('admin.onglets.journal')}>
+          <ol className="divide-y divide-bordure verre rounded-xl" aria-label={t('admin.onglets.journal')}>
             {entrees.map((e) => {
               const famille = e.action.split('.')[0] ?? ''
               const alerte = sensible(e.action)

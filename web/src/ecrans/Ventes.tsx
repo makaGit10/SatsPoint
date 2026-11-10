@@ -136,7 +136,7 @@ export default function Ventes() {
       </div>
 
       {totaux && (
-        <dl className="mb-3 grid grid-cols-3 divide-x divide-bordure rounded-lg border border-bordure bg-surface py-2 text-center">
+        <dl className="mb-3 grid grid-cols-3 divide-x divide-bordure verre rounded-xl py-2 text-center">
           <div className="px-2">
             <dt className="text-xs text-texte-3">{t('ventes.titre')}</dt>
             <dd className="text-base font-semibold text-texte tabulaire">{t('ventes.nombre', { count: totaux.nombre })}</dd>

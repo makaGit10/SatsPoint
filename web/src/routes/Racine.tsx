@@ -43,7 +43,7 @@ export function ErreurRacine() {
   const erreur = useRouteError()
   const introuvable = isRouteErrorResponse(erreur) && erreur.status === 404
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-fond px-6 text-center" data-ecran="erreur">
+    <div className="flex min-h-dvh flex-col items-center justify-center gap-3 px-6 text-center" data-ecran="erreur">
       <p className="text-lg font-semibold text-texte">{introuvable ? t('introuvable.titre') : t('erreurs.inattendue')}</p>
       <Bouton variante="secondaire" voix="introuvable.retour" onClick={() => window.location.assign('/')}>
         {t('introuvable.retour')}

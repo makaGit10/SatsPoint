@@ -36,7 +36,7 @@ export function Pastille({ ton = 'neutre', icone, point, pulse, className, child
   return (
     <span
       className={cn(
-        'inline-flex h-5 items-center gap-1 rounded-full px-2 text-xs font-medium whitespace-nowrap',
+        'inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold whitespace-nowrap',
         TONS[ton],
         className,
       )}

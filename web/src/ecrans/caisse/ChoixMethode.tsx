@@ -36,7 +36,7 @@ function Option({ icone, titre, detail, onClick, desactive, ton, voix, raison }:
         onClick={onClick}
         disabled={desactive}
         className={cn(
-          'flex min-h-14 w-full items-center gap-3 rounded-lg border border-bordure bg-surface px-3 py-2 text-left transition-[border-color,background-color] duration-150',
+          'flex min-h-14 w-full items-center gap-3 verre rounded-xl px-3 py-2 text-left transition-[border-color,background-color] duration-150',
           'hover:border-bordure-forte hover:bg-surface-2 active:scale-[0.99] disabled:opacity-55',
         )}
       >

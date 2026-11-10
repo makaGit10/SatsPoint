@@ -24,7 +24,7 @@ function Segment<T extends string>({
   libelle: string
 }) {
   return (
-    <div role="radiogroup" aria-label={libelle} className="inline-flex h-10 w-full items-stretch gap-0.5 rounded-md bg-surface-2 p-0.5 md:h-9">
+    <div role="radiogroup" aria-label={libelle} className="inline-flex h-12 w-full items-stretch gap-1 rounded-full bg-surface-2 p-1 md:h-11">
       {options.map((o) => {
         const Icone = o.icone
         const actif = o.valeur === valeur
@@ -36,8 +36,8 @@ function Segment<T extends string>({
             aria-checked={actif}
             onClick={() => onChange(o.valeur)}
             className={cn(
-              'inline-flex flex-1 items-center justify-center gap-1.5 rounded-sm px-2 text-sm font-medium whitespace-nowrap text-texte-2 transition-colors duration-150 hover:text-texte',
-              actif && 'bg-surface text-texte shadow-xs',
+              'inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-semibold whitespace-nowrap transition-colors duration-150',
+              actif ? 'bg-inverse text-inverse-texte shadow-sm' : 'text-texte-2 hover:text-texte',
             )}
           >
             {Icone && <Icone size={15} aria-hidden="true" />}

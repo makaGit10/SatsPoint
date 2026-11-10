@@ -32,11 +32,11 @@ export function Interrupteur({ coche, onChange, libelle, description, voix, desa
         onCheckedChange={onChange}
         disabled={desactive}
         className={cn(
-          'zone-tactile relative h-6 w-10 shrink-0 rounded-full border border-transparent bg-bordure-forte transition-colors duration-150',
-          'data-[state=checked]:bg-accent-trait disabled:opacity-50',
+          'zone-tactile relative h-7 w-12 shrink-0 rounded-full border border-transparent bg-bordure-forte transition-colors duration-150',
+          'data-[state=checked]:bg-accent-trait data-[state=checked]:shadow-[0_6px_16px_-6px_rgba(224,162,31,0.8)] disabled:opacity-50',
         )}
       >
-        <Switch.Thumb className="block size-5 translate-x-0.5 rounded-full bg-white shadow-sm transition-transform duration-150 data-[state=checked]:translate-x-[18px]" />
+        <Switch.Thumb className="block size-6 translate-x-0.5 rounded-full bg-white shadow-sm transition-transform duration-150 data-[state=checked]:translate-x-[20px]" />
       </Switch.Root>
     </div>
   )

@@ -67,7 +67,7 @@ export default function Invitation() {
       ) : (
         <>
           <TitreAuth titre={t('invitation.titre')} sousTitre={t('invitation.sousTitre')} voix="invitation.titre" />
-          <dl className="mb-4 divide-y divide-bordure rounded-lg border border-bordure bg-surface" data-invitation>
+          <dl className="mb-4 divide-y divide-bordure verre rounded-xl" data-invitation>
             <div className="flex items-center gap-3 px-3 py-2.5">
               <Store size={18} className="shrink-0 text-accent-texte" aria-hidden="true" />
               <dt className="sr-only">{t('invitation.boutique')}</dt>

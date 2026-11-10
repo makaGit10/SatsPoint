@@ -24,23 +24,23 @@ export default function DialogueRadix({ onFermer, titre, description, children, 
   return (
     <Dialog.Root open onOpenChange={(ouvert) => !ouvert && onFermer()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="anim-apparition fixed inset-0 z-40 bg-black/50 backdrop-blur-[1px]" />
+        <Dialog.Overlay className="anim-apparition fixed inset-0 z-40 bg-[#1b1710]/40 backdrop-blur-sm" />
         <Dialog.Content
           className={cn(
             'fixed z-50 flex max-h-[92dvh] w-full flex-col bg-surface shadow-lg outline-none',
             // Mobile : feuille du bas.
-            'inset-x-0 bottom-0 rounded-t-xl border-t border-bordure pb-sure anim-glisser-haut',
+            'inset-x-0 bottom-0 rounded-t-[28px] border-t border-bordure pb-sure anim-glisser-haut',
             // Bureau : centrée.
             'md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-xl md:border md:anim-apparition',
             TAILLES[taille],
             className,
           )}
         >
-          <div className="flex items-start gap-3 px-4 pt-3 pb-2 md:px-5 md:pt-4">
+          <div className="flex items-start gap-3 px-5 pt-5 pb-3 md:px-6 md:pt-6">
             <div className="min-w-0 flex-1">
-              <Dialog.Title className={cn('text-lg font-semibold text-texte', titreMasque && 'sr-only')}>{titre}</Dialog.Title>
+              <Dialog.Title className={cn('text-xl titre-serre text-texte', titreMasque && 'sr-only')}>{titre}</Dialog.Title>
               {description ? (
-                <Dialog.Description className="mt-0.5 text-sm text-texte-3">{description}</Dialog.Description>
+                <Dialog.Description className="mt-1 text-sm text-texte-3">{description}</Dialog.Description>
               ) : (
                 <Dialog.Description className="sr-only">{titre}</Dialog.Description>
               )}
@@ -49,8 +49,8 @@ export default function DialogueRadix({ onFermer, titre, description, children, 
               <BoutonIcone libelle={t('commun.fermer')} icone={<X />} voix="commun.fermer" taille="sm" sansInfobulle className="-mt-1 -mr-2" />
             </Dialog.Close>
           </div>
-          {children && <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 md:px-5">{children}</div>}
-          {pied && <div className="flex flex-wrap justify-end gap-2 border-t border-bordure px-4 py-3 md:px-5">{pied}</div>}
+          {children && <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 md:px-6 md:pb-6">{children}</div>}
+          {pied && <div className="flex flex-wrap justify-end gap-2 border-t border-bordure px-5 py-4 md:px-6">{pied}</div>}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

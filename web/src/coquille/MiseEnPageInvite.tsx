@@ -21,9 +21,9 @@ export function MiseEnPageInvite({
 }) {
   const { t } = useTranslation()
   return (
-    <div className="flex min-h-dvh flex-col bg-fond" data-ecran={ecran}>
+    <div className="flex min-h-dvh flex-col" data-ecran={ecran}>
       <BandeauDemo />
-      <header className="flex h-[var(--hauteur-entete)] shrink-0 items-center justify-between px-4 md:px-6">
+      <header className="flex h-[var(--hauteur-entete)] shrink-0 items-center justify-between px-5 md:px-8">
         {sansMarque ? (
           <span />
         ) : (
@@ -37,7 +37,7 @@ export function MiseEnPageInvite({
           <SelecteurLangue />
         </div>
       </header>
-      <main className={cn('mx-auto flex w-full flex-1 flex-col px-4 pt-2 pb-8 md:justify-center md:pt-0 md:pb-16', large ? 'max-w-2xl' : 'max-w-sm')}>
+      <main className={cn('mx-auto flex w-full flex-1 flex-col px-5 pt-4 pb-8 md:justify-center md:pt-0 md:pb-16', large ? 'max-w-xl' : 'max-w-md')}>
         {children}
       </main>
     </div>

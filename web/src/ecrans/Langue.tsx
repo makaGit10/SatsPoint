@@ -56,7 +56,7 @@ export default function Langue() {
   if (statut === 'inconnu') return <SqueletteApplication />
 
   return (
-    <div className="flex min-h-dvh flex-col bg-fond" data-ecran="langue">
+    <div className="flex min-h-dvh flex-col" data-ecran="langue">
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center px-4 py-8">
         <div className="mb-6 flex flex-col items-center text-center">
           <Marque taille="lg" sansTexte className="mb-4" />

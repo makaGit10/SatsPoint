@@ -8,7 +8,7 @@ export const Onglets = Tabs.Root
 export function OngletsListe({ className, ...reste }: ComponentProps<typeof Tabs.List>) {
   return (
     <Tabs.List
-      className={cn('inline-flex h-10 w-full items-stretch gap-0.5 rounded-md bg-surface-2 p-0.5 md:h-9 md:w-auto', className)}
+      className={cn('verre inline-flex h-12 w-full items-stretch gap-1 rounded-full p-1 md:h-11 md:w-auto', className)}
       {...reste}
     />
   )
@@ -25,9 +25,9 @@ export function Onglet({ icone, voix, className, children, ...reste }: PropsOngl
   return (
     <Tabs.Trigger
       className={cn(
-        'relative inline-flex flex-1 items-center justify-center gap-1.5 rounded-sm px-3 text-sm font-medium whitespace-nowrap text-texte-2 select-none md:flex-none',
+        'relative inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 text-sm font-semibold whitespace-nowrap text-texte-2 select-none md:flex-none',
         'transition-[background-color,color,box-shadow] duration-150 hover:text-texte',
-        'data-[state=active]:bg-surface data-[state=active]:text-texte data-[state=active]:shadow-xs',
+        'data-[state=active]:bg-inverse data-[state=active]:text-inverse-texte data-[state=active]:shadow-sm',
         'disabled:pointer-events-none disabled:opacity-50',
         className,
       )}
@@ -45,5 +45,5 @@ export function Onglet({ icone, voix, className, children, ...reste }: PropsOngl
 }
 
 export function OngletContenu({ className, ...reste }: ComponentProps<typeof Tabs.Content>) {
-  return <Tabs.Content className={cn('mt-3 outline-none', className)} {...reste} />
+  return <Tabs.Content className={cn('mt-5 outline-none', className)} {...reste} />
 }

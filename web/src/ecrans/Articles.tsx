@@ -157,7 +157,7 @@ export default function Articles() {
       )}
 
       {articles && articles.length > 0 && (
-        <ol className="divide-y divide-bordure rounded-lg border border-bordure bg-surface" aria-label={t('articles.titre')}>
+        <ol className="divide-y divide-bordure verre rounded-xl" aria-label={t('articles.titre')}>
           {articles.map((a, i) => (
             <li key={a.ulid} className={cn('flex items-center gap-3 px-3 py-2', !a.actif && 'opacity-60')}>
               <span

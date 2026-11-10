@@ -18,7 +18,7 @@ import { Dialogue } from '@/composants/Dialogue'
 import { notifier } from '@/composants/toastStore'
 import { useMessageErreur } from '@/ecrans/auth/useMessageErreur'
 import { cn } from '@/lib/cn'
-import { convertirEnSats, formaterFCFA, formaterSats } from '@/lib/format'
+import { convertirEnSats, formaterFCFA, formaterNombre, formaterSats } from '@/lib/format'
 import { queryClient } from '@/lib/queryClient'
 import { tempsRelatif } from '@/lib/temps'
 import { useDonneesEnDirect } from '@/temps-reel/useDonneesEnDirect'
@@ -170,7 +170,7 @@ export default function Caisse() {
   const versBranchement = demarrageEnCours ? '/demarrage' : boutique?.reglages.moyens.lightning && !boutique.configuration.wallet ? '/portefeuille' : '/reglages'
 
   return (
-    <div className="anim-apparition flex flex-1 flex-col gap-3" data-ecran="caisse">
+    <div className="anim-apparition flex flex-1 flex-col gap-4" data-ecran="caisse">
       {demarrageEnCours && (
         <Suspense fallback={null}>
           <BandeauDemarrage />
@@ -178,10 +178,10 @@ export default function Caisse() {
       )}
       {/* Mobile : une colonne (montant en haut, pavé en bas). Bureau : montant, conversion et articles à gauche,
           pavé + action à droite, pour que le montant reste toujours visible sans défiler. */}
-      <section className="flex min-h-0 flex-1 flex-col md:grid md:grid-cols-[minmax(0,1fr)_minmax(300px,360px)] md:items-start md:gap-6" aria-label={t('caisse.titre')}>
-        <div className="flex min-h-0 flex-1 flex-col md:gap-3">
-          <header className="mb-1 flex items-center justify-between gap-2 md:mb-0">
-            <h1 className="flex items-center gap-1.5 text-xl font-semibold tracking-tight text-texte">
+      <section className="flex min-h-0 flex-1 flex-col md:grid md:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] md:items-start md:gap-8" aria-label={t('caisse.titre')}>
+        <div className="flex min-h-0 flex-1 flex-col gap-4">
+          <header className="flex items-center justify-between gap-2">
+            <h1 className="flex items-center gap-2 text-2xl text-texte md:text-3xl">
               {t('caisse.titre')}
               <HautParleur cle="caisse.titre" />
             </h1>
@@ -201,15 +201,16 @@ export default function Caisse() {
           </header>
 
           {/* Montant + conversion : zone qui respire, centrée (carte sur bureau). */}
-          <div className="flex flex-1 flex-col items-center justify-center py-3 text-center md:flex-none md:rounded-lg md:border md:border-bordure md:bg-surface md:px-4 md:py-6 md:shadow-xs" data-montant>
-            <p className={cn('text-[2.6rem] leading-none font-semibold tracking-tight tabulaire md:text-5xl', montant === 0 ? 'text-texte-3' : 'text-texte')} aria-live="polite" aria-atomic="true" aria-label={t('caisse.montantAria')}>
-              {formaterFCFA(montant)}
+          <div className="verre flex flex-1 flex-col items-center justify-center rounded-xl px-5 py-7 text-center md:flex-none md:py-10" data-montant>
+            <p className={cn('chiffre-geant md:text-7xl', montant === 0 ? 'text-texte-3' : 'text-texte')} aria-live="polite" aria-atomic="true" aria-label={t('caisse.montantAria')}>
+              {formaterNombre(montant)}
+              <span className="ml-1.5 text-xl font-bold tracking-normal text-accent-texte md:text-2xl">FCFA</span>
             </p>
-            <p className="mt-2 min-h-5 text-base text-texte-2 tabulaire" aria-live="polite">
+            <p className="mt-3 min-h-6 text-base font-semibold text-texte-2 tabulaire" aria-live="polite">
               {sats !== null ? formaterSats(sats, { approx: true }) : coursDisponible || !cours ? '' : t('caisse.coursIndisponible')}
             </p>
             {coursDisponible ? (
-              <p className="mt-1 text-xs text-texte-3 tabulaire">
+              <p className="mt-1.5 text-xs text-texte-3 tabulaire">
                 {t('caisse.coursValeur', { cours: formaterFCFA(cours!.btc_xof!) })}
                 {ageCours && ` · ${t(ageCours.cle, { count: ageCours.count })}`}
               </p>
@@ -222,7 +223,7 @@ export default function Caisse() {
               </p>
             )}
             {panier.length > 0 && (
-              <button type="button" onClick={() => setArticlesOuverts(true)} className="mt-2 rounded-md bg-surface-2 px-2.5 py-1 text-xs font-medium text-texte-2 md:hidden">
+              <button type="button" onClick={() => setArticlesOuverts(true)} className="mt-3 rounded-full bg-accent-doux px-3.5 py-1.5 text-sm font-semibold text-accent-texte md:hidden">
                 {t('caisse.panier')} · {panier.reduce((s, l) => s + l.quantite, 0)} · {formaterFCFA(totalPanier(panier))}
               </button>
             )}
@@ -236,7 +237,7 @@ export default function Caisse() {
               value={note}
               maxLength={120}
               onChange={(e) => setNote(e.target.value)}
-              classeConteneur="mb-3 md:mb-0"
+              classeConteneur=""
               autoFocus
             />
           )}
@@ -247,7 +248,7 @@ export default function Caisse() {
             </Suspense>
           )}
           {!aucunMoyenBranche && boutique && !boutique.configuration.wallet && boutique.reglages.moyens.lightning && gestion && (
-            <div className="mb-3 flex items-center gap-2 rounded-md border border-attente/40 bg-attente-doux px-3 py-2 text-sm text-attente-texte md:mb-0">
+            <div className="flex items-center gap-3 rounded-xl border border-attente/30 bg-attente-doux px-4 py-3 text-sm font-medium text-attente-texte">
               <span className="min-w-0 flex-1">{t('caisse.walletNonConnecte')}</span>
               <BoutonLien to="/portefeuille" variante="secondaire" taille="sm" icone={<Link2 />} voix="caisse.connecterWallet">{t('caisse.connecterWallet')}</BoutonLien>
             </div>
@@ -255,12 +256,12 @@ export default function Caisse() {
 
           {/* Bureau : articles rapides + panier sous le montant. */}
           {aDesArticles && (
-            <Carte className="hidden min-w-0 md:block" rembourrage="sm">
-              <CarteEnTete titre={t('caisse.articles')} className="mb-2" />
+            <Carte className="hidden min-w-0 md:block" rembourrage="md">
+              <CarteEnTete titre={t('caisse.articles')} className="mb-3" />
               <Suspense fallback={<div className="h-20" data-chargement="articles" />}>
                 <GrilleArticles articles={articlesActifs} onAjouter={(a) => setPanier((p) => ajouterAuPanier(p, a))} />
               </Suspense>
-              <div className="mt-3 border-t border-bordure pt-2">
+              <div className="mt-4 border-t border-bordure pt-3">
                 <h3 className="mb-1 text-xs font-semibold tracking-wide text-texte-3 uppercase">{t('caisse.panier')}</h3>
                 <Suspense fallback={null}>
                   <Panier panier={panier} onChanger={(ulid, d) => setPanier((p) => changerQuantite(p, ulid, d))} onVider={() => setPanier([])} />
@@ -270,11 +271,11 @@ export default function Caisse() {
           )}
         </div>
 
-        <div className="flex flex-col md:sticky md:top-0">
+        <div className="flex flex-col md:sticky md:top-20">
           <Pave valeur={saisie} onChange={setSaisie} desactive={creation.isPending} />
 
           {aucunMoyenBranche && gestion ? (
-            <Suspense fallback={<div className="mt-3 h-14" />}>
+            <Suspense fallback={<div className="mt-4 h-16" />}>
               <BoutonBrancherMoyen vers={versBranchement} />
             </Suspense>
           ) : (
@@ -283,7 +284,7 @@ export default function Caisse() {
               pleineLargeur
               icone={<Zap />}
               voix="caisse.encaisser"
-              className="mt-3 h-14 text-lg"
+              className="mt-4"
               disabled={montant === 0 || horsBornes || aucunMoyenBranche}
               chargement={creation.isPending || (montant > 0 && !horsBornes && !moyensConnus)}
               onClick={encaisser}

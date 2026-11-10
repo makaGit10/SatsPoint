@@ -32,7 +32,7 @@ export function FiltresVentes({ filtres, onChange, caissiers, restreint, classNa
   }
 
   return (
-    <div className={cn('flex flex-col gap-2 rounded-lg border border-bordure bg-surface p-2.5', className)} data-filtres>
+    <div className={cn('flex flex-col gap-2 verre rounded-xl p-2.5', className)} data-filtres>
       {!restreint && (
         <div className="flex flex-col gap-2 md:flex-row md:items-center">
           <Segment<Periode>

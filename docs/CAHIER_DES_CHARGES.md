@@ -423,15 +423,17 @@ Paiement :  en_attente ──► reussi
 
 ### 8.1 Principes (inspirés de Square, SumUp, Stripe, Wave, Linear)
 - **Une action principale par écran**, visible immédiatement ; les actions secondaires en icônes.
-- **Compact et rangé** : grille de 4 px, interlignes resserrés, cartes sans marges excessives ; aucune page surchargée.
+- **Aéré et rangé** (direction « Lumière », validée le 10/11) : grille de 4 px, texte de base 15 px, interlignes généreux, grands titres très gras ; aucune page surchargée.
 - **Zéro jargon** dans l'interface commerçant : « Paiement reçu », « Facture » → « Demande de paiement », « Solde » ; le vocabulaire technique reste dans l'aide.
-- **Comprendre sans lire** : couleur + icône + son pour chaque statut (vert ✔ payé, orange ⏱ en attente, gris ✕ annulé, rouge ⚠ problème).
+- **Comprendre sans lire** : couleur + icône + son pour chaque statut (vert ✔ payé, ambre doré ⏱ en attente, gris ✕ annulé, rouge ⚠ problème).
 - **Rapide** : réponses optimistes là où c'est sûr (jamais pour un paiement), squelettes de chargement uniquement au premier affichage, transitions ≤ 150 ms.
 
 ### 8.2 Système visuel
-- Police **Inter** (auto-hébergée, sous-ensemble latin), chiffres tabulaires pour les montants.
-- Couleurs : neutres (zinc) + accent **orange Bitcoin** (`#F7931A`) pour Lightning, vert succès, couleur mobile money distincte.
-  Jetons de couleur en variables CSS, déclinés en **clair et sombre**, contraste **WCAG AA** minimum.
+- Police **Plus Jakarta Sans** (auto-hébergée, latin + latin étendu), chiffres tabulaires pour les montants.
+- Direction **« Lumière »** : blanc chaud (`#fffdf8`) avec halos dorés, cartes en **verre dépoli**, boutons et touches en pilule,
+  accent **or** en dégradé (`#f6c34a` → `#e0a21f`, texte `#2a1c00`) ; **pas d'orange** (trop proche de Banxaas). Vert succès, bleu mobile money.
+  Jetons de couleur en variables CSS (`web/src/styles/jetons.css`), **clair par défaut, sombre en option**, contraste **WCAG AA** minimum.
+- Logo : fichier unique `web/public/logo.svg` (provisoire, à remplacer par la propriétaire), icônes PWA régénérées par `node scripts/generer-icones.mjs`.
 - Icônes **Lucide** (traits fins, cohérentes) ; libellés d'actions longs remplacés par des icônes + infobulle + `aria-label` + clé vocale.
 - Composants : primitives accessibles (Radix UI) stylées avec Tailwind CSS.
 - Mobile d'abord (390 px), puis tablette, puis bureau (1366 px) avec barre latérale repliable.

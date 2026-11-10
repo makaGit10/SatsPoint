@@ -22,7 +22,7 @@ export default function Recu() {
   const { data, isPending, isError } = useRecu(jeton)
 
   return (
-    <div className="flex min-h-dvh flex-col bg-fond-2 print:bg-white" data-ecran="recu">
+    <div className="flex min-h-dvh flex-col print:bg-white" data-ecran="recu">
       <header className="flex h-[var(--hauteur-entete)] items-center justify-between px-4 print:hidden">
         <Marque taille="sm" />
         <div className="flex items-center gap-0.5">

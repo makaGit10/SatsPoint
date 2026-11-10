@@ -21,8 +21,8 @@ function OngletBarre({ element, actif }: { element: ElementNavigation; actif: bo
       to={element.chemin}
       aria-current={actif ? 'page' : undefined}
       className={cn(
-        'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-md py-1 text-2xs font-medium transition-colors duration-150',
-        actif ? 'text-accent-texte' : 'text-texte-3 active:text-texte',
+        'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-1 text-xs font-semibold transition-colors duration-150',
+        actif ? 'bg-accent-doux text-accent-texte' : 'text-texte-3 active:text-texte',
       )}
     >
       <Icone size={22} strokeWidth={actif ? 2.2 : 1.8} aria-hidden="true" />
@@ -50,7 +50,7 @@ export function BarreBas() {
     <>
       <nav
         aria-label={t('nav.principale')}
-        className="fixed inset-x-0 bottom-0 z-30 flex h-[calc(var(--hauteur-barre-bas)+env(safe-area-inset-bottom,0px))] items-stretch border-t border-bordure bg-fond/95 px-1 pb-sure backdrop-blur-sm md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 flex h-[calc(var(--hauteur-barre-bas)+env(safe-area-inset-bottom,0px))] items-stretch gap-1 barre-verre border-t px-2 pt-1.5 pb-sure md:hidden"
       >
         {dansBarre.map((e) => (
           <OngletBarre key={e.chemin} element={e} actif={estActif(pathname, e.chemin)} />
@@ -61,8 +61,8 @@ export function BarreBas() {
           aria-haspopup="dialog"
           aria-expanded={plusOuvert}
           className={cn(
-            'flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-md py-1 text-2xs font-medium transition-colors duration-150',
-            plusActif ? 'text-accent-texte' : 'text-texte-3 active:text-texte',
+            'flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-1 text-xs font-semibold transition-colors duration-150',
+            plusActif ? 'bg-accent-doux text-accent-texte' : 'text-texte-3 active:text-texte',
           )}
         >
           <Ellipsis size={22} strokeWidth={1.8} aria-hidden="true" />
@@ -72,7 +72,7 @@ export function BarreBas() {
 
       <Dialogue ouvert={plusOuvert} onOuvertChange={setPlusOuvert} titre={t('nav.plus')} taille="sm">
         {dansPlus.length > 0 && (
-          <ul className="mb-4 grid grid-cols-2 gap-1.5" aria-label={t('nav.menuPlus')}>
+          <ul className="mb-5 grid grid-cols-2 gap-2" aria-label={t('nav.menuPlus')}>
             {dansPlus.map((e) => {
               const Icone = e.icone
               const actif = estActif(pathname, e.chemin)
@@ -86,8 +86,8 @@ export function BarreBas() {
                     }}
                     aria-current={actif ? 'page' : undefined}
                     className={cn(
-                      'flex h-14 w-full items-center gap-2.5 rounded-md border px-3 text-left text-sm font-medium transition-colors',
-                      actif ? 'border-accent bg-accent-doux text-texte' : 'border-bordure bg-surface text-texte-2 hover:bg-surface-2',
+                      'flex h-16 w-full items-center gap-3 rounded-xl border px-4 text-left text-sm font-semibold transition-colors',
+                      actif ? 'border-accent bg-accent-doux text-texte' : 'border-bordure bg-surface-2 text-texte-2 hover:bg-accent-doux',
                     )}
                   >
                     <Icone size={20} className={cn(actif && 'text-accent-texte')} aria-hidden="true" />

@@ -1,6 +1,6 @@
-// Génère les icônes PWA (PNG 192/512, maskable, apple-touch) à partir d'un SVG : éclair or (dégradé) sur fond blanc.
+// Génère les icônes PWA (PNG 192/512, maskable, apple-touch) et le favicon à partir du logo `public/logo.svg`.
 // Usage : node scripts/generer-icones.mjs   (utilise le Chromium de Playwright, déjà installé pour les tests)
-import { mkdir, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright'
@@ -8,24 +8,28 @@ import { chromium } from 'playwright'
 const racine = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const dossier = resolve(racine, 'public/icones')
 
-/** `marge` = pourcentage de zone sûre (maskable : l'éclair occupe le centre, le fond déborde). */
+/**
+ * Les icônes sont composées à partir du logo unique `public/logo.svg` (remplaçable par la propriétaire) :
+ * pastille arrondie blanc chaud (icônes classiques) ou pleine page (maskable, zone sûre au centre).
+ * Le favicon `public/favicon.svg` est une copie du logo.
+ */
+const logo = await readFile(resolve(racine, 'public/logo.svg'), 'utf8')
+const logoDataUri = `data:image/svg+xml;base64,${Buffer.from(logo).toString('base64')}`
+
 function svg(taille, { maskable }) {
-  const rayon = maskable ? 0 : Math.round(taille * 0.22)
-  const echelle = maskable ? 0.62 : 0.78
-  const decalage = (taille * (1 - echelle)) / 2
-  // Bordure gris chaud très fine sur les icônes arrondies (lisibles sur un écran d'accueil clair) ; pleine page pour maskable.
-  const bordure = maskable ? '' : ` stroke="#e8e4db" stroke-width="${Math.max(1, Math.round(taille / 96))}"`
+  const rayon = maskable ? 0 : Math.round(taille * 0.24)
+  const echelle = maskable ? 0.6 : 0.74
+  const cote = Math.round(taille * echelle)
+  const decalage = Math.round((taille - cote) / 2)
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${taille}" height="${taille}" viewBox="0 0 ${taille} ${taille}">
   <defs>
-    <linearGradient id="or" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#e2c25c"/>
-      <stop offset="1" stop-color="#b38a1f"/>
-    </linearGradient>
+    <radialGradient id="halo" cx="0.75" cy="0.1" r="0.9">
+      <stop offset="0" stop-color="#ffe7a6"/>
+      <stop offset="1" stop-color="#fffdf8"/>
+    </radialGradient>
   </defs>
-  <rect x="0.5" y="0.5" width="${taille - 1}" height="${taille - 1}" rx="${rayon}" fill="#ffffff"${bordure}/>
-  <g transform="translate(${decalage} ${decalage}) scale(${(taille * echelle) / 64})">
-    <path fill="url(#or)" stroke="url(#or)" stroke-width="2" stroke-linejoin="round" d="M35.5 10 18 36h12.5l-3 18L47 28H34.5z"/>
-  </g>
+  <rect width="${taille}" height="${taille}" rx="${rayon}" fill="url(#halo)"/>
+  <image href="${logoDataUri}" x="${decalage}" y="${decalage}" width="${cote}" height="${cote}"/>
 </svg>`
 }
 
@@ -38,6 +42,8 @@ const CIBLES = [
 ]
 
 await mkdir(dossier, { recursive: true })
+await copyFile(resolve(racine, 'public/logo.svg'), resolve(racine, 'public/favicon.svg'))
+console.log('✓ favicon.svg (copie du logo)')
 const navigateur = await chromium.launch()
 try {
   for (const cible of CIBLES) {

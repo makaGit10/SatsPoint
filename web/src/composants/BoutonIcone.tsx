@@ -7,17 +7,17 @@ export type VarianteBoutonIcone = 'fantome' | 'secondaire' | 'primaire' | 'dange
 export type TailleBoutonIcone = 'sm' | 'md' | 'lg'
 
 const VARIANTES: Record<VarianteBoutonIcone, string> = {
-  fantome: 'text-texte-2 hover:bg-surface-2 hover:text-texte',
-  secondaire: 'border border-bordure bg-surface text-texte-2 shadow-xs hover:bg-surface-2 hover:text-texte',
+  fantome: 'text-texte-2 hover:bg-accent-doux hover:text-texte',
+  secondaire: 'verre-fort text-texte-2 hover:bg-surface hover:text-texte',
   primaire: 'fond-or text-sur-accent',
   danger: 'text-danger-texte hover:bg-danger-doux',
 }
 
 /* Visuel compact ; zone tactile ≥ 44 px garantie par le pseudo-élément. */
 const TAILLES: Record<TailleBoutonIcone, string> = {
-  sm: 'h-8 w-8 [&>svg]:size-4',
-  md: 'h-9 w-9 [&>svg]:size-[18px]',
-  lg: 'h-11 w-11 [&>svg]:size-5',
+  sm: 'h-9 w-9 [&>svg]:size-[17px]',
+  md: 'h-10 w-10 [&>svg]:size-[19px]',
+  lg: 'h-12 w-12 [&>svg]:size-[22px]',
 }
 
 export interface PropsBoutonIcone extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
@@ -56,11 +56,11 @@ export function BoutonIcone({
         aria-label={libelle}
         aria-pressed={actif}
         className={cn(
-          'zone-tactile relative inline-flex shrink-0 items-center justify-center rounded-md select-none',
+          'zone-tactile relative inline-flex shrink-0 items-center justify-center rounded-full select-none',
           'transition-[background-color,color,transform] duration-150 active:scale-95 disabled:pointer-events-none disabled:opacity-55',
           VARIANTES[variante],
           TAILLES[taille],
-          actif && variante === 'fantome' && 'bg-surface-2 text-texte',
+          actif && variante === 'fantome' && 'bg-accent-doux text-texte',
           className,
         )}
         {...reste}

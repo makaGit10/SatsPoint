@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="SatsPoint">
+  <!-- Logo PROVISOIRE (pièce d'or + éclair). Pour le remplacer : écraser ce fichier (public/logo.svg),
+       puis `node scripts/generer-icones.mjs` pour régénérer favicon et icônes PWA. -->
+  <defs>
+    <linearGradient id="piece" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd76a"/>
+      <stop offset="1" stop-color="#d99a14"/>
+    </linearGradient>
+    <linearGradient id="lisere" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff3c4"/>
+      <stop offset="1" stop-color="#f0b52e"/>
+    </linearGradient>
+  </defs>
+  <circle cx="48" cy="48" r="44" fill="url(#piece)"/>
+  <circle cx="48" cy="48" r="35" fill="none" stroke="url(#lisere)" stroke-width="3" opacity="0.9"/>
+  <path d="M53 22 33 52h14l-5 22 22-31H50l3-21Z" fill="#ffffff"/>
+</svg>

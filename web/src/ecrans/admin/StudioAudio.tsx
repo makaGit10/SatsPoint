@@ -225,7 +225,7 @@ export default function StudioAudio() {
               <MatriceMobile cles={cles} langues={matrice.langues} langue={langue} selection={selection} onChoisir={choisir} />
             )}
             {bureau && panneau && (
-              <aside className="sticky top-[calc(var(--hauteur-entete)+12px)] rounded-lg border border-bordure bg-surface p-3 shadow-xs">{panneau}</aside>
+              <aside className="sticky top-[calc(var(--hauteur-entete)+12px)] verre rounded-xl p-3 shadow-xs">{panneau}</aside>
             )}
           </div>
 
