@@ -8,7 +8,9 @@ use App\Models\User;
 use App\Services\BoutiqueCourante;
 
 /**
- * Refus par défaut. Le super-admin n'a AUCUN accès aux données des boutiques (moindre privilège).
+ * Refus par défaut. Le super-admin n'a AUCUN accès aux données des AUTRES boutiques (moindre privilège) :
+ * il peut seulement créer et gérer SA propre boutique, comme n'importe quel commerçant (l'accès passe par
+ * l'adhésion, jamais par le rôle plateforme).
  */
 class BoutiquePolicy
 {
@@ -17,10 +19,6 @@ class BoutiquePolicy
     /** Créer une boutique : utilisateur sans adhésion active (il en devient propriétaire). */
     public function create(User $user): bool
     {
-        if ($user->estSuperAdmin()) {
-            return false;
-        }
-
         return $this->membreActif($user) === null;
     }
 

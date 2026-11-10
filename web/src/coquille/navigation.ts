@@ -43,10 +43,19 @@ export const NAV_ADMIN: readonly ElementNavigation[] = [
   { cle: 'nav.studio', chemin: '/admin/studio', icone: Mic, roles: [], barreBas: true },
 ]
 
-/** Éléments visibles pour une personne donnée (super-admin : console uniquement). */
+/** Éléments visibles pour une personne donnée. */
 export function navigationPour(utilisateur: Utilisateur | null): ElementNavigation[] {
   if (!utilisateur) return []
-  if (estSuperAdmin(utilisateur)) return [...NAV_ADMIN]
+  // Super-admin : console et studio, puis SA boutique (s'il en a une) comme n'importe quel propriétaire ;
+  // sans boutique, une entrée pour en créer une. Il ne voit jamais les données des autres boutiques.
+  if (estSuperAdmin(utilisateur)) {
+    const boutique = navigationBoutique(utilisateur).map((e) => ({ ...e, barreBas: e.barreBas && e.chemin === '/caisse' }))
+    return [...NAV_ADMIN, ...boutique]
+  }
+  return navigationBoutique(utilisateur)
+}
+
+function navigationBoutique(utilisateur: Utilisateur): ElementNavigation[] {
   const role = roleBoutique(utilisateur)
   if (!role) return NAV_BOUTIQUE.filter((e) => e.chemin === '/demarrage')
   // Démarrage guidé visible tant que la configuration n'est pas terminée.

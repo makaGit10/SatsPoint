@@ -102,5 +102,19 @@ it('interdit au super-admin l\'accès aux données d\'une boutique', function ()
     Boutique::factory()->create();
 
     connecte($admin)->getJson('/api/v1/boutique')->assertNotFound();
-    $this->postJson('/api/v1/boutique', ['nom' => 'Admin shop', 'ville' => 'Dakar'])->assertForbidden();
+});
+
+it('le super-admin peut créer SA boutique et n\'accède toujours qu\'à elle', function () {
+    $admin = User::factory()->superAdmin()->create();
+    $autre = Boutique::factory()->create();
+
+    connecte($admin)->postJson('/api/v1/boutique', ['nom' => 'Boutique de la plateforme', 'ville' => 'Dakar'])
+        ->assertCreated()
+        ->assertJsonPath('boutique.mon_role', 'proprietaire')
+        ->assertJsonPath('utilisateur.role_plateforme', 'super_admin');
+
+    $this->getJson('/api/v1/boutique')->assertOk()->assertJsonPath('boutique.nom', 'Boutique de la plateforme');
+    expect($this->getJson('/api/v1/boutique')->json('boutique.ulid'))->not->toBe($autre->ulid);
+    // Une seule boutique par compte, super-admin compris.
+    $this->postJson('/api/v1/boutique', ['nom' => 'Deuxième', 'ville' => 'Thiès'])->assertForbidden();
 });

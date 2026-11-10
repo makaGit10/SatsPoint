@@ -56,12 +56,12 @@ export function RequiertSession() {
 }
 
 /**
- * Espace boutique : un super-admin est renvoyé vers sa console, une personne sans boutique vers le démarrage guidé.
+ * Espace boutique : une personne sans boutique (super-admin compris) va au démarrage guidé. Le super-admin n'y voit
+ * que SA boutique : l'API ne sert que la boutique dont on est membre.
  */
 export function RequiertBoutique() {
   const utilisateur = useAuth((s) => s.utilisateur)
   const { pathname } = useLocation()
-  if (estSuperAdmin(utilisateur)) return <Navigate to="/admin" replace />
   if (!utilisateur?.boutique && pathname !== '/demarrage') return <Navigate to="/demarrage" replace />
   return <Outlet />
 }

@@ -127,9 +127,10 @@ test.describe('15 · Super-admin : 2FA et console', () => {
     await expect(page.getByRole('list', { name: 'Journal' })).toContainText('Boutique suspendue');
     await capturer(page, '15-console-journal');
 
-    // Le super-admin n'entre pas dans la caisse ; le propriétaire n'entre pas dans la console.
+    // Le super-admin sans boutique est invité à créer la sienne (jamais celle des autres) ;
+    // le propriétaire n'entre pas dans la console.
     await page.goto('/caisse');
-    await expect(page).toHaveURL(/\/admin$/);
+    await expect(page).toHaveURL(/\/demarrage$/);
     const { page: proprio, surveillance: s2 } = await ouvrir(await etatDemo('proprietaire'));
     s2.tolerer(/\/api\/v1\/admin\//, 403);
     await proprio.goto('/admin');

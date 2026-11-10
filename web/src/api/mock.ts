@@ -88,7 +88,8 @@ const COMPTES: Record<string, Utilisateur> = {
     telephone: null,
     role_plateforme: 'super_admin',
     preferences: { ...PREFERENCES_DEFAUT },
-    boutique: null,
+    // Le super-admin a aussi sa boutique (ici la boutique de démonstration) pour voir tous les espaces.
+    boutique: { ...BOUTIQUE_DEMO, role: 'proprietaire' },
   },
   'nouveau@demo.test': {
     ulid: '01JUSERNOUVEAU000000000000001',

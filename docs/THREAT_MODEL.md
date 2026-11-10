@@ -83,7 +83,7 @@ Severity: 🔴 high · 🟠 medium · 🟡 low. Status: ✅ implemented in MVP �
 | # | Threat | Category | Sev. | Mitigation | Status |
 |---|---|---|---|---|---|
 | T20 | Super-admin account takeover → malicious audio pushed to every device | Elevation / Tampering | 🔴 | Mandatory TOTP 2FA, rate limits, audit log; uploaded files type-checked by signature (not extension), **always re-encoded by ffmpeg** with fixed parameters and a time limit, size ≤ 2 MB, server-generated filenames, content-addressed URLs. | ✅ |
-| T21 | Super-admin reads merchants' money data | Information disclosure | 🟠 | Least privilege: the platform role has **no access** to sales, wallets or PayTech data — only shop status, health and audio. | ✅ |
+| T21 | Super-admin reads merchants' money data | Information disclosure | 🟠 | Least privilege: the platform role has **no access** to other shops' sales, wallets or PayTech data — only shop status, health and audio. The super-admin may own **one shop of their own**, reached through an ordinary owner membership (data access always goes through membership + `BoutiqueScope`, never through the platform role); a Pest test checks they still only see that shop. | ✅ |
 | T22 | Audio manifest poisoning (cache) | Tampering | 🟡 | Manifest served by our API with short cache + ETag; files immutable and hash-named. | ✅ |
 
 ### 4.5 Availability and abuse
