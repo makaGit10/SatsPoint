@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ErreurApi } from '@/api/client'
 import { useConnexion } from '@/auth/useMoi'
+import { identifiantsMemorises, memoriserIdentifiant, oublierIdentifiant } from '@/lib/identifiantsMemorises'
 import { Bouton } from '@/composants/Bouton'
 import { cheminAccueil } from '@/coquille/navigation'
 import { MiseEnPageInvite } from '@/coquille/MiseEnPageInvite'
@@ -25,6 +26,7 @@ export default function Connexion() {
   const [identifiant, setIdentifiant] = useState<SaisieIdentifiant>(SAISIE_VIDE)
   const [motDePasse, setMotDePasse] = useState('')
   const [seSouvenir, setSeSouvenir] = useState(true)
+  const [memorises, setMemorises] = useState<string[]>(() => identifiantsMemorises())
   const [erreur, setErreur] = useState<string | null>(null)
   const [erreursChamps, setErreursChamps] = useState<{ identifiant?: string; password?: string }>({})
 
@@ -37,29 +39,42 @@ export default function Connexion() {
     setErreursChamps(champs)
     if (Object.keys(champs).length) return
 
-    connexion.mutate(
-      { identifiant: valeurIdentifiant(identifiant), password: motDePasse, se_souvenir: seSouvenir },
-      {
-        onSuccess: ({ utilisateur }) => {
-          const suite = suiteSure(params.get('suite'))
-          const vers = suite ?? cheminAccueil(utilisateur)
-          // Double authentification active : le code d'abord, puis la page demandée.
-          if (utilisateur.deux_fa?.active && !utilisateur.deux_fa.validee) navigate(`/verification-2fa?suite=${encodeURIComponent(vers)}`, { replace: true })
-          else navigate(vers, { replace: true })
-        },
-        onError: (err) => {
-          setErreur(messageErreur(err, { identifiants: true }))
-          if (err instanceof ErreurApi && err.estValidation) setMotDePasse('')
-        },
-      },
-    )
+    // mutateAsync et non mutate : la garde « invité » quitte cet écran dès que la session est connue, et les
+    // rappels passés à mutate() ne s'exécutent plus une fois l'écran démonté (la mémorisation serait perdue).
+    const saisie = valeurIdentifiant(identifiant)
+    connexion
+      .mutateAsync({ identifiant: saisie, password: motDePasse, se_souvenir: seSouvenir })
+      .then(({ utilisateur }) => {
+        // « Se souvenir de moi » : l'identifiant (jamais le mot de passe) sera proposé la prochaine fois.
+        if (seSouvenir) memoriserIdentifiant(saisie)
+        else oublierIdentifiant(saisie)
+        const suite = suiteSure(params.get('suite'))
+        const vers = suite ?? cheminAccueil(utilisateur)
+        // Double authentification active : le code d'abord, puis la page demandée.
+        if (utilisateur.deux_fa?.active && !utilisateur.deux_fa.validee) navigate(`/verification-2fa?suite=${encodeURIComponent(vers)}`, { replace: true })
+        else navigate(vers, { replace: true })
+      })
+      .catch((err: unknown) => {
+        setErreur(messageErreur(err, { identifiants: true }))
+        if (err instanceof ErreurApi && err.estValidation) setMotDePasse('')
+      })
   }
 
   return (
     <MiseEnPageInvite ecran="connexion">
       <TitreAuth titre={t('auth.connexion.titre')} sousTitre={t('auth.connexion.sousTitre')} voix="auth.connexion.titre" />
       <form onSubmit={soumettre} noValidate className="flex flex-col gap-3.5">
-        <ChampIdentifiant libelle={t('auth.connexion.identifiant')} saisie={identifiant} onChange={setIdentifiant} erreur={erreursChamps.identifiant} />
+        <ChampIdentifiant
+          libelle={t('auth.connexion.identifiant')}
+          saisie={identifiant}
+          onChange={setIdentifiant}
+          erreur={erreursChamps.identifiant}
+          suggestions={memorises}
+          onOublier={(v) => {
+            oublierIdentifiant(v)
+            setMemorises(identifiantsMemorises())
+          }}
+        />
         <ChampMotDePasse
           libelle={t('auth.connexion.motDePasse')}
           name="password"
