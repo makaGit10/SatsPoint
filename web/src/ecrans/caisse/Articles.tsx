@@ -29,7 +29,7 @@ export function GrilleArticles({ articles, onAjouter, className }: { articles: A
             )}
           >
             <span className="line-clamp-2 text-sm leading-tight font-medium">{a.nom}</span>
-            <span className="text-xs font-semibold opacity-80 tabulaire">{formaterFCFA(a.prix_xof)}</span>
+            <span className="text-xs font-semibold tabulaire">{formaterFCFA(a.prix_xof)}</span>
           </button>
         </li>
       ))}

@@ -441,7 +441,7 @@ function PanneauTentative(p: PropsPanneau) {
           href={lienExterne}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-4 inline-flex h-13 w-full max-w-xs items-center justify-center gap-2 rounded-full bg-mm px-5 text-base font-bold text-white ombre-mm hover:brightness-105"
+          className="mt-4 inline-flex h-13 w-full max-w-xs items-center justify-center gap-2 rounded-full bg-mm px-5 text-base font-bold text-[#04263a] ombre-mm hover:brightness-105"
         >
           <ExternalLink size={16} aria-hidden="true" />
           {waveManuel ? t('paiement.ouvrirWave') : t('paiement.ouvrir')}

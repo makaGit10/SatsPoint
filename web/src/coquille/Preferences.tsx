@@ -90,7 +90,7 @@ export function PanneauPreferences({ className }: { className?: string }) {
           libelle={t('utilisateur.aideVocale')}
           description={t('utilisateur.aideVocaleAide')}
         />
-        <div className={cn('flex flex-col gap-1.5', !aideVocale && 'opacity-60')}>
+        <div className="flex flex-col gap-1.5" data-inactif={!aideVocale || undefined}>
           <h3 className="text-xs font-semibold tracking-wide text-texte-3 uppercase">{t('utilisateur.langueAudio')}</h3>
           <div role="radiogroup" aria-label={t('utilisateur.langueAudio')} className="grid grid-cols-3 gap-1.5">
             {langues.map((l) => {

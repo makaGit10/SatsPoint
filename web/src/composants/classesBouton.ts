@@ -8,7 +8,7 @@ const VARIANTES: Record<VarianteBouton, string> = {
   secondaire: 'verre-fort text-texte hover:bg-surface',
   fantome: 'text-texte-2 hover:bg-accent-doux hover:text-texte',
   danger: 'bg-danger text-white shadow-sm hover:brightness-105',
-  mm: 'bg-mm text-white ombre-mm hover:brightness-105',
+  mm: 'bg-mm text-[#04263a] ombre-mm hover:brightness-105',
 }
 
 /* Hauteurs : ≥ 44 px au doigt (mobile), plus compactes au pointeur (bureau). */

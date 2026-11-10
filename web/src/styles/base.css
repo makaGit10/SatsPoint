@@ -72,6 +72,24 @@
     color: inherit;
   }
 
+  /* Listes déroulantes natives (partout dans l'appli) : la liste qui s'ouvre suit le thème ; sinon, en sombre,
+     texte clair sur fond blanc système, illisible. `color-scheme` donne au navigateur une liste sombre et les
+     couleurs explicites des options couvrent les navigateurs qui l'ignorent. */
+  select {
+    color-scheme: inherit;
+  }
+  option,
+  optgroup {
+    background-color: var(--surface);
+    color: var(--texte);
+  }
+  option:checked {
+    background-color: var(--surface-3);
+  }
+  option:disabled {
+    color: var(--texte-3);
+  }
+
   button {
     cursor: pointer;
     touch-action: manipulation;
