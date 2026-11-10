@@ -59,20 +59,19 @@ test.describe('01 · Premier lancement et langue', () => {
     expect(anglais['satspoint.langue-audio']).toBeUndefined();
 
     // Retour au français par le sélecteur d'interface, conservé après rechargement.
-    await page.getByRole('combobox', { name: /Interface language|Langue de l'interface/ }).selectOption({ label: 'Français' });
+    await page.getByRole('group', { name: /Interface language|Langue de l'interface/ }).getByRole('button', { name: 'Français' }).click();
     await expect(page.getByRole('heading', { name: 'La caisse qui encaisse tout.', level: 1 })).toBeVisible();
     await page.reload();
     await expect(page.getByRole('heading', { name: 'La caisse qui encaisse tout.', level: 1 })).toBeVisible();
 
-    // Thème : sombre puis automatique, appliqué sans rechargement et conservé.
-    const theme = page.getByRole('combobox', { name: 'Thème' });
-    await theme.selectOption({ label: 'Sombre' });
+    // Thème : bascule soleil / lune, appliquée sans rechargement et conservée (« automatique » reste dans les réglages).
+    await page.getByRole('button', { name: 'Thème : Sombre' }).click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'sombre');
     await capturer(page, '01-accueil-sombre');
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'sombre');
-    await page.getByRole('combobox', { name: 'Thème' }).selectOption({ label: 'Automatique' });
-    await expect(page.locator('html')).not.toHaveAttribute('data-theme', /.+/);
+    await page.getByRole('button', { name: 'Thème : Clair' }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'clair');
   });
 
   test('page introuvable', async ({ ouvrir }) => {

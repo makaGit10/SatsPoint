@@ -27,7 +27,7 @@ const SELECTEUR = [
 ].join(',');
 
 /** Éléments jamais cliqués par l'inventaire générique (testés ailleurs ou sortants). */
-const EXCLUS = /^(Écouter|Me déconnecter|Langue de l'interface|Thème|English|Français|Clair|Sombre|Automatique)$/;
+const EXCLUS = /^(Écouter|Me déconnecter|Langue de l'interface|Thème|Thème : (Clair|Sombre)|English|Français|Clair|Sombre|Automatique)$/;
 const RAISON_EXCLUS = "préférence du compte, testée dans les parcours 01, 11 et 14 (la changer ici fausserait la suite de l'inventaire)";
 
 async function inventaire(page: Page) {

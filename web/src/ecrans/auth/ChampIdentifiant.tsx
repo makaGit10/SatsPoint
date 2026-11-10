@@ -85,9 +85,16 @@ export function ChampIdentifiant({
       value={valeur}
       onChange={(e) => {
         const el = e.target
-        const avant = el.value.slice(0, el.selectionStart ?? el.value.length)
-        curseur.current = (avant.match(/\d/g) ?? []).length
-        onChange(analyserSaisie(el.value, saisie.indicatif))
+        const suivante = analyserSaisie(el.value, saisie.indicatif)
+        // Le curseur n'est recalculé que pour un numéro (reformaté avec des espaces) : en e-mail, le texte
+        // n'est pas transformé et le navigateur garde lui-même la bonne position (sinon « su » devenait « us »).
+        if (suivante.mode === 'telephone') {
+          const avant = el.value.slice(0, el.selectionStart ?? el.value.length)
+          curseur.current = (avant.match(/\d/g) ?? []).length
+        } else {
+          curseur.current = null
+        }
+        onChange(suivante)
       }}
       erreur={erreur}
       aide={aide}

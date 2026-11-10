@@ -1,94 +1,79 @@
-import { ChevronDown, Languages, Monitor, Moon, Sun } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { Moon, Sun } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import type { Theme } from '@/api/types'
 import { localeCourante, LOCALES } from '@/i18n'
 import { cn } from '@/lib/cn'
-import { THEMES, useTheme } from '@/lib/theme'
+import { themeEffectif, useTheme } from '@/lib/theme'
 import { usePreferences } from './usePreferences'
 
-const ICONES_THEME: Record<Theme, ReactNode> = { clair: <Sun />, sombre: <Moon />, auto: <Monitor /> }
-
 /**
- * Sélecteur compact : un <select> natif (accessible, sélecteur système sur mobile, zéro dépendance)
- * recouvre une icône ; seule l'icône est visible.
+ * Bascule clair / sombre en un geste : soleil en clair, lune en sombre (l'icône pivote).
+ * Le thème « automatique » reste disponible dans les réglages ; ici on part du thème réellement affiché.
  */
-function SelecteurCompact<T extends string>({
-  libelle,
-  valeur,
-  options,
-  onChange,
-  icone,
-  texte,
-  className,
-}: {
-  libelle: string
-  valeur: T
-  options: { valeur: T; libelle: string }[]
-  onChange: (v: T) => void
-  icone: ReactNode
-  texte?: string
-  className?: string
-}) {
-  return (
-    <span
-      className={cn(
-        'zone-tactile relative inline-flex h-9 items-center gap-1 rounded-md px-2 text-texte-2 transition-colors duration-150 hover:bg-surface-2 hover:text-texte focus-within:bg-surface-2',
-        className,
-      )}
-      title={libelle}
-    >
-      <span className="inline-flex [&>svg]:size-[18px]" aria-hidden="true">
-        {icone}
-      </span>
-      {texte && <span className="text-xs font-semibold uppercase">{texte}</span>}
-      <ChevronDown size={12} className="text-texte-3" aria-hidden="true" />
-      <select
-        aria-label={libelle}
-        value={valeur}
-        onChange={(e) => onChange(e.target.value as T)}
-        className="absolute inset-0 z-10 h-full w-full cursor-pointer appearance-none opacity-0"
-      >
-        {options.map((o) => (
-          <option key={o.valeur} value={o.valeur}>
-            {o.libelle}
-          </option>
-        ))}
-      </select>
-    </span>
-  )
-}
-
 export function SelecteurTheme({ className }: { className?: string }) {
   const { t } = useTranslation()
   const theme = useTheme((s) => s.theme)
   const { changerTheme } = usePreferences()
+  const sombre = themeEffectif(theme) === 'sombre'
+  const cible = sombre ? 'clair' : 'sombre'
+  const libelle = `${t('entete.theme')} : ${t(`theme.${cible}`)}`
   return (
-    <SelecteurCompact<Theme>
-      libelle={t('entete.theme')}
-      valeur={theme}
-      onChange={changerTheme}
-      icone={ICONES_THEME[theme]}
-      options={THEMES.map((v) => ({ valeur: v, libelle: t(`theme.${v}`) }))}
-      className={className}
-    />
+    <button
+      type="button"
+      onClick={() => changerTheme(cible)}
+      aria-label={libelle}
+      title={libelle}
+      data-theme-actuel={sombre ? 'sombre' : 'clair'}
+      className={cn(
+        'zone-tactile relative inline-flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full text-texte-2 transition-colors duration-200 hover:bg-surface-2 hover:text-texte',
+        className,
+      )}
+    >
+      <Sun
+        aria-hidden="true"
+        className={cn('absolute size-[19px] transition-all duration-300 ease-out', sombre ? 'scale-50 -rotate-90 opacity-0' : 'scale-100 rotate-0 opacity-100')}
+      />
+      <Moon
+        aria-hidden="true"
+        className={cn('absolute size-[18px] transition-all duration-300 ease-out', sombre ? 'scale-100 rotate-0 opacity-100' : 'scale-50 rotate-90 opacity-0')}
+      />
+    </button>
   )
 }
 
+/** Langue de l'interface : pastille « FR | EN », la langue active est surlignée. */
 export function SelecteurLangue({ className }: { className?: string }) {
   const { t, i18n } = useTranslation()
   void i18n.language
   const locale = localeCourante()
   const { changerLocale } = usePreferences()
   return (
-    <SelecteurCompact
-      libelle={t('entete.langueInterface')}
-      valeur={locale}
-      onChange={changerLocale}
-      icone={<Languages />}
-      texte={locale}
-      options={LOCALES.map((v) => ({ valeur: v, libelle: t(`langue.${v}`) }))}
-      className={className}
-    />
+    <div
+      role="group"
+      aria-label={t('entete.langueInterface')}
+      className={cn('inline-flex h-9 shrink-0 items-center gap-0.5 rounded-full border border-bordure bg-surface-2 p-0.5', className)}
+    >
+      {LOCALES.map((v) => {
+        const actif = v === locale
+        return (
+          <button
+            key={v}
+            type="button"
+            lang={v}
+            aria-pressed={actif}
+            aria-label={t(`langue.${v}`)}
+            title={t(`langue.${v}`)}
+            onClick={() => {
+              if (!actif) changerLocale(v)
+            }}
+            className={cn(
+              'inline-flex h-8 min-w-9 items-center justify-center rounded-full px-2.5 text-xs font-bold tracking-wide uppercase transition-all duration-200',
+              actif ? 'bg-texte text-fond shadow-sm' : 'text-texte-2 hover:text-texte',
+            )}
+          >
+            {v}
+          </button>
+        )
+      })}
+    </div>
   )
 }

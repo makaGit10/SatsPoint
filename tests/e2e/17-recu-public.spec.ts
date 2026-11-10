@@ -50,7 +50,7 @@ test.describe('17 · Reçu public', () => {
 
     await page.getByRole('button', { name: /^Imprimer/ }).click();
     expect(await page.evaluate(() => (window as unknown as { __impressions: number }).__impressions)).toBe(1);
-    await page.getByRole('combobox', { name: /Langue de l'interface/ }).selectOption({ label: 'English' });
+    await page.getByRole('group', { name: /Langue de l'interface/ }).getByRole('button', { name: 'English' }).click();
     await expect(recu).toContainText('Paid');
     await capturer(page, '17-recu-en');
 
