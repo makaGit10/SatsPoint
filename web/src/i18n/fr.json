@@ -54,7 +54,8 @@
     "fr": "Français",
     "en": "English",
     "ecouterNom": "Écouter le nom de la langue",
-    "changer": "Changer de langue"
+    "changer": "Changer de langue",
+    "pays": "Votre pays"
   },
   "accueil": {
     "titre": "Bienvenue sur SatsPoint",
@@ -206,7 +207,8 @@
     "lightning": "Bitcoin",
     "paytech": "Mobile money",
     "wave_manuel": "Wave direct",
-    "mobileMoney": "Mobile money"
+    "mobileMoney": "Mobile money",
+    "moyen_pays": "Moyen du pays"
   },
   "operateurs": {
     "wave": "Wave",
@@ -325,7 +327,10 @@
     "annulerTexte": "La demande de paiement sera fermée. Si le client a déjà payé, le paiement sera tout de même enregistré.",
     "garder": "Garder la vente",
     "lightningIndisponible": "Le bitcoin est indisponible pour le moment.",
-    "copieImpossible": "Impossible de copier automatiquement. Sélectionnez le texte à la main."
+    "copieImpossible": "Impossible de copier automatiquement. Sélectionnez le texte à la main.",
+    "moyenNumero": "Numéro marchand",
+    "moyenTexte": "Le client paie avec {{moyen}}, puis vous confirmez la réception.",
+    "confirmerTexteMoyen": "Vérifiez d'abord que l'argent est bien arrivé sur votre compte {{moyen}}. Cette confirmation est enregistrée dans le journal."
   },
   "succes": {
     "titre": "Paiement reçu",
@@ -408,27 +413,6 @@
       "filtres": "Aucune vente ne correspond à ces filtres."
     }
   },
-  "tableau": {
-    "titre": "Tableau de bord",
-    "chiffreAffaires": "Chiffre d'affaires",
-    "chiffreDuJour": "Chiffre du jour",
-    "nombreVentes": "Ventes payées",
-    "panierMoyen": "Panier moyen",
-    "repartition": "Répartition",
-    "dernieresVentes": "Dernières ventes",
-    "vsPrecedente": "vs période précédente",
-    "courbe": "Évolution",
-    "courbeAria": "Courbe du chiffre d'affaires par jour",
-    "aucuneVentePeriode": "Aucune vente payée sur cette période.",
-    "bitcoin": "Bitcoin",
-    "mobileMoney": "Mobile money",
-    "mesChiffresDuJour": "Vos chiffres d'aujourd'hui",
-    "voirVentes": "Voir toutes les ventes",
-    "vide": {
-      "titre": "Rien à afficher pour l'instant",
-      "texte": "Dès la première vente, vous verrez ici votre chiffre du jour et la répartition bitcoin / mobile money, en direct."
-    }
-  },
   "articles": {
     "titre": "Articles",
     "ajouter": "Ajouter un article",
@@ -465,76 +449,12 @@
     "exporter": "Exporter les articles"
   },
   "reglages": {
-    "titre": "Réglages",
-    "boutique": "Ma boutique",
-    "paiements": "Moyens de paiement",
-    "preferences": "Préférences",
-    "securite": "Sécurité",
-    "nom": "Nom de la boutique",
-    "telephone": "Téléphone",
-    "ville": "Ville",
-    "expiration": "Durée d'une demande de paiement",
-    "expirationAide": "Entre 2 et 15 minutes.",
-    "minutes": "{{count}} min",
-    "montantMax": "Montant maximum par vente",
-    "moyens": "Moyens actifs",
-    "lightning": "Bitcoin (Lightning)",
-    "paytech": "Mobile money (PayTech)",
-    "waveManuel": "Wave direct",
-    "waveManuelAide": "Confirmation manuelle par le propriétaire ou le gérant.",
-    "messageRecu": "Message sur le reçu",
-    "messageRecuAide": "Affiché en bas du reçu du client.",
-    "waveLien": "Lien Wave direct",
-    "waveLienAide": "Lien de votre page marchand Wave (https://pay.wave.com/m/…).",
-    "paytechTitre": "PayTech",
-    "paytechTexte": "Vos clés restent chiffrées et ne sont jamais réaffichées. L'argent arrive sur votre propre compte PayTech.",
-    "apiKey": "Clé API",
-    "apiSecret": "Secret API",
-    "secretAide": "Laissez vide pour conserver la valeur enregistrée.",
-    "environnement": "Environnement",
-    "test": "Test",
-    "prod": "Production",
-    "configure": "Configuré",
-    "nonConfigure": "Non configuré",
-    "tester": "Tester la connexion",
-    "supprimerCles": "Supprimer les clés",
-    "supprimerTitre": "Supprimer les clés PayTech ?",
-    "supprimerTexte": "Le mobile money sera désactivé jusqu'à la saisie de nouvelles clés.",
-    "enregistre": "Réglages enregistrés",
-    "unMoyenRequis": "Au moins un moyen de paiement doit rester actif.",
-    "vide": {
-      "titre": "Réglages de la boutique",
-      "texte": "Nom, ville, durée des demandes de paiement, montant maximum et message du reçu : tout se règle ici."
-    }
+    "waveManuelAide": "Confirmation manuelle par le propriétaire ou le gérant."
   },
   "demarrage": {
-    "titre": "Démarrage guidé",
-    "sousTitre": "Quatre étapes, environ trois minutes.",
-    "commencer": "Commencer",
     "progression": "{{faites}} / {{total}} étapes",
     "continuer": "Continuer le démarrage",
-    "etapes": {
-      "boutique": "Ma boutique",
-      "boutiqueTexte": "Nom, téléphone et ville.",
-      "portefeuille": "Mon portefeuille",
-      "portefeuilleTexte": "Lien Nostr Wallet Connect.",
-      "mobileMoney": "Mobile money",
-      "mobileMoneyTexte": "Clés PayTech ou lien Wave (facultatif).",
-      "test": "Paiement test",
-      "testTexte": "100 FCFA pour vérifier que tout marche."
-    },
-    "creerBoutique": "Créer ma boutique",
-    "passer": "Passer cette étape",
-    "lancerTest": "Lancer le paiement test",
-    "testExplication": "Créez une demande de 100 FCFA et payez-la vous-même : vous verrez l'écran vert et saurez que tout fonctionne.",
-    "termine": "Votre caisse est prête",
-    "termineTexte": "Tout fonctionne. Encaissez votre première vente.",
-    "allerCaisse": "Aller à la caisse",
-    "etapeSuivante": "Étape suivante",
-    "vide": {
-      "titre": "Votre boutique n'est pas encore créée",
-      "texte": "Le démarrage guidé vous accompagne jusqu'au premier paiement test."
-    }
+    "allerCaisse": "Aller à la caisse"
   },
   "erreurs": {
     "inattendue": "Un problème est survenu. Réessayez dans un instant.",

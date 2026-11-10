@@ -11,6 +11,9 @@ describe('formatage du reçu et de la demande de paiement', () => {
     expect(libelleMethode(t, 'paytech', 'orange_money')).toBe('Mobile money · Orange Money')
     expect(libelleMethode(t, 'wave_manuel', 'wave')).toBe('Wave direct')
     expect(libelleMethode(t, null, null)).toBe('—')
+    // Moyen du pays : le nom vient du catalogue ; sans nom, libellé générique.
+    expect(libelleMethode(t, 'moyen_pays', null, 'Orange Money')).toBe('Orange Money')
+    expect(libelleMethode(t, 'moyen_pays', null, null)).toBe('Moyen du pays')
     await i18n.changeLanguage('en')
     expect(libelleMethode(t, 'paytech', 'wave')).toBe('Mobile money · Wave')
     await i18n.changeLanguage('fr')

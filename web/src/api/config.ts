@@ -8,7 +8,7 @@ export function chargerConfig() {
   return http.get<Config>('/config', { publique: true })
 }
 
-/** Configuration publique (nom, mode démo, Reverb, langues). Mise en cache longue. */
+/** Configuration publique (nom, mode démo, Reverb, pays et langues). Mise en cache longue ; relue sur le signal `catalogues`. */
 export function useConfig() {
   return useQuery({
     queryKey: CLE_CONFIG,

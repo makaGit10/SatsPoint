@@ -95,5 +95,26 @@
   "articles": {
     "rechercher": "Search items",
     "aucunResultat": "No item matches “{{terme}}”"
+  },
+  "tableau": {
+    "titre": "Dashboard",
+    "chiffreAffaires": "Revenue",
+    "chiffreDuJour": "Today's total",
+    "nombreVentes": "Paid sales",
+    "panierMoyen": "Average basket",
+    "repartition": "Breakdown",
+    "dernieresVentes": "Latest sales",
+    "vsPrecedente": "vs previous period",
+    "courbe": "Trend",
+    "courbeAria": "Daily revenue curve",
+    "aucuneVentePeriode": "No paid sale over this period.",
+    "bitcoin": "Bitcoin",
+    "mobileMoney": "Mobile money",
+    "mesChiffresDuJour": "Your numbers today",
+    "voirVentes": "See all sales",
+    "vide": {
+      "titre": "Nothing to show yet",
+      "texte": "From the first sale, you will see today's total and the bitcoin / mobile money split here, live."
+    }
   }
 }

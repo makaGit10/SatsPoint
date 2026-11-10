@@ -8,7 +8,7 @@ import { cn } from '@/lib/cn'
 import { CLE_PERIODE, FILTRES_DEFAUT, filtresActifs, PERIODES } from './filtres'
 
 const STATUTS: StatutVente[] = ['payee', 'en_attente', 'annulee', 'expiree']
-const METHODES: MethodePaiement[] = ['lightning', 'paytech', 'wave_manuel']
+const METHODES: MethodePaiement[] = ['lightning', 'paytech', 'wave_manuel', 'moyen_pays']
 
 export interface PropsFiltresVentes {
   filtres: TypeFiltres

@@ -86,13 +86,14 @@ export default function Caisse() {
       lightningRaison: !r?.lightning ? null : !walletOk ? t('caisse.walletNonConnecte') : !coursDisponible ? t('caisse.coursIndisponible') : null,
       paytech: Boolean(r?.paytech && boutique?.paytech.configure),
       wave_manuel: Boolean(r?.wave_manuel && boutique?.reglages.wave_lien),
+      pays: boutique?.moyens_pays ?? [],
     }
   }, [boutique, coursDisponible, t])
-  const nombreMoyens = [moyens.lightning, moyens.paytech, moyens.wave_manuel].filter(Boolean).length
+  const nombreMoyens = [moyens.lightning, moyens.paytech, moyens.wave_manuel].filter(Boolean).length + moyens.pays.length
   // Aucun moyen branché (ni portefeuille relié, ni PayTech, ni lien Wave) : on ne propose pas « Encaisser » (erreur évitable),
   // mais « Brancher un moyen de paiement ». Un cours momentanément indisponible n'entre pas dans ce cas.
   const lightningBranche = Boolean(boutique?.reglages.moyens.lightning && boutique?.configuration.wallet)
-  const aucunMoyenBranche = Boolean(boutique) && !lightningBranche && !moyens.paytech && !moyens.wave_manuel
+  const aucunMoyenBranche = Boolean(boutique) && !lightningBranche && !moyens.paytech && !moyens.wave_manuel && !moyens.pays.length
 
   const creation = useMutation({
     mutationFn: creerVente,
@@ -115,7 +116,7 @@ export default function Caisse() {
   })
 
   const encaisserAvec = useCallback(
-    (methode: MethodePaiement, operateur?: Operateur) => {
+    (methode: MethodePaiement, operateur?: Operateur, moyen?: string) => {
       setErreur(null)
       const lignes = [
         ...panier.map((l) => ({ article_ulid: l.article.ulid, libelle: l.article.nom, quantite: l.quantite, prix_unitaire_xof: l.article.prix_xof })),
@@ -127,6 +128,7 @@ export default function Caisse() {
         ...(lignes.length ? { lignes } : {}),
         methode,
         ...(operateur ? { operateur } : {}),
+        ...(moyen ? { moyen } : {}),
       })
     },
     [creation, montant, montantLibre, note, panier, t],
@@ -140,7 +142,9 @@ export default function Caisse() {
     }
     setErreur(null)
     if (nombreMoyens === 1 && !moyens.paytech) {
-      encaisserAvec(moyens.lightning ? 'lightning' : 'wave_manuel')
+      const seul = moyens.pays[0]
+      if (seul) encaisserAvec('moyen_pays', undefined, seul.ulid)
+      else encaisserAvec(moyens.lightning ? 'lightning' : 'wave_manuel')
       return
     }
     setChoixOuvert(true)

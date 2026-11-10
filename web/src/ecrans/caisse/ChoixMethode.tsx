@@ -1,10 +1,11 @@
 import { ChevronRight, Smartphone, Zap } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { MethodePaiement, Operateur } from '@/api/types'
+import type { MethodePaiement, MoyenBoutique, Operateur } from '@/api/types'
 import { Dialogue } from '@/composants/Dialogue'
 import { ErreurFormulaire } from '@/ecrans/auth/communs'
 import { cn } from '@/lib/cn'
+import { classesCouleur } from '@/lib/couleursMoyens'
 import { formaterFCFA, formaterSats } from '@/lib/format'
 import { OPERATEURS } from '@/lib/methodes'
 import { HautParleur } from '@/voix/HautParleur'
@@ -15,6 +16,8 @@ export interface MoyensDisponibles {
   lightningRaison: string | null
   paytech: boolean
   wave_manuel: boolean
+  /** Moyens du pays activés par la boutique (CONTRAT_API § 14.3). */
+  pays: MoyenBoutique[]
 }
 
 export interface PropsChoixMethode {
@@ -25,10 +28,10 @@ export interface PropsChoixMethode {
   moyens: MoyensDisponibles
   enCours: boolean
   erreur: string | null
-  onChoisir: (methode: MethodePaiement, operateur?: Operateur) => void
+  onChoisir: (methode: MethodePaiement, operateur?: Operateur, moyen?: string) => void
 }
 
-function Option({ icone, titre, detail, onClick, desactive, ton, voix, raison }: { icone: ReactNode; titre: string; detail?: string; onClick: () => void; desactive?: boolean; ton: 'accent' | 'mm'; voix: string; raison?: string | null }) {
+function Option({ icone, titre, detail, onClick, desactive, ton, voix, raison }: { icone: ReactNode; titre: string; detail?: string; onClick: () => void; desactive?: boolean; ton: 'accent' | 'mm' | string; voix: string; raison?: string | null }) {
   return (
     <li className="relative">
       <button
@@ -40,7 +43,7 @@ function Option({ icone, titre, detail, onClick, desactive, ton, voix, raison }:
           'hover:border-bordure-forte hover:bg-surface-2 active:scale-[0.99] disabled:opacity-55',
         )}
       >
-        <span className={cn('inline-flex size-10 shrink-0 items-center justify-center rounded-md [&>svg]:size-5', ton === 'accent' ? 'bg-accent-doux text-accent-texte' : 'bg-mm-doux text-mm-texte')} aria-hidden="true">
+        <span className={cn('inline-flex size-10 shrink-0 items-center justify-center rounded-md [&>svg]:size-5', ton === 'accent' ? 'bg-accent-doux text-accent-texte' : ton === 'mm' ? 'bg-mm-doux text-mm-texte' : classesCouleur(ton).doux)} aria-hidden="true">
           {icone}
         </span>
         <span className="min-w-0 flex-1">
@@ -80,6 +83,9 @@ export function ChoixMethode({ ouvert, onFermer, montant, sats, moyens, enCours,
           {moyens.wave_manuel && (
             <Option icone={<Smartphone />} ton="mm" titre={t('methodes.wave_manuel')} detail={t('reglages.waveManuelAide')} voix="caisse.mobileMoney" onClick={() => onChoisir('wave_manuel')} />
           )}
+          {moyens.pays.map((m) => (
+            <Option key={m.ulid} icone={<Smartphone />} ton={m.couleur} titre={m.nom} detail={t('reglages.waveManuelAide')} voix="caisse.mobileMoney" onClick={() => onChoisir('moyen_pays', undefined, m.ulid)} />
+          ))}
         </ul>
         <ErreurFormulaire message={erreur} />
       </div>

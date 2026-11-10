@@ -95,5 +95,26 @@
   "articles": {
     "rechercher": "Rechercher un article",
     "aucunResultat": "Aucun article ne correspond à « {{terme}} »"
+  },
+  "tableau": {
+    "titre": "Tableau de bord",
+    "chiffreAffaires": "Chiffre d'affaires",
+    "chiffreDuJour": "Chiffre du jour",
+    "nombreVentes": "Ventes payées",
+    "panierMoyen": "Panier moyen",
+    "repartition": "Répartition",
+    "dernieresVentes": "Dernières ventes",
+    "vsPrecedente": "vs période précédente",
+    "courbe": "Évolution",
+    "courbeAria": "Courbe du chiffre d'affaires par jour",
+    "aucuneVentePeriode": "Aucune vente payée sur cette période.",
+    "bitcoin": "Bitcoin",
+    "mobileMoney": "Mobile money",
+    "mesChiffresDuJour": "Vos chiffres d'aujourd'hui",
+    "voirVentes": "Voir toutes les ventes",
+    "vide": {
+      "titre": "Rien à afficher pour l'instant",
+      "texte": "Dès la première vente, vous verrez ici votre chiffre du jour et la répartition bitcoin / mobile money, en direct."
+    }
   }
 }

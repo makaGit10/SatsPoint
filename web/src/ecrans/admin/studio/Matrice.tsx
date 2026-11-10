@@ -1,14 +1,14 @@
 import { ChevronRight, Star } from 'lucide-react'
 import { Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { CleAudio, LangueAudio } from '@/api/types'
+import type { CleAudio, LangueAudio, LangueMatrice } from '@/api/types'
 import { cn } from '@/lib/cn'
 import { IconeStatut } from './IconeStatut'
 import { statutDe } from './selection'
 
 interface PropsMatrice {
   cles: CleAudio[]
-  langues: Array<{ code: LangueAudio; nom: string }>
+  langues: LangueMatrice[]
   langue: LangueAudio
   selection: string | null
   onChoisir: (cle: string, langue: LangueAudio) => void

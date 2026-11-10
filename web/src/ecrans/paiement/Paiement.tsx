@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { BadgeCheck, Ban, Clock, Copy, ExternalLink, FlaskConical, RefreshCw, Share2, Smartphone, TriangleAlert, X, Zap } from 'lucide-react'
+import { BadgeCheck, Ban, Clock, Copy, ExternalLink, FlaskConical, Hash, RefreshCw, Share2, Smartphone, TriangleAlert, X, Zap } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -21,6 +21,7 @@ import { BandeauDemo } from '@/coquille/BandeauDemo'
 import { Marque } from '@/coquille/Marque'
 import { useMessageErreur } from '@/ecrans/auth/useMessageErreur'
 import { cn } from '@/lib/cn'
+import { classesCouleur, formaterNumeroMarchand, instructionsMoyen } from '@/lib/couleursMoyens'
 import { formaterCompteARebours, formaterFCFA, formaterSats } from '@/lib/format'
 import { contenuQrLightning, OPERATEURS } from '@/lib/methodes'
 import { queryClient } from '@/lib/queryClient'
@@ -33,7 +34,9 @@ import { Succes } from './Succes'
 import { useSuiviPaiement, type EtatSuivi } from './useSuiviPaiement'
 
 type Onglet = 'lightning' | 'mobile'
-type ChoixMobile = Operateur | 'wave_manuel'
+/** Opérateur PayTech, Wave direct, ou moyen du pays (`moyen:{ulid}`, CONTRAT_API § 14.4). */
+type ChoixMobile = Operateur | 'wave_manuel' | `moyen:${string}`
+const PREFIXE_MOYEN = 'moyen:'
 
 /**
  * Écran de paiement plein écran : onglets Bitcoin | Mobile money, QR côté client, compte à rebours,
@@ -88,7 +91,7 @@ export default function Paiement() {
   // `isPending` n'est pas encore à jour entre les deux → sans ce verrou, deux tentatives (deux factures) partaient.
   const tentativeEnCours = useRef(false)
   const tentative = useMutation({
-    mutationFn: ({ methode, operateur }: { methode: MethodePaiement; operateur?: Operateur }) => nouvelleTentative(vente!.ulid, methode, operateur),
+    mutationFn: ({ methode, operateur, moyen }: { methode: MethodePaiement; operateur?: Operateur; moyen?: string }) => nouvelleTentative(vente!.ulid, methode, operateur, moyen),
     onSettled: () => {
       tentativeEnCours.current = false
     },
@@ -126,25 +129,35 @@ export default function Paiement() {
   const paytechOk = Boolean(moyens?.paytech && boutique?.paytech.configure)
   const waveOk = Boolean(moyens?.wave_manuel && boutique?.reglages.wave_lien)
   const lightningOk = Boolean(moyens?.lightning && boutique?.configuration.wallet)
-  const mobileOk = paytechOk || waveOk
+  const moyensPays = useMemo(() => boutique?.moyens_pays ?? [], [boutique])
+  const mobileOk = paytechOk || waveOk || moyensPays.length > 0
 
   const choixMobile: { valeur: ChoixMobile; libelle: string }[] = useMemo(
     () => [
       ...(paytechOk ? OPERATEURS.map((op) => ({ valeur: op as ChoixMobile, libelle: t(`operateurs.${op}`) })) : []),
       ...(waveOk ? [{ valeur: 'wave_manuel' as ChoixMobile, libelle: t('methodes.wave_manuel') }] : []),
+      ...moyensPays.map((m) => ({ valeur: `${PREFIXE_MOYEN}${m.ulid}` as ChoixMobile, libelle: m.nom })),
     ],
-    [paytechOk, waveOk, t],
+    [paytechOk, waveOk, moyensPays, t],
   )
 
   const ongletCourant: Onglet = paiement?.methode === 'lightning' ? 'lightning' : 'mobile'
-  const choixCourant: ChoixMobile | null = paiement ? (paiement.methode === 'wave_manuel' ? 'wave_manuel' : paiement.operateur) : null
+  const moyenCourant = paiement?.methode === 'moyen_pays' ? (paiement.moyen ?? null) : null
+  const choixCourant: ChoixMobile | null = !paiement
+    ? null
+    : paiement.methode === 'wave_manuel'
+      ? 'wave_manuel'
+      : moyenCourant
+        ? `${PREFIXE_MOYEN}${moyenCourant.ulid}`
+        : paiement.operateur
 
   const lancerTentative = (choix: 'lightning' | ChoixMobile) => {
     if (!vente || tentative.isPending || tentativeEnCours.current) return
     tentativeEnCours.current = true
     if (choix === 'lightning') tentative.mutate({ methode: 'lightning' })
     else if (choix === 'wave_manuel') tentative.mutate({ methode: 'wave_manuel' })
-    else tentative.mutate({ methode: 'paytech', operateur: choix })
+    else if (choix.startsWith(PREFIXE_MOYEN)) tentative.mutate({ methode: 'moyen_pays', moyen: choix.slice(PREFIXE_MOYEN.length) })
+    else tentative.mutate({ methode: 'paytech', operateur: choix as Operateur })
   }
 
   const changerOnglet = (valeur: string) => {
@@ -170,6 +183,7 @@ export default function Paiement() {
           sats={venteComplete?.montant_sats_reussi ?? paiement.montant_sats}
           methode={venteComplete?.methode_reussie ?? paiement.methode}
           operateur={venteComplete?.operateur_reussi ?? paiement.operateur}
+          moyen={venteComplete?.moyen_reussi ?? paiement.moyen?.nom ?? null}
           numero={vente.numero}
           boutique={nomBoutique}
           recuUrl={venteComplete?.recu_url ?? null}
@@ -315,7 +329,7 @@ export default function Paiement() {
         ouvert={confirmationOuverte}
         onOuvertChange={setConfirmationOuverte}
         titre={t('paiement.confirmerTitre', { montant: paiement ? formaterFCFA(paiement.montant_xof) : '' })}
-        description={t('paiement.confirmerTexte')}
+        description={moyenCourant ? t('paiement.confirmerTexteMoyen', { moyen: moyenCourant.nom }) : t('paiement.confirmerTexte')}
         taille="sm"
         pied={
           <>
@@ -351,7 +365,7 @@ interface PropsPanneau {
 
 /** Contenu d'un onglet selon l'état de la tentative courante. */
 function PanneauTentative(p: PropsPanneau) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { etat, paiement } = p
 
   if (etat === 'chargement' || !paiement) {
@@ -406,10 +420,21 @@ function PanneauTentative(p: PropsPanneau) {
 
   // En attente : QR + actions.
   const lightning = paiement.methode === 'lightning'
-  const waveManuel = paiement.methode === 'wave_manuel'
-  const contenuQr = lightning ? (paiement.bolt11 ? contenuQrLightning(paiement.bolt11) : null) : (paiement.paytech?.redirect_url ?? paiement.wave_lien)
-  const lienExterne = lightning ? null : (paiement.paytech?.redirect_url ?? paiement.wave_lien)
-  const aCopier = lightning ? paiement.bolt11 : lienExterne
+  // Moyen du pays : lien (QR) ou numéro marchand en grand ; comme le Wave direct, confirmation à la main.
+  const moyen = paiement.methode === 'moyen_pays' ? (paiement.moyen ?? null) : null
+  const manuel = paiement.methode === 'wave_manuel' || moyen !== null
+  const numeroMarchand = moyen?.type === 'numero' ? moyen.valeur : null
+  const lienMoyen = moyen?.type === 'lien' ? moyen.valeur : null
+  const contenuQr = lightning ? (paiement.bolt11 ? contenuQrLightning(paiement.bolt11) : null) : moyen ? lienMoyen : (paiement.paytech?.redirect_url ?? paiement.wave_lien)
+  const lienExterne = lightning ? null : moyen ? lienMoyen : (paiement.paytech?.redirect_url ?? paiement.wave_lien)
+  const aCopier = lightning ? paiement.bolt11 : (numeroMarchand ?? lienExterne)
+  const texte = lightning
+    ? t('paiement.scanner')
+    : moyen
+      ? (instructionsMoyen(moyen, i18n.language) ?? t('paiement.moyenTexte', { moyen: moyen.nom }))
+      : paiement.methode === 'wave_manuel'
+        ? t('paiement.waveTexte')
+        : t('paiement.scannerMobileMoney')
 
   const copierDemande = async () => {
     if (!aCopier) return
@@ -421,12 +446,28 @@ function PanneauTentative(p: PropsPanneau) {
 
   return (
     <div className="flex flex-1 flex-col items-center">
+      {moyen && (
+        <span className={cn('mb-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold', classesCouleur(moyen.couleur).doux)} data-moyen={moyen.nom}>
+          <span className={cn('size-2 rounded-full', classesCouleur(moyen.couleur).pastille)} aria-hidden="true" />
+          {moyen.nom}
+        </span>
+      )}
       {contenuQr && <QrCode valeur={contenuQr} libelle={t('paiement.qrAria')} taille={248} className="md:size-[272px]" />}
-      <p className="mt-5 max-w-xs text-center text-base leading-relaxed text-texte-2">{lightning ? t('paiement.scanner') : waveManuel ? t('paiement.waveTexte') : t('paiement.scannerMobileMoney')}</p>
+      {numeroMarchand && (
+        <div className="verre flex w-full max-w-xs flex-col items-center gap-1 rounded-2xl px-4 py-5" data-numero-marchand>
+          <span className="flex items-center gap-1 text-xs font-semibold tracking-wide text-texte-3 uppercase">
+            <Hash size={13} aria-hidden="true" />
+            {t('paiement.moyenNumero')}
+            <HautParleur cle="paiement.moyenNumero" />
+          </span>
+          <span className="text-center text-2xl leading-tight font-bold tracking-wide text-texte tabulaire select-all">{formaterNumeroMarchand(numeroMarchand)}</span>
+        </div>
+      )}
+      <p className="mt-5 max-w-xs text-center text-base leading-relaxed text-texte-2">{texte}</p>
 
       <div className="verre mt-4 flex items-center gap-2.5 rounded-full py-1.5 pr-1.5 pl-4" aria-live="polite">
         <span className="inline-flex size-2.5 rounded-full bg-attente shadow-[0_0_0_4px_var(--attente-doux)] anim-pulsation" aria-hidden="true" />
-        <span className="text-sm font-bold text-attente-texte">{waveManuel ? t('paiement.enAttenteConfirmation') : t('paiement.enAttente')}</span>
+        <span className="text-sm font-bold text-attente-texte">{manuel ? t('paiement.enAttenteConfirmation') : t('paiement.enAttente')}</span>
         {p.secondes !== null && (
           <span className={cn('inline-flex items-center gap-1 rounded-full bg-surface px-3 py-1 text-sm font-bold text-texte tabulaire', p.secondes <= 30 && 'bg-danger-doux text-danger-texte')}>
             <Clock size={13} aria-hidden="true" />
@@ -444,7 +485,7 @@ function PanneauTentative(p: PropsPanneau) {
           className="mt-4 inline-flex h-13 w-full max-w-xs items-center justify-center gap-2 rounded-full bg-mm px-5 text-base font-bold text-[#04263a] ombre-mm hover:brightness-105"
         >
           <ExternalLink size={16} aria-hidden="true" />
-          {waveManuel ? t('paiement.ouvrirWave') : t('paiement.ouvrir')}
+          {paiement.methode === 'wave_manuel' ? t('paiement.ouvrirWave') : t('paiement.ouvrir')}
         </a>
       )}
 
@@ -455,7 +496,7 @@ function PanneauTentative(p: PropsPanneau) {
       </div>
 
       <div className="mt-auto flex w-full max-w-xs flex-col gap-3 pt-6">
-        {waveManuel && p.gestion && (
+        {manuel && p.gestion && (
           <Bouton taille="lg" pleineLargeur icone={<BadgeCheck />} voix="paiement.confirmerManuellement" onClick={p.onConfirmer}>
             {t('paiement.confirmerManuellement')}
           </Bouton>

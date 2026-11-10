@@ -73,3 +73,8 @@ export function verifierFichierAudio(fichier: { name: string; size: number; type
   if (fichier.size > TAILLE_MAX_AUDIO) return 'taille'
   return null
 }
+
+/** Colonnes du studio pour un pays : ses langues + celles de tous les pays (le français) ; `''` = toutes. */
+export function languesDuFiltre<L extends { pays?: readonly string[] }>(langues: readonly L[], pays: string): L[] {
+  return langues.filter((l) => !pays || !l.pays?.length || l.pays.includes(pays))
+}

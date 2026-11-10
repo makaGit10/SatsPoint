@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { http } from './client'
-import type { BoutiqueDetail, ReglagesBoutique, Utilisateur } from './types'
+import type { BoutiqueDetail, CodePays, MoyenBoutique, ReglagesBoutique, Utilisateur } from './types'
 
 export const CLE_BOUTIQUE = ['boutique'] as const
 
@@ -17,12 +17,14 @@ export interface ModificationBoutique {
   nom?: string
   telephone?: string | null
   ville?: string
+  /** Propriétaire seulement (CONTRAT_API § 14.3). */
+  pays?: CodePays
   reglages?: Partial<ReglagesBoutique>
   paiement_test?: true
 }
 
 /** Création de la boutique (démarrage guidé, étape 1) — ajout au contrat § 8. */
-export function creerBoutique(corps: { nom: string; telephone?: string | null; ville: string }) {
+export function creerBoutique(corps: { nom: string; telephone?: string | null; ville: string; pays?: CodePays }) {
   return http.post<{ boutique: BoutiqueDetail; utilisateur: Utilisateur }>('/boutique', corps)
 }
 
@@ -40,4 +42,21 @@ export function supprimerPaytech() {
 
 export function verifierPaytech() {
   return http.post<{ ok: boolean; message: string }>('/boutique/paytech/verifier')
+}
+
+// ----- Moyens de paiement du pays (CONTRAT_API § 14.3) : propriétaire / gérant -----
+
+export const CLE_MOYENS_PAYS = ['boutique', 'moyens-pays'] as const
+
+export function useMoyensPays(actif = true) {
+  return useQuery({
+    queryKey: CLE_MOYENS_PAYS,
+    queryFn: () => http.get<{ pays: CodePays; moyens: MoyenBoutique[] }>('/boutique/moyens-pays'),
+    enabled: actif,
+    staleTime: 30_000,
+  })
+}
+
+export function configurerMoyenPays(ulid: string, corps: { active: boolean; valeur?: string | null }) {
+  return http.put<{ moyen: MoyenBoutique }>(`/boutique/moyens-pays/${ulid}`, corps)
 }

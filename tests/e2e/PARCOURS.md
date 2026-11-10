@@ -740,6 +740,17 @@ Rôle : propriétaire **démo** (`demo@satspoint.local`, vrai portefeuille). Int
 4. « Annuler la vente » (icône) → « Annuler la vente » → `POST /ventes/<ulid>/annuler` 200 → « Paiement annulé ». `GET /ventes/<ulid>` → `statut='annulee'`.
 5. Capture du QR (preuve) puis fin. La vente annulée reste dans l'historique démo (identifiable par la note).
 
+### 23-pays-langues-moyens (CONTRAT_API § 14)
+Rôles : super-admin **de test** (2FA validée par l'API) + propriétaire d'une boutique de test (portefeuille simulé).
+1. `/admin?onglet=langues` : « Ajouter une langue » → code `zq…`, noms `TEST-E2E Langue`, pays Togo → `POST /admin/langues` 201, toast « Langue ajoutée », ligne visible ; la matrice du studio contient la colonne et la clé `langue.{code}` ; « Supprimer la langue » → `DELETE` 204 (aucun audio).
+2. Onglet « Moyens de paiement » : pays Togo (Mixx by Yas, Flooz visibles) → « Ajouter un moyen » `TEST-E2E-<date> Moyen` (numéro marchand, vert) → `POST /admin/moyens-paiement` 201.
+3. `/reglages` (propriétaire) : « Pays de la boutique » = Togo (aide « Changer de pays désactive… ») → `PATCH /boutique` 200 `pays='TG'` ; carte « Moyens de paiement du pays » : interrupteur du moyen → champ « Numéro marchand » `+228 90 11 22 33` → `PUT /boutique/moyens-pays/{ulid}` 200 (`valeur` normalisée `+22890112233`).
+4. Anti-IDOR : `PUT /boutique/moyens-pays/{ulid d'un moyen ivoirien}` → 404.
+5. `/caisse` : 1 500 FCFA → « Encaisser » → option du moyen → `POST /ventes` 201 (`methode='moyen_pays'`, photographie `moyen`, `expire_le=null`) ; écran de paiement : numéro en grand `+228 90 11 22 33`, « En attente de confirmation » ; « Confirmer la réception » (texte du moyen) → 200 → « par TEST-E2E-… Moyen ».
+6. `DELETE /admin/moyens-paiement/{ulid}` → 409 `MOYEN_UTILISE`. Nettoyage : `e2e:nettoyer` (moyen et boutique `TEST-E2E-`).
+7. `/langue` (visiteur) : « Votre pays » = SN, 6 tuiles ; Niger → 2 tuiles (Français, English) ; retour SN → 6 ; `GET /config` expose les 8 pays et les 5 langues de départ.
+Non couvert par 19-tous-les-boutons : les interrupteurs des catalogues réels (désactiver le wolof sur la base de test) — seules des données `TEST-E2E` sont modifiées ici.
+
 ---
 
 ## 5. Écarts et points d'attention relevés à la lecture du code

@@ -101,5 +101,88 @@
       "titre": "You are on your own for now",
       "texte": "Invite a cashier or a manager: they charge for you, with no access to your money."
     }
+  },
+  "reglages": {
+    "titre": "Settings",
+    "boutique": "My shop",
+    "paiements": "Payment methods",
+    "preferences": "Preferences",
+    "securite": "Security",
+    "nom": "Shop name",
+    "telephone": "Phone",
+    "ville": "City",
+    "expiration": "Payment request duration",
+    "expirationAide": "Between 2 and 15 minutes.",
+    "minutes": "{{count}} min",
+    "montantMax": "Maximum amount per sale",
+    "moyens": "Active methods",
+    "lightning": "Bitcoin (Lightning)",
+    "paytech": "Mobile money (PayTech)",
+    "waveManuel": "Wave direct",
+    "messageRecu": "Receipt message",
+    "messageRecuAide": "Shown at the bottom of the customer's receipt.",
+    "waveLien": "Wave direct link",
+    "waveLienAide": "Link of your Wave merchant page (https://pay.wave.com/m/…).",
+    "paytechTitre": "PayTech",
+    "paytechTexte": "Your keys stay encrypted and are never shown again. The money lands in your own PayTech account.",
+    "apiKey": "API key",
+    "apiSecret": "API secret",
+    "secretAide": "Leave empty to keep the saved value.",
+    "environnement": "Environment",
+    "test": "Test",
+    "prod": "Production",
+    "configure": "Configured",
+    "nonConfigure": "Not configured",
+    "tester": "Test the connection",
+    "supprimerCles": "Delete the keys",
+    "supprimerTitre": "Delete the PayTech keys?",
+    "supprimerTexte": "Mobile money will be disabled until new keys are entered.",
+    "enregistre": "Settings saved",
+    "unMoyenRequis": "At least one payment method must stay active.",
+    "vide": {
+      "titre": "Shop settings",
+      "texte": "Name, city, payment request duration, maximum amount and receipt message: everything is set here."
+    },
+    "pays": "Shop country",
+    "paysAide": "Changing country turns off the payment methods of the previous country.",
+    "paysProprietaire": "Only the owner can change the country.",
+    "moyensPays": {
+      "titre": "Local payment methods",
+      "aide": "Turn on the ones your customers use, with your merchant number or link. You confirm each payment received yourself.",
+      "vide": "No payment method is offered for this country yet.",
+      "activer": "Turn on this payment method",
+      "numero": "Merchant number",
+      "lien": "Merchant payment link",
+      "numeroAide": "International number (+225…) or merchant code",
+      "lienAide": "https link provided by the operator",
+      "valeurRequise": "Enter your number or link first."
+    }
+  },
+  "demarrage": {
+    "titre": "Guided setup",
+    "sousTitre": "Four steps, about three minutes.",
+    "commencer": "Start",
+    "etapes": {
+      "boutique": "My shop",
+      "boutiqueTexte": "Name, phone and city.",
+      "portefeuille": "My wallet",
+      "portefeuilleTexte": "Nostr Wallet Connect link.",
+      "mobileMoney": "Mobile money",
+      "mobileMoneyTexte": "PayTech keys or Wave link (optional).",
+      "test": "Test payment",
+      "testTexte": "100 FCFA to check everything works."
+    },
+    "creerBoutique": "Create my shop",
+    "passer": "Skip this step",
+    "lancerTest": "Start the test payment",
+    "testExplication": "Create a 100 FCFA request and pay it yourself: you will see the green screen and know everything works.",
+    "termine": "Your checkout is ready",
+    "termineTexte": "Everything works. Charge your first sale.",
+    "etapeSuivante": "Next step",
+    "vide": {
+      "titre": "Your shop is not created yet",
+      "texte": "The guided setup walks you through to the first test payment."
+    },
+    "paysAide": "It sets the languages and payment methods offered."
   }
 }

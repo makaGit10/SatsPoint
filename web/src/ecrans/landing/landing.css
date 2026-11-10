@@ -226,6 +226,34 @@
 .landing .choix-voix-langue.actif [data-haut-parleur] {
   color: var(--l-pastille-texte-voix, #f6c34a);
 }
+.landing .choix-voix-pays {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 40px;
+  padding: 0 6px 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--l-ligne);
+  background: var(--l-carte);
+  color: var(--l-or-texte);
+}
+.landing .choix-voix-pays svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+.landing .choix-voix-pays select {
+  max-width: 9.5rem;
+  height: 38px;
+  font: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--l-texte);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-overflow: ellipsis;
+}
 .landing .choix-voix-couper {
   width: 40px;
   height: 40px;

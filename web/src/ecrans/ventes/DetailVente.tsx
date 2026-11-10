@@ -40,7 +40,7 @@ function Tentative({ paiement }: { paiement: Paiement }) {
     <li className="flex flex-col gap-1 rounded-md border border-bordure bg-fond-2 px-2.5 py-2 text-xs">
       <div className="flex items-center gap-2">
         <IconeMethode methode={paiement.methode} taille={13} />
-        <span className="flex-1 text-sm font-medium text-texte">{libelleMethode(t, paiement.methode, paiement.operateur)}</span>
+        <span className="flex-1 text-sm font-medium text-texte">{libelleMethode(t, paiement.methode, paiement.operateur, paiement.moyen?.nom)}</span>
         {paiement.simule && <span className="text-texte-3">{t('ventes.simule')}</span>}
         <PastilleStatutPaiement statut={paiement.statut} />
       </div>
@@ -73,7 +73,8 @@ function Corps({ vente, gestion, onFermer }: { vente: Vente; gestion: boolean; o
 
   const enAttente = vente.statut === 'en_attente'
   const tentativeEnAttente = vente.paiements.find((p) => p.statut === 'en_attente') ?? null
-  const waveAConfirmer = gestion && enAttente && tentativeEnAttente?.methode === 'wave_manuel' ? tentativeEnAttente : null
+  // Confirmation à la main : Wave direct et moyens du pays (CONTRAT_API § 14.4).
+  const waveAConfirmer = gestion && enAttente && (tentativeEnAttente?.methode === 'wave_manuel' || tentativeEnAttente?.methode === 'moyen_pays') ? tentativeEnAttente : null
 
   const rafraichir = () => {
     void queryClient.invalidateQueries({ queryKey: CLE_VENTES })
@@ -113,7 +114,7 @@ function Corps({ vente, gestion, onFermer }: { vente: Vente; gestion: boolean; o
           {vente.montant_sats_reussi !== null && <p className="text-sm text-texte-2 tabulaire">{formaterSats(vente.montant_sats_reussi)}</p>}
           <p className="mt-0.5 flex items-center gap-1.5 text-sm text-texte-2">
             <IconeMethode methode={vente.methode_reussie ?? tentativeEnAttente?.methode ?? null} taille={14} />
-            {libelleMethode(t, vente.methode_reussie ?? tentativeEnAttente?.methode ?? null, vente.operateur_reussi ?? tentativeEnAttente?.operateur ?? null)}
+            {libelleMethode(t, vente.methode_reussie ?? tentativeEnAttente?.methode ?? null, vente.operateur_reussi ?? tentativeEnAttente?.operateur ?? null, vente.moyen_reussi ?? tentativeEnAttente?.moyen?.nom)}
           </p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
@@ -218,7 +219,7 @@ function Corps({ vente, gestion, onFermer }: { vente: Vente; gestion: boolean; o
         ouvert={confirmationOuverte}
         onOuvertChange={setConfirmationOuverte}
         titre={t('paiement.confirmerTitre', { montant: formaterFCFA(vente.montant_xof) })}
-        description={t('paiement.confirmerTexte')}
+        description={waveAConfirmer?.moyen ? t('paiement.confirmerTexteMoyen', { moyen: waveAConfirmer.moyen.nom }) : t('paiement.confirmerTexte')}
         taille="sm"
         pied={
           <>

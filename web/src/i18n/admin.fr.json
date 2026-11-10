@@ -1,13 +1,16 @@
 {
   "admin": {
     "titre": "Console plateforme",
-    "sousTitre": "Adoption, boutiques, santé des services et journal. Aucun montant des boutiques n'apparaît ici.",
+    "sousTitre": "Adoption, boutiques, langues, moyens de paiement par pays, santé et journal. Aucun montant des boutiques n'apparaît ici.",
     "onglets": {
       "ensemble": "Vue d'ensemble",
       "ensembleCourt": "Résumé",
       "boutiques": "Boutiques",
       "sante": "Santé",
-      "journal": "Journal"
+      "journal": "Journal",
+      "langues": "Langues",
+      "moyens": "Moyens de paiement",
+      "moyensCourt": "Paiements"
     },
     "ouvrirStudio": "Ouvrir le studio",
     "stats": {
@@ -104,7 +107,7 @@
         "paytech": "Mobile money",
         "vente": "Ventes",
         "paiement": "Paiements",
-        "plateforme": "Plateforme (suspensions)",
+        "plateforme": "Plateforme (boutiques, catalogues)",
         "article": "Articles",
         "import": "Imports",
         "export": "Exports"
@@ -162,8 +165,95 @@
         "wallet_envoi_echec": "Envoi de sats échoué",
         "wallet_envoi_incertain": "Envoi de sats à vérifier",
         "wallet_envoi_refuse_mot_de_passe": "Envoi refusé (mot de passe)",
-        "wallet_revoque": "Portefeuille déconnecté"
+        "wallet_revoque": "Portefeuille déconnecté",
+        "plateforme_pays_modifie": "Pays modifié",
+        "plateforme_langue_creee": "Langue ajoutée",
+        "plateforme_langue_modifiee": "Langue modifiée",
+        "plateforme_langue_supprimee": "Langue supprimée",
+        "plateforme_moyen_cree": "Moyen de paiement ajouté",
+        "plateforme_moyen_modifie": "Moyen de paiement modifié",
+        "plateforme_moyen_supprime": "Moyen de paiement supprimé",
+        "boutique_moyen_pays_modifie": "Moyen du pays configuré",
+        "boutique_pays_modifie": "Pays de la boutique modifié"
       }
+    },
+    "langues": {
+      "aide": "Chaque langue active est proposée aux personnes de ses pays (choix de la langue, aide vocale) et apparaît comme une colonne du studio, où s'enregistre aussi son nom.",
+      "ajouter": "Ajouter une langue",
+      "modifier": "Modifier la langue",
+      "modifierTitre": "Modifier {{nom}}",
+      "supprimer": "Supprimer la langue",
+      "supprimerTitre": "Supprimer la langue {{nom}} ?",
+      "supprimerTexte": "Possible seulement si aucun audio n'a été enregistré pour elle. Sinon, désactivez-la : ses audios restent conservés.",
+      "filtrePays": "Pays",
+      "tousPays": "Tous les pays",
+      "code": "Code",
+      "codeAide": "2 à 8 lettres minuscules (bm, dyu, mos), éventuellement suivies de « - » et d’une variante. Il ne change plus ensuite.",
+      "nomLocal": "Nom dans la langue",
+      "nomLocalAide": "Tel que ses locuteurs l’écrivent (ex. Bamanankan).",
+      "nomFr": "Nom en français",
+      "nomEn": "Nom en anglais",
+      "pays": "Pays où elle est proposée",
+      "paysAide": "Aucun pays coché = tous les pays.",
+      "active": "Langue active",
+      "activeAide": "Désactivée, elle disparaît des écrans ; ses audios sont conservés.",
+      "audios_one": "{{count}} audio publié",
+      "audios_other": "{{count}} audios publiés",
+      "vide": "Aucune langue pour ce pays.",
+      "creee": "Langue ajoutée",
+      "enregistree": "Langue enregistrée",
+      "supprimee": "Langue supprimée",
+      "protegee": "Le français est la langue de repli : il reste toujours actif.",
+      "utilisee": "Cette langue a déjà des audios : désactivez-la plutôt que de la supprimer.",
+      "enregistrerNom": "Enregistrer les noms au studio"
+    },
+    "moyens": {
+      "aide": "Les commerçants d’un pays activent ces moyens avec leur propre numéro ou lien marchand, puis confirment chaque paiement à la main.",
+      "pays": "Pays",
+      "paysFerme": "fermé",
+      "paysActif": "{{pays}} ouvert aux nouvelles boutiques",
+      "paysBoutiques_one": "{{count}} boutique dans ce pays",
+      "paysBoutiques_other": "{{count}} boutiques dans ce pays",
+      "paysEnregistre": "Pays enregistré",
+      "paysProtege": "Le Sénégal reste toujours ouvert.",
+      "senegal": "Au Sénégal, PayTech (Wave, Orange Money, Free Money) et le lien Wave direct restent proposés à toutes les boutiques, comme avant.",
+      "ajouter": "Ajouter un moyen",
+      "modifier": "Modifier le moyen",
+      "modifierTitre": "Modifier {{nom}}",
+      "supprimer": "Supprimer le moyen",
+      "supprimerTitre": "Supprimer {{nom}} ?",
+      "supprimerTexte": "Possible seulement s'il n'a jamais servi. Sinon, désactivez-le.",
+      "utilise": "Ce moyen a déjà servi : désactivez-le plutôt que de le supprimer.",
+      "vide": "Aucun moyen de paiement pour ce pays.",
+      "nom": "Nom",
+      "type": "Type",
+      "types": {
+        "numero": "Numéro marchand",
+        "lien": "Lien de paiement"
+      },
+      "typeAide": "Le type ne change plus après la création.",
+      "couleur": "Couleur",
+      "couleurs": {
+        "ciel": "Bleu ciel",
+        "bleu": "Bleu",
+        "orange": "Orange",
+        "jaune": "Jaune",
+        "vert": "Vert",
+        "rouge": "Rouge",
+        "violet": "Violet",
+        "gris": "Gris"
+      },
+      "instructionsFr": "Instructions (français)",
+      "instructionsEn": "Instructions (anglais)",
+      "instructionsAide": "Texte court montré sur l’écran de paiement.",
+      "actif": "Moyen actif",
+      "actifAide": "Désactivé, il disparaît des réglages et des caisses du pays.",
+      "boutiques_one": "{{count}} boutique l’utilise",
+      "boutiques_other": "{{count}} boutiques l’utilisent",
+      "cree": "Moyen ajouté",
+      "enregistre": "Moyen enregistré",
+      "supprime": "Moyen supprimé",
+      "paysOuvert": "Pays ouvert aux nouvelles boutiques"
     }
   },
   "studio": {
@@ -280,7 +370,9 @@
       "securite": "Sécurité",
       "admin": "Console",
       "divers": "Divers"
-    }
+    },
+    "pays": "Pays",
+    "tousPays": "Tous les pays"
   },
   "deuxFa": {
     "titre": "Double authentification",

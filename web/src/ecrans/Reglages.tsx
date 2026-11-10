@@ -14,8 +14,10 @@ import { FormulairePaiements } from './reglages/FormulairePaiements'
 import { FormulairePaytech } from './reglages/FormulairePaytech'
 
 const PanneauPreferences = lazy(() => import('@/coquille/Preferences').then((m) => ({ default: m.PanneauPreferences })))
+// Moyens de paiement du pays (CONTRAT_API § 14.3) : chargés à la demande.
+const FormulaireMoyensPays = lazy(() => import('./reglages/FormulaireMoyensPays').then((m) => ({ default: m.FormulaireMoyensPays })))
 
-/** Réglages : boutique, moyens de paiement, PayTech (propriétaire), préférences personnelles. */
+/** Réglages : boutique (et pays), moyens de paiement, moyens du pays, PayTech (propriétaire), préférences personnelles. */
 export default function Reglages() {
   const { t, i18n } = useTranslation()
   void i18n.language
@@ -42,7 +44,7 @@ export default function Reglages() {
         <div className="grid gap-3 md:grid-cols-2 md:items-start">
           <div className="flex flex-col gap-3">
             <div id="boutique" className="scroll-mt-20">
-              <FormulaireBoutique key={`${boutique.nom}|${boutique.telephone ?? ''}|${boutique.ville}`} boutique={boutique} />
+              <FormulaireBoutique key={`${boutique.nom}|${boutique.telephone ?? ''}|${boutique.ville}|${boutique.pays ?? ''}`} boutique={boutique} proprietaire={proprietaire} />
             </div>
             <div id="paytech" className="scroll-mt-20">
               <FormulairePaytech key={`${boutique.paytech.configure}|${boutique.paytech.environnement}`} boutique={boutique} proprietaire={proprietaire} />
@@ -52,10 +54,15 @@ export default function Reglages() {
             <div id="paiements" className="scroll-mt-20">
               <FormulairePaiements key={`${JSON.stringify(boutique.reglages)}|${boutique.paytech.configure}`} boutique={boutique} />
             </div>
+            <div id="moyens-pays" className="scroll-mt-20">
+              <Suspense fallback={null}>
+                <FormulaireMoyensPays />
+              </Suspense>
+            </div>
             <Carte rembourrage="sm" id="preferences" className="scroll-mt-20">
               <CarteEnTete titre={t('reglages.preferences')} className="mb-2" />
               <Suspense fallback={<SqueletteTexte lignes={4} />}>
-                <PanneauPreferences />
+                <PanneauPreferences pays={boutique.pays} />
               </Suspense>
             </Carte>
           </div>

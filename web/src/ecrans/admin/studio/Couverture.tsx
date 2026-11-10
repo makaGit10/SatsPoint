@@ -7,7 +7,7 @@ import { HautParleur } from '@/voix/HautParleur'
 export function Couverture({ matrice, langue, onChoisir }: { matrice: MatriceAudio; langue: LangueAudio; onChoisir: (l: LangueAudio) => void }) {
   const { t } = useTranslation()
   return (
-    <div role="radiogroup" aria-label={t('studio.langueTravail')} className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-5 md:overflow-visible md:px-0 md:pb-0" data-couverture>
+    <div role="radiogroup" aria-label={t('studio.langueTravail')} className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-[repeat(auto-fill,minmax(150px,1fr))] md:overflow-visible md:px-0 md:pb-0" data-couverture>
       {matrice.langues.map((l) => {
         const c = matrice.couverture[l.code] ?? { publies: 0, brouillons: 0, manquants: 0, total: 0, essentielles_manquantes: 0 }
         const total = c.total || 1
@@ -25,7 +25,9 @@ export function Couverture({ matrice, langue, onChoisir }: { matrice: MatriceAud
             )}
           >
             <span className="flex items-baseline justify-between gap-2">
-              <span className="truncate text-sm font-semibold text-texte">{l.nom}</span>
+              <span className="truncate text-sm font-semibold text-texte" lang={l.code}>
+                {l.nom_local ?? l.nom}
+              </span>
               <span className="text-xs text-texte-2 tabulaire">
                 {c.publies}/{c.total}
               </span>

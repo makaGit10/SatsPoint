@@ -2,14 +2,12 @@ import { ArrowRight, Mic, Receipt, Store, Timer, Zap } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useStatistiquesAdmin } from '@/api/admin'
-import type { LangueAudio } from '@/api/types'
+import { useCatalogue } from '@/api/catalogue'
 import { BoutonLien } from '@/composants/Bouton'
 import { Carte } from '@/composants/Carte'
 import { SqueletteIndicateurs } from '@/composants/Squelette'
 import { cn } from '@/lib/cn'
 import { HautParleur } from '@/voix/HautParleur'
-
-const LANGUES_CONNUES: readonly string[] = ['wo', 'srr', 'ff', 'dyo', 'fr'] satisfies readonly LangueAudio[]
 
 function formaterDecimal(valeur: number, locale: string) {
   return new Intl.NumberFormat(locale === 'en' ? 'en-US' : 'fr-FR', { maximumFractionDigits: 1 }).format(valeur)
@@ -33,6 +31,7 @@ function Indicateur({ icone, libelle, valeur, aide, voix }: { icone: ReactNode; 
 export function VueEnsemble({ actif }: { actif: boolean }) {
   const { t, i18n } = useTranslation()
   const { data, isPending } = useStatistiquesAdmin()
+  const { langues } = useCatalogue()
   if (!actif) return null
   if (isPending || !data)
     return (
@@ -44,7 +43,8 @@ export function VueEnsemble({ actif }: { actif: boolean }) {
   const delai = data.delai_median_confirmation_ms
   const sats = Math.round(data.part_sats_pct)
   const mm = Math.round(data.part_mobile_money_pct)
-  const couverture = Object.entries(data.couverture_audio) as Array<[LangueAudio, number]>
+  const couverture = Object.entries(data.couverture_audio).filter((e): e is [string, number] => typeof e[1] === 'number')
+  const nomDe = (code: string) => langues.find((l) => l.code === code)?.nom_local ?? code
 
   return (
     <div className="flex flex-col gap-3" data-vue="ensemble">
@@ -91,11 +91,11 @@ export function VueEnsemble({ actif }: { actif: boolean }) {
             {t('admin.ouvrirStudio')}
           </BoutonLien>
         </div>
-        <ul className="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-5">
+        <ul className="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-5" data-couverture-audio>
           {couverture.map(([langue, pct]) => (
             <li key={langue} className="flex flex-col gap-1">
               <span className="flex justify-between text-xs">
-                <span className="font-medium text-texte-2">{LANGUES_CONNUES.includes(langue) ? t(`langue.${langue}`) : langue}</span>
+                <span className="font-medium text-texte-2">{nomDe(langue)}</span>
                 <span className={cn('tabulaire', pct >= 80 ? 'text-succes-texte' : pct >= 40 ? 'text-attente-texte' : 'text-danger-texte')}>{pct} %</span>
               </span>
               <span className="h-1.5 overflow-hidden rounded-full bg-surface-3" aria-hidden="true">

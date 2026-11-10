@@ -16,6 +16,8 @@ export interface PropsSucces {
   sats: number | null
   methode: MethodePaiement | null
   operateur: Operateur | null
+  /** Nom du moyen du pays (méthode `moyen_pays`). */
+  moyen?: string | null
   numero: string
   boutique: string
   /** Chemin relatif du reçu (`/r/{jeton}`), `null` tant qu'il n'est pas prêt. */
@@ -55,7 +57,7 @@ function ChoixPartage({ icone, libelle, href, onClick, voix }: { icone: ReactNod
 }
 
 /** Écran de succès plein écran : fond lumineux à halos, grand rond vert lumineux, montant énorme, reçu à envoyer, nouvelle vente. */
-export function Succes({ montant, sats, methode, operateur, numero, boutique, recuUrl, alerte, test, onNouvelleVente }: PropsSucces) {
+export function Succes({ montant, sats, methode, operateur, moyen, numero, boutique, recuUrl, alerte, test, onNouvelleVente }: PropsSucces) {
   const { t } = useTranslation()
   const [partageOuvert, setPartageOuvert] = useState(false)
   const lien = recuUrl ? `${window.location.origin}${recuUrl}` : null
@@ -90,7 +92,7 @@ export function Succes({ montant, sats, methode, operateur, numero, boutique, re
         <p className="chiffre-geant mt-3 md:text-7xl">{formaterFCFA(montant)}</p>
         <p className="mt-4 text-base font-semibold text-texte-2 tabulaire">
           {sats !== null && `${formaterSats(sats)} · `}
-          {t('succes.par', { methode: libelleMethode(t, methode, operateur) })}
+          {t('succes.par', { methode: libelleMethode(t, methode, operateur, moyen) })}
         </p>
         <p className="mt-1.5 text-sm text-texte-3 tabulaire">{t('succes.vente', { numero })}</p>
 

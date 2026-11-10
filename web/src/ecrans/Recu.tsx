@@ -74,7 +74,7 @@ function DetailRecu({ recu }: { recu: TypeRecu }) {
         <dt className="text-texte-3">{t('recu.moyen')}</dt>
         <dd className="flex items-center justify-end gap-1.5 text-texte">
           <IconeMethode methode={recu.methode} taille={14} />
-          {libelleMethode(t, recu.methode, recu.operateur)}
+          {libelleMethode(t, recu.methode, recu.operateur, recu.moyen)}
         </dd>
       </dl>
       {recu.message && <p className="border-t border-bordure pt-3 text-center text-sm text-texte-2">{recu.message}</p>}

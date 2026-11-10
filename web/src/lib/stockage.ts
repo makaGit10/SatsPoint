@@ -8,6 +8,7 @@ export const CLES_STOCKAGE = {
   langueAudio: `${PREFIXE}langue-audio`,
   aideVocale: `${PREFIXE}aide-vocale`,
   langueChoisie: `${PREFIXE}langue-choisie`,
+  pays: `${PREFIXE}pays`,
   lateraleRepliee: `${PREFIXE}laterale-repliee`,
 } as const
 

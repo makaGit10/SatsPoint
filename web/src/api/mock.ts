@@ -13,14 +13,17 @@
  * - `satspoint.mock.cours` = `indisponible` : le cours n'est plus disponible (Lightning bloqué) ;
  * - `satspoint.mock.wallet` = `deconnecte` : aucun portefeuille connecté ;
  * - `satspoint.mock.moyens` = `aucun` : ni portefeuille, ni PayTech, ni lien Wave (aucun moyen de paiement branché) ;
- * - `satspoint.mock.vide` = `1` : boutique sans aucune vente.
+ * - `satspoint.mock.vide` = `1` : boutique sans aucune vente ;
+ * - `satspoint.mock.pays` = `CI` (ou autre code) : boutique dans ce pays, moyens du pays activés (voir mockCatalogue).
  */
 import { emettreSignal } from '@/temps-reel/signaux'
+import { catalogueConfig, changerPaysBoutique, langueExiste, moyensActifsBoutique, paysActif, paysInitialBoutique, photoMoyen, repondreMoyensBoutique } from './mockCatalogue'
 import { lirePagination, paginer } from './mockPagination'
 import { audiosPublies, etatDeuxFa, reinitialiserDeuxFa, repondreV3, repondreV3Public, type ContexteMock } from './mockV3'
 import type {
   Article,
   BoutiqueDetail,
+  CodePays,
   Config,
   Equipe,
   Invitation,
@@ -216,11 +219,11 @@ function bipDataUrl(frequence: number): string {
   return `data:audio/wav;base64,${btoa(binaire)}`
 }
 
-const FREQUENCES: Record<LangueAudio, number> = { wo: 440, srr: 494, ff: 523, dyo: 587, fr: 659 }
+const FREQUENCES: Record<string, number> = { wo: 440, srr: 494, ff: 523, dyo: 587, fr: 659 }
 
 const bips = new Map<LangueAudio, string>()
 function bip(langue: LangueAudio): string {
-  if (!bips.has(langue)) bips.set(langue, bipDataUrl(FREQUENCES[langue]))
+  if (!bips.has(langue)) bips.set(langue, bipDataUrl(FREQUENCES[langue] ?? 620))
   return bips.get(langue)!
 }
 
@@ -475,6 +478,7 @@ function creerEtatInitial(): Etat {
       telephone: '+221771234567',
       ville: 'Dakar',
       devise: 'XOF',
+      pays: 'SN',
       reglages: {
         expiration_facture_min: 5,
         montant_max_xof: 2_000_000,
@@ -526,6 +530,54 @@ if (sessionStorage.getItem('satspoint.mock.moyens') === 'aucun') {
   etat.boutique.reglages = { ...etat.boutique.reglages, wave_lien: null }
 }
 const coursIndisponible = () => sessionStorage.getItem('satspoint.mock.cours') === 'indisponible'
+
+/** GET /boutique : forme du contrat + moyens du pays activés (CONTRAT_API § 14.3). */
+function boutiqueExposee(): BoutiqueDetail {
+  return { ...etat.boutique, moyens_pays: moyensActifsBoutique(etat.boutique.pays ?? 'SN') }
+}
+
+// Levier `satspoint.mock.pays` : boutique dans un autre pays de la zone XOF, moyens du pays activés,
+// et une vente « moyen du pays » en attente de confirmation (identifiants stables pour les captures).
+{
+  const code = paysInitialBoutique()
+  if (code !== 'SN') {
+    etat.boutique.pays = code
+    etat.boutique.ville = 'Abidjan'
+    // PayTech et le lien Wave direct sont des moyens du Sénégal : la boutique de démonstration ne garde que ceux de son pays.
+    etat.boutique.reglages = { ...etat.boutique.reglages, wave_lien: null, moyens: { ...etat.boutique.reglages.moyens, paytech: false, wave_manuel: false } }
+    etat.boutique.configuration = { ...etat.boutique.configuration, paytech: false }
+    etat.boutique.paytech = { configure: false, environnement: 'test' }
+    const numero = moyensActifsBoutique(code).find((m) => m.type === 'numero')
+    if (numero) {
+      etat.sequence += 1
+      const vente: Vente = {
+        ulid: '01VDEMOMOYENPAYS0000000001',
+        numero: `V-${String(etat.sequence).padStart(6, '0')}`,
+        montant_xof: 8500,
+        statut: 'en_attente',
+        methode_reussie: null,
+        operateur_reussi: null,
+        methode_en_cours: 'moyen_pays',
+        montant_sats_reussi: null,
+        caissier: { ulid: COMPTES['proprio@demo.test']!.ulid, nom: 'Awa Ndiaye' },
+        note: null,
+        alerte: null,
+        cree_le: ISO(Date.now() - 2 * MINUTE),
+        payee_le: null,
+        lignes: [],
+        paiements: [],
+        paiement_reussi: null,
+        recu_url: null,
+      }
+      const tentative = creerTentative(vente, 'moyen_pays', undefined, numero.ulid)
+      if (!('erreur' in tentative)) {
+        tentative.ulid = '01PDEMOMOYENPAYS0000000001'
+        tentative.cree_le = vente.cree_le
+        etat.ventes.push(vente)
+      }
+    }
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Transitions (toujours côté « serveur » ; le front relit via GET /paiements/{ulid})
@@ -589,6 +641,7 @@ function regler(vente: Vente, paiement: Paiement) {
     vente.payee_le = maintenant
     vente.methode_reussie = paiement.methode
     vente.operateur_reussi = paiement.operateur
+    vente.moyen_reussi = paiement.moyen?.nom ?? null
     vente.montant_sats_reussi = paiement.montant_sats
     vente.paiement_reussi = paiement
     const jeton = vente.ulid.toLowerCase()
@@ -610,7 +663,7 @@ function regler(vente: Vente, paiement: Paiement) {
   }
 }
 
-function creerTentative(vente: Vente, methode: MethodePaiement, operateur: Operateur | undefined): Paiement | { erreur: Response } {
+function creerTentative(vente: Vente, methode: MethodePaiement, operateur: Operateur | undefined, moyen?: unknown): Paiement | { erreur: Response } {
   const maintenant = Date.now()
   const ulidPaiement = ulid('01P')
   const base: Paiement = {
@@ -644,6 +697,11 @@ function creerTentative(vente: Vente, methode: MethodePaiement, operateur: Opera
     base.operateur = operateur ?? 'wave'
     base.paytech = { redirect_url: `https://paytech.sn/payment/checkout/${ulidPaiement.toLowerCase()}`, token: ulidPaiement.toLowerCase() }
     base.expire_le = ISO(maintenant + etat.boutique.reglages.expiration_facture_min * MINUTE)
+  } else if (methode === 'moyen_pays') {
+    // Moyen du pays : activé par la boutique, actif au catalogue, du pays de la boutique — sinon MOYEN_INACTIF (§ 14.4).
+    const photo = photoMoyen(moyen, etat.boutique.pays ?? 'SN')
+    if (!photo) return { erreur: json(409, { message: "Ce moyen de paiement n'est pas activé pour la boutique.", code: 'MOYEN_INACTIF' }) }
+    base.moyen = photo
   } else {
     const lien = etat.boutique.reglages.wave_lien
     if (!etat.boutique.reglages.moyens.wave_manuel || !lien) return { erreur: json(422, { message: "Le lien Wave n'est pas configuré.", code: 'WAVE_NON_CONFIGURE' }) }
@@ -840,7 +898,8 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
 
   if (chemin.startsWith('/api/v1/audio/manifeste/')) {
     const langue = chemin.split('/').pop() as LangueAudio
-    if (!(langue in FREQUENCES)) return json(404, { message: 'Langue inconnue' })
+    // Toute langue existante (même désactivée) a un manifeste ; inconnue → 404 (CONTRAT_API § 14.1).
+    if (!langueExiste(langue)) return json(404, { message: 'Langue inconnue' })
     return json(200, manifeste(langue))
   }
 
@@ -858,6 +917,7 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
       paye_le: vente.payee_le ?? vente.cree_le,
       boutique: { nom: etat.boutique.nom, ville: etat.boutique.ville },
       message: etat.boutique.reglages.message_recu,
+      moyen: vente.moyen_reussi ?? null,
     }
     return json(200, recu)
   }
@@ -871,7 +931,7 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
     if (enTetes.get('X-XSRF-TOKEN') !== 'jeton-mock') return json(419, { message: 'CSRF token mismatch.' })
   }
 
-  if (route === '/config') return json(200, CONFIG)
+  if (route === '/config') return json(200, { ...CONFIG, ...catalogueConfig() })
 
   if (route === '/auth/connexion' && methode === 'POST') {
     const corps = await lireJson(init)
@@ -984,6 +1044,7 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
     const errors: Record<string, string[]> = {}
     if (!corps.nom || String(corps.nom).trim().length < 2) errors.nom = ['Le nom est obligatoire.']
     if (!corps.ville) errors.ville = ['La ville est obligatoire.']
+    if (corps.pays !== undefined && !paysActif(corps.pays)) errors.pays = ['Pays inconnu ou fermé.']
     if (Object.keys(errors).length) return json(422, { message: 'Les données sont invalides.', errors })
     etat = creerEtatInitial()
     etat.ventes = []
@@ -999,6 +1060,7 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
       nom: String(corps.nom).trim(),
       telephone: corps.telephone ? String(corps.telephone) : null,
       ville: String(corps.ville),
+      pays: (corps.pays as CodePays | undefined) ?? 'SN',
       configuration: { wallet: false, paytech: false, paiement_test: false },
       paytech: { configure: false, environnement: 'test' },
       reglages: { ...etat.boutique.reglages, wave_lien: null, moyens: { lightning: true, paytech: false, wave_manuel: false } },
@@ -1009,13 +1071,17 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
       boutique: { ulid: etat.boutique.ulid, nom: etat.boutique.nom, ville: etat.boutique.ville, devise: 'XOF', role: 'proprietaire', configuration: { ...etat.boutique.configuration } },
     }
     ecrireSession(utilisateur)
-    return json(201, { boutique: etat.boutique, utilisateur })
+    return json(201, { boutique: boutiqueExposee(), utilisateur })
   }
 
   if (!session.boutique) return json(403, { message: 'Aucune boutique.' })
   const moi = session.ulid
 
-  if (route === '/boutique' && methode === 'GET') return json(200, { boutique: etat.boutique })
+  if (route === '/boutique' && methode === 'GET') return json(200, { boutique: boutiqueExposee() })
+
+  // ----- Moyens de paiement du pays (CONTRAT_API § 14.3) -----
+  const moyensPays = await repondreMoyensBoutique(route, methode, init, session, etat.boutique.pays ?? 'SN')
+  if (moyensPays) return moyensPays
 
   if (route === '/boutique' && methode === 'PATCH') {
     if (!estGestion(session)) return interdit()
@@ -1026,14 +1092,21 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
     if (reglages.expiration_facture_min !== undefined && (reglages.expiration_facture_min < 2 || reglages.expiration_facture_min > 15)) errors['reglages.expiration_facture_min'] = ['Entre 2 et 15 minutes.']
     if (reglages.montant_max_xof !== undefined && reglages.montant_max_xof < 100) errors['reglages.montant_max_xof'] = ['100 FCFA minimum.']
     if (reglages.wave_lien && !/^https:\/\/pay\.wave\.com\//.test(reglages.wave_lien)) errors['reglages.wave_lien'] = ['Le lien doit commencer par https://pay.wave.com/.']
+    if (corps.pays !== undefined && !paysActif(corps.pays)) errors.pays = ['Pays inconnu ou fermé.']
     if (Object.keys(errors).length) return json(422, { message: 'Les données sont invalides.', errors })
+    // Le pays : propriétaire seulement ; les moyens de l'ancien pays sont désactivés.
+    if (corps.pays !== undefined && !estProprietaire(session)) return interdit()
+    if (corps.pays !== undefined && corps.pays !== etat.boutique.pays) {
+      changerPaysBoutique(etat.boutique.pays ?? 'SN')
+      etat.boutique.pays = corps.pays as CodePays
+    }
     if (corps.nom !== undefined) etat.boutique.nom = String(corps.nom).trim()
     if (corps.telephone !== undefined) etat.boutique.telephone = corps.telephone ? String(corps.telephone) : null
     if (corps.ville !== undefined) etat.boutique.ville = String(corps.ville)
     etat.boutique.reglages = { ...etat.boutique.reglages, ...reglages, moyens: { ...etat.boutique.reglages.moyens, ...(reglages.moyens ?? {}) } }
     if (corps.paiement_test === true) etat.boutique.configuration.paiement_test = true
     signaler(['parametres'], moi)
-    return json(200, { boutique: etat.boutique })
+    return json(200, { boutique: boutiqueExposee() })
   }
 
   if (route === '/boutique/paytech') {
@@ -1179,7 +1252,7 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
       paiement_reussi: null,
       recu_url: null,
     }
-    const tentative = creerTentative(vente, corps.methode as MethodePaiement, corps.operateur as Operateur | undefined)
+    const tentative = creerTentative(vente, corps.methode as MethodePaiement, corps.operateur as Operateur | undefined, corps.moyen)
     if ('erreur' in tentative) return tentative.erreur
     etat.ventes.push(vente)
     signaler(['ventes', 'paiements'], moi)
@@ -1193,7 +1266,7 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
     if (vente.statut === 'payee') return json(409, { message: 'Cette vente est déjà payée.', code: 'VENTE_DEJA_PAYEE' })
     if (vente.statut === 'annulee') return json(409, { message: 'Cette vente est annulée.', code: 'VENTE_ANNULEE' })
     const corps = await lireJson(init)
-    const tentative = creerTentative(vente, corps.methode as MethodePaiement, corps.operateur as Operateur | undefined)
+    const tentative = creerTentative(vente, corps.methode as MethodePaiement, corps.operateur as Operateur | undefined, corps.moyen)
     if ('erreur' in tentative) return tentative.erreur
     vente.statut = 'en_attente'
     signaler(['paiements'], moi)
@@ -1269,7 +1342,7 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
     }
     if (action === 'confirmer-manuellement' && methode === 'POST') {
       if (!estGestion(session)) return interdit()
-      if (paiement.methode !== 'wave_manuel') return json(422, { message: 'Seul un paiement Wave direct se confirme à la main.', code: 'CONFIRMATION_IMPOSSIBLE' })
+      if (paiement.methode !== 'wave_manuel' && paiement.methode !== 'moyen_pays') return json(409, { message: 'Seuls le Wave direct et les moyens du pays se confirment à la main.', code: 'CONFIRMATION_IMPOSSIBLE' })
       if (paiement.statut !== 'en_attente') return json(409, { message: "Cette demande de paiement n'est plus en attente.", code: 'PAIEMENT_TERMINE' })
       regler(vente, paiement)
       signaler(['paiements', 'ventes'], moi)

@@ -1,7 +1,8 @@
 /**
  * Mode mock — routes de la vague 3 (CONTRAT_API § V3), branchées par `mock.ts`. Jamais inclus en production.
  *
- * - Studio audio : matrice d'environ 90 clés (tirées du vrai registre `voix/cles-vocales.json`) × 5 langues, couverture partielle ;
+ * - Studio audio : matrice d'environ 90 clés (tirées du vrai registre `voix/cles-vocales.json`) × les langues actives du catalogue
+ *   (mockCatalogue : graines + langues de démonstration), couverture partielle ;
  *   dépôt → `en_traitement` → `brouillon` après 1,5 s + signal `audio` (canal `admin`) ; publication → manifeste mis à jour
  *   + signal `audios` (canal `plateforme`). Les enregistrements déposés sont réellement réécoutables (URL `blob:`).
  * - 2FA : code `123456` (ou un code de secours affiché à l'activation). Le super-admin a la 2FA active, non validée.
@@ -12,6 +13,7 @@
 import { suggererCorrespondance } from '@/ecrans/articles/correspondance'
 import { pertinence } from '@/lib/texte'
 import { emettreSignal } from '@/temps-reel/signaux'
+import { clesVocalesLangues, langueActive, languesStudio, publierAudioLangue, repondreCatalogueAdmin } from './mockCatalogue'
 import { lirePagination, paginer } from './mockPagination'
 import registre from '@/voix/cles-vocales.json'
 import type {
@@ -53,13 +55,6 @@ export interface ContexteMock {
 const MINUTE = 60_000
 const JOUR = 24 * 60 * MINUTE
 const ISO = (d: number) => new Date(d).toISOString()
-const LANGUES: Array<{ code: LangueAudio; nom: string }> = [
-  { code: 'wo', nom: 'Wolof' },
-  { code: 'srr', nom: 'Sérère' },
-  { code: 'ff', nom: 'Pulaar' },
-  { code: 'dyo', nom: 'Diola' },
-  { code: 'fr', nom: 'Français' },
-]
 
 function json(statut: number, corps: unknown = null): Response {
   if (statut === 204 || corps === null) return new Response(null, { status: statut })
@@ -125,7 +120,14 @@ const CLES_STUDIO = (() => {
   return [...essentielles, ...autres.filter((_, i) => i % pas === 0).slice(0, 40)]
 })()
 
-const PUBLIES: Record<LangueAudio, number> = { fr: 30, wo: 18, srr: 9, ff: 5, dyo: 2 }
+const PUBLIES: Record<string, number> = { fr: 30, wo: 18, srr: 9, ff: 5, dyo: 2 }
+
+/** Clés du studio : celles du registre + `langue.{code}` des langues ajoutées au catalogue (créées par le serveur). */
+function clesStudio() {
+  const essentielles = CLES_STUDIO.filter((e) => e.essentielle)
+  const ajoutees = clesVocalesLangues().filter((c) => !CLES_STUDIO.some((e) => e.cle === c.cle))
+  return [...essentielles, ...ajoutees, ...CLES_STUDIO.filter((e) => !e.essentielle)]
+}
 let sequenceAudio = 1000
 const studio = new Map<string, CelluleStudio>()
 
@@ -137,13 +139,14 @@ function initialiserStudio(bip: (l: LangueAudio) => string) {
   if (studio.size) return
   const debut = Date.now() - 6 * JOUR
   CLES_STUDIO.forEach((e, i) => {
-    for (const { code } of LANGUES) {
+    for (const { code } of languesStudio()) {
+      const publies = PUBLIES[code] ?? 0
       let statut: StatutAudio = 'manquant'
-      if (i < PUBLIES[code]) statut = 'publie'
-      else if (code === 'wo' && i < PUBLIES.wo + 3) statut = 'brouillon'
-      else if (code === 'fr' && i < PUBLIES.fr + 2) statut = 'brouillon'
-      else if (code === 'srr' && i === PUBLIES.srr) statut = 'brouillon'
-      else if (code === 'ff' && i === PUBLIES.ff) statut = 'erreur'
+      if (i < publies) statut = 'publie'
+      else if (code === 'wo' && i < publies + 3) statut = 'brouillon'
+      else if (code === 'fr' && i < publies + 2) statut = 'brouillon'
+      else if (code === 'srr' && i === publies) statut = 'brouillon'
+      else if (code === 'ff' && i === publies) statut = 'erreur'
       const cellule: CelluleStudio = { statut }
       if (code === 'wo' && i === 1) {
         studio.set(cleCellule(e.cle, code), { statut: 'brouillon', id: ++sequenceAudio, url: bip(code), publieUrl: bip(code), duree_ms: 1300, mis_a_jour_le: ISO(debut) })
@@ -173,11 +176,12 @@ export function audiosPublies(langue: LangueAudio): Record<string, string> {
 }
 
 function matrice(): MatriceAudio {
-  const cles: CleAudio[] = CLES_STUDIO.map((e, ordre) => ({
+  const langues = languesStudio()
+  const cles: CleAudio[] = clesStudio().map((e, ordre) => ({
     ...e,
     ordre,
     etats: Object.fromEntries(
-      LANGUES.map(({ code }) => {
+      langues.map(({ code }) => {
         const c = studio.get(cleCellule(e.cle, code)) ?? { statut: 'manquant' as const }
         const { publieUrl, ...visible } = c
         // Comme le back (V3.9) : version publiée + nouvelle version en préparation.
@@ -189,7 +193,7 @@ function matrice(): MatriceAudio {
     ),
   }))
   const couverture: MatriceAudio['couverture'] = {}
-  for (const { code } of LANGUES) {
+  for (const { code } of langues) {
     const etats = cles.map((c) => ({ statut: c.etats[code]?.nouvelle_version?.statut ?? c.etats[code]?.statut ?? 'manquant', essentielle: c.essentielle }))
     couverture[code] = {
       publies: etats.filter((e) => e.statut === 'publie').length,
@@ -199,7 +203,7 @@ function matrice(): MatriceAudio {
       essentielles_manquantes: etats.filter((e) => e.essentielle && e.statut !== 'publie').length,
     }
   }
-  return { langues: LANGUES, ecrans: [...new Set(CLES_STUDIO.map((e) => e.ecran))], couverture, cles }
+  return { langues, ecrans: [...new Set(cles.map((e) => e.ecran))], couverture, cles }
 }
 
 function trouverParId(id: number): [string, CelluleStudio] | null {
@@ -451,7 +455,7 @@ export async function repondreV3(ctx: ContexteMock): Promise<Response | null> {
       const cle = String(corps?.get('cle') ?? '')
       const langue = String(corps?.get('langue') ?? '') as LangueAudio
       const fichier = corps?.get('fichier')
-      if (!CLES_STUDIO.some((e) => e.cle === cle) || !LANGUES.some((l) => l.code === langue)) return json(422, { message: 'Clé ou langue inconnue.', errors: { cle: ['Clé inconnue.'] } })
+      if (!clesStudio().some((e) => e.cle === cle) || !langueActive(langue)) return json(422, { message: 'Clé ou langue inconnue.', errors: { cle: ['Clé inconnue.'] } })
       if (!(fichier instanceof Blob) || fichier.size === 0) return json(422, { message: 'Fichier manquant.', errors: { fichier: ['Fichier manquant.'] } })
       if (fichier.size > 2 * 1024 * 1024) return json(422, { message: 'Fichier trop lourd (2 Mo maximum).', errors: { fichier: ['Fichier trop lourd (2 Mo maximum).'] } })
       const cellule = studio.get(cleCellule(cle, langue)) ?? { statut: 'manquant' }
@@ -477,6 +481,7 @@ export async function repondreV3(ctx: ContexteMock): Promise<Response | null> {
         const vise = ids ? c.id !== undefined && ids.includes(c.id) : cle === corps.cle && l === corps.langue
         if (vise && c.statut === 'brouillon') {
           studio.set(k, { ...c, statut: 'publie', publieUrl: c.url, mis_a_jour_le: new Date().toISOString() })
+          if (!c.publieUrl) publierAudioLangue(l!, 1)
           publies++
         }
       }
@@ -500,7 +505,7 @@ export async function repondreV3(ctx: ContexteMock): Promise<Response | null> {
 
     if (route === '/admin/statistiques') {
       const mat = matrice()
-      const couverture = Object.fromEntries(LANGUES.map(({ code }) => [code, Math.round(((mat.couverture[code]?.publies ?? 0) / (mat.couverture[code]?.total || 1)) * 100)]))
+      const couverture = Object.fromEntries(languesStudio().map(({ code }) => [code, Math.round(((mat.couverture[code]?.publies ?? 0) / (mat.couverture[code]?.total || 1)) * 100)]))
       return json(200, { boutiques: { total: boutiques.length, actives: boutiques.filter((b) => b.statut === 'active').length, nouvelles_7j: 3 }, commercants_actifs_semaine: 19, paiements_par_commercant_semaine: 23.4, delai_median_confirmation_ms: 2300, part_sats_pct: 41, part_mobile_money_pct: 59, couverture_audio: couverture })
     }
 
@@ -550,6 +555,12 @@ export async function repondreV3(ctx: ContexteMock): Promise<Response | null> {
       const { elements, pagination } = paginer(filtrees, lecture)
       return json(200, { entrees: elements, pagination })
     }
+
+    // ----- Catalogues : pays, langues, moyens de paiement par pays (CONTRAT_API § 14.2) -----
+    const catalogue = await repondreCatalogueAdmin(route, methode, url, init, session, (action, details) =>
+      journal.unshift({ id: Date.now(), action, utilisateur: { ulid: session.ulid, nom: session.nom }, boutique: null, ip: '127.0.0.1', details, cree_le: new Date().toISOString() }),
+    )
+    if (catalogue) return catalogue
     return json(404, { message: 'Route inconnue (mock).' })
   }
 

@@ -54,7 +54,8 @@
     "fr": "Français",
     "en": "English",
     "ecouterNom": "Hear the language name",
-    "changer": "Change language"
+    "changer": "Change language",
+    "pays": "Your country"
   },
   "accueil": {
     "titre": "Welcome to SatsPoint",
@@ -206,7 +207,8 @@
     "lightning": "Bitcoin",
     "paytech": "Mobile money",
     "wave_manuel": "Wave direct",
-    "mobileMoney": "Mobile money"
+    "mobileMoney": "Mobile money",
+    "moyen_pays": "Local payment method"
   },
   "operateurs": {
     "wave": "Wave",
@@ -325,7 +327,10 @@
     "annulerTexte": "The payment request will be closed. If the customer has already paid, the payment will still be recorded.",
     "garder": "Keep the sale",
     "lightningIndisponible": "Bitcoin is unavailable right now.",
-    "copieImpossible": "Automatic copy failed. Select the text by hand."
+    "copieImpossible": "Automatic copy failed. Select the text by hand.",
+    "moyenNumero": "Merchant number",
+    "moyenTexte": "The customer pays with {{moyen}}, then you confirm receipt.",
+    "confirmerTexteMoyen": "First check that the money has reached your {{moyen}} account. This confirmation is recorded in the log."
   },
   "succes": {
     "titre": "Payment received",
@@ -408,27 +413,6 @@
       "filtres": "No sale matches these filters."
     }
   },
-  "tableau": {
-    "titre": "Dashboard",
-    "chiffreAffaires": "Revenue",
-    "chiffreDuJour": "Today's total",
-    "nombreVentes": "Paid sales",
-    "panierMoyen": "Average basket",
-    "repartition": "Breakdown",
-    "dernieresVentes": "Latest sales",
-    "vsPrecedente": "vs previous period",
-    "courbe": "Trend",
-    "courbeAria": "Daily revenue curve",
-    "aucuneVentePeriode": "No paid sale over this period.",
-    "bitcoin": "Bitcoin",
-    "mobileMoney": "Mobile money",
-    "mesChiffresDuJour": "Your numbers today",
-    "voirVentes": "See all sales",
-    "vide": {
-      "titre": "Nothing to show yet",
-      "texte": "From the first sale, you will see today's total and the bitcoin / mobile money split here, live."
-    }
-  },
   "articles": {
     "titre": "Items",
     "ajouter": "Add an item",
@@ -465,76 +449,12 @@
     "exporter": "Export items"
   },
   "reglages": {
-    "titre": "Settings",
-    "boutique": "My shop",
-    "paiements": "Payment methods",
-    "preferences": "Preferences",
-    "securite": "Security",
-    "nom": "Shop name",
-    "telephone": "Phone",
-    "ville": "City",
-    "expiration": "Payment request duration",
-    "expirationAide": "Between 2 and 15 minutes.",
-    "minutes": "{{count}} min",
-    "montantMax": "Maximum amount per sale",
-    "moyens": "Active methods",
-    "lightning": "Bitcoin (Lightning)",
-    "paytech": "Mobile money (PayTech)",
-    "waveManuel": "Wave direct",
-    "waveManuelAide": "Manual confirmation by the owner or manager.",
-    "messageRecu": "Receipt message",
-    "messageRecuAide": "Shown at the bottom of the customer's receipt.",
-    "waveLien": "Wave direct link",
-    "waveLienAide": "Link of your Wave merchant page (https://pay.wave.com/m/…).",
-    "paytechTitre": "PayTech",
-    "paytechTexte": "Your keys stay encrypted and are never shown again. The money lands in your own PayTech account.",
-    "apiKey": "API key",
-    "apiSecret": "API secret",
-    "secretAide": "Leave empty to keep the saved value.",
-    "environnement": "Environment",
-    "test": "Test",
-    "prod": "Production",
-    "configure": "Configured",
-    "nonConfigure": "Not configured",
-    "tester": "Test the connection",
-    "supprimerCles": "Delete the keys",
-    "supprimerTitre": "Delete the PayTech keys?",
-    "supprimerTexte": "Mobile money will be disabled until new keys are entered.",
-    "enregistre": "Settings saved",
-    "unMoyenRequis": "At least one payment method must stay active.",
-    "vide": {
-      "titre": "Shop settings",
-      "texte": "Name, city, payment request duration, maximum amount and receipt message: everything is set here."
-    }
+    "waveManuelAide": "Manual confirmation by the owner or manager."
   },
   "demarrage": {
-    "titre": "Guided setup",
-    "sousTitre": "Four steps, about three minutes.",
-    "commencer": "Start",
     "progression": "{{faites}} / {{total}} steps",
     "continuer": "Continue the setup",
-    "etapes": {
-      "boutique": "My shop",
-      "boutiqueTexte": "Name, phone and city.",
-      "portefeuille": "My wallet",
-      "portefeuilleTexte": "Nostr Wallet Connect link.",
-      "mobileMoney": "Mobile money",
-      "mobileMoneyTexte": "PayTech keys or Wave link (optional).",
-      "test": "Test payment",
-      "testTexte": "100 FCFA to check everything works."
-    },
-    "creerBoutique": "Create my shop",
-    "passer": "Skip this step",
-    "lancerTest": "Start the test payment",
-    "testExplication": "Create a 100 FCFA request and pay it yourself: you will see the green screen and know everything works.",
-    "termine": "Your checkout is ready",
-    "termineTexte": "Everything works. Charge your first sale.",
-    "allerCaisse": "Go to checkout",
-    "etapeSuivante": "Next step",
-    "vide": {
-      "titre": "Your shop is not created yet",
-      "texte": "The guided setup walks you through to the first test payment."
-    }
+    "allerCaisse": "Go to checkout"
   },
   "erreurs": {
     "inattendue": "Something went wrong. Try again in a moment.",

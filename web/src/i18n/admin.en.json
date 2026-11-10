@@ -1,13 +1,16 @@
 {
   "admin": {
     "titre": "Platform console",
-    "sousTitre": "Adoption, shops, service health and audit log. No shop amounts are shown here.",
+    "sousTitre": "Adoption, shops, languages, payment methods by country, health and log. No shop amounts appear here.",
     "onglets": {
       "ensemble": "Overview",
       "ensembleCourt": "Overview",
       "boutiques": "Shops",
       "sante": "Health",
-      "journal": "Log"
+      "journal": "Log",
+      "langues": "Languages",
+      "moyens": "Payment methods",
+      "moyensCourt": "Payments"
     },
     "ouvrirStudio": "Open the studio",
     "stats": {
@@ -104,7 +107,7 @@
         "paytech": "Mobile money",
         "vente": "Sales",
         "paiement": "Payments",
-        "plateforme": "Platform (suspensions)",
+        "plateforme": "Platform (shops, catalogues)",
         "article": "Items",
         "import": "Imports",
         "export": "Exports"
@@ -162,8 +165,95 @@
         "wallet_envoi_echec": "Sats send failed",
         "wallet_envoi_incertain": "Sats send to check",
         "wallet_envoi_refuse_mot_de_passe": "Send refused (password)",
-        "wallet_revoque": "Wallet disconnected"
+        "wallet_revoque": "Wallet disconnected",
+        "plateforme_pays_modifie": "Country edited",
+        "plateforme_langue_creee": "Language added",
+        "plateforme_langue_modifiee": "Language edited",
+        "plateforme_langue_supprimee": "Language deleted",
+        "plateforme_moyen_cree": "Payment method added",
+        "plateforme_moyen_modifie": "Payment method edited",
+        "plateforme_moyen_supprime": "Payment method deleted",
+        "boutique_moyen_pays_modifie": "Local payment method set up",
+        "boutique_pays_modifie": "Shop country changed"
       }
+    },
+    "langues": {
+      "aide": "Each active language is offered to people in its countries (language choice, voice help) and appears as a studio column, where its name is recorded too.",
+      "ajouter": "Add a language",
+      "modifier": "Edit language",
+      "modifierTitre": "Edit {{nom}}",
+      "supprimer": "Delete language",
+      "supprimerTitre": "Delete the {{nom}} language?",
+      "supprimerTexte": "Only possible if no audio has been recorded for it. Otherwise, turn it off: its audios are kept.",
+      "filtrePays": "Country",
+      "tousPays": "All countries",
+      "code": "Code",
+      "codeAide": "2 to 8 lowercase letters (bm, dyu, mos), optionally followed by “-” and a variant. It cannot change afterwards.",
+      "nomLocal": "Name in the language",
+      "nomLocalAide": "As its speakers write it (e.g. Bamanankan).",
+      "nomFr": "Name in French",
+      "nomEn": "Name in English",
+      "pays": "Countries where it is offered",
+      "paysAide": "No country ticked = all countries.",
+      "active": "Active language",
+      "activeAide": "When off, it disappears from screens; its audios are kept.",
+      "audios_one": "{{count}} published audio",
+      "audios_other": "{{count}} published audios",
+      "vide": "No language for this country.",
+      "creee": "Language added",
+      "enregistree": "Language saved",
+      "supprimee": "Language deleted",
+      "protegee": "French is the fallback language: it always stays active.",
+      "utilisee": "This language already has audios: turn it off instead of deleting it.",
+      "enregistrerNom": "Record the names in the studio"
+    },
+    "moyens": {
+      "aide": "Merchants in a country turn these methods on with their own merchant number or link, then confirm each payment by hand.",
+      "pays": "Country",
+      "paysFerme": "closed",
+      "paysActif": "{{pays}} open to new shops",
+      "paysBoutiques_one": "{{count}} shop in this country",
+      "paysBoutiques_other": "{{count}} shops in this country",
+      "paysEnregistre": "Country saved",
+      "paysProtege": "Senegal always stays open.",
+      "senegal": "In Senegal, PayTech (Wave, Orange Money, Free Money) and the direct Wave link remain available to every shop, as before.",
+      "ajouter": "Add a method",
+      "modifier": "Edit method",
+      "modifierTitre": "Edit {{nom}}",
+      "supprimer": "Delete method",
+      "supprimerTitre": "Delete {{nom}}?",
+      "supprimerTexte": "Only possible if it has never been used. Otherwise, turn it off.",
+      "utilise": "This method has already been used: turn it off instead of deleting it.",
+      "vide": "No payment method for this country.",
+      "nom": "Name",
+      "type": "Type",
+      "types": {
+        "numero": "Merchant number",
+        "lien": "Payment link"
+      },
+      "typeAide": "The type cannot change after creation.",
+      "couleur": "Colour",
+      "couleurs": {
+        "ciel": "Sky blue",
+        "bleu": "Blue",
+        "orange": "Orange",
+        "jaune": "Yellow",
+        "vert": "Green",
+        "rouge": "Red",
+        "violet": "Purple",
+        "gris": "Grey"
+      },
+      "instructionsFr": "Instructions (French)",
+      "instructionsEn": "Instructions (English)",
+      "instructionsAide": "Short text shown on the payment screen.",
+      "actif": "Active method",
+      "actifAide": "When off, it disappears from the country's settings and checkouts.",
+      "boutiques_one": "Used by {{count}} shop",
+      "boutiques_other": "Used by {{count}} shops",
+      "cree": "Method added",
+      "enregistre": "Method saved",
+      "supprime": "Method deleted",
+      "paysOuvert": "Country open to new shops"
     }
   },
   "studio": {
@@ -280,7 +370,9 @@
       "securite": "Security",
       "admin": "Console",
       "divers": "Other"
-    }
+    },
+    "pays": "Country",
+    "tousPays": "All countries"
   },
   "deuxFa": {
     "titre": "Two-factor authentication",

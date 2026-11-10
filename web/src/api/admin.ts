@@ -4,10 +4,14 @@ import type {
   AudioStudio,
   BoutiqueAdmin,
   CleAudio,
+  CodePays,
+  LangueAdmin,
   LangueAudio,
   MatriceAudio,
+  MoyenCatalogue,
   PageBoutiquesAdmin,
   PageJournal,
+  PaysAdmin,
   SanteAdmin,
   StatistiquesAdmin,
 } from './types'
@@ -127,4 +131,57 @@ export function useJournalAdmin(filtres: FiltresJournal, page: number, actif: bo
     placeholderData: keepPreviousData,
     enabled: actif,
   })
+}
+
+// ----- Catalogues : pays, langues, moyens de paiement par pays (CONTRAT_API § 14.2) -----
+
+export function usePaysAdmin(actif = true) {
+  return useQuery({ queryKey: ['admin', 'catalogue', 'pays'], queryFn: () => http.get<{ pays: PaysAdmin[] }>('/admin/pays'), select: (r) => r.pays, enabled: actif, staleTime: 30_000 })
+}
+
+export function modifierPays(code: CodePays, corps: Partial<Pick<PaysAdmin, 'nom_fr' | 'nom_en' | 'actif'>>) {
+  return http.patch<{ pays: PaysAdmin }>(`/admin/pays/${code}`, corps)
+}
+
+export function useLanguesAdmin(actif = true) {
+  return useQuery({ queryKey: ['admin', 'catalogue', 'langues'], queryFn: () => http.get<{ langues: LangueAdmin[] }>('/admin/langues'), select: (r) => r.langues, enabled: actif, staleTime: 30_000 })
+}
+
+export type CorpsLangue = Pick<LangueAdmin, 'nom_local' | 'nom_fr' | 'nom_en' | 'pays'> & { code?: string; actif?: boolean; ordre?: number }
+
+export function creerLangue(corps: CorpsLangue & { code: string }) {
+  return http.post<{ langue: LangueAdmin }>('/admin/langues', corps)
+}
+
+export function modifierLangue(code: string, corps: Partial<CorpsLangue>) {
+  return http.patch<{ langue: LangueAdmin }>(`/admin/langues/${code}`, corps)
+}
+
+export function supprimerLangue(code: string) {
+  return http.delete<null>(`/admin/langues/${code}`)
+}
+
+export function useMoyensAdmin(pays: CodePays | '', actif = true) {
+  return useQuery({
+    queryKey: ['admin', 'catalogue', 'moyens', pays],
+    queryFn: () => http.get<{ moyens: MoyenCatalogue[] }>(`/admin/moyens-paiement${pays ? `?pays=${pays}` : ''}`),
+    select: (r) => r.moyens,
+    enabled: actif,
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
+  })
+}
+
+export type CorpsMoyen = Pick<MoyenCatalogue, 'nom' | 'couleur' | 'instructions_fr' | 'instructions_en'> & { actif?: boolean; ordre?: number }
+
+export function creerMoyen(corps: CorpsMoyen & Pick<MoyenCatalogue, 'pays' | 'type'>) {
+  return http.post<{ moyen: MoyenCatalogue }>('/admin/moyens-paiement', corps)
+}
+
+export function modifierMoyen(ulid: string, corps: Partial<CorpsMoyen>) {
+  return http.patch<{ moyen: MoyenCatalogue }>(`/admin/moyens-paiement/${ulid}`, corps)
+}
+
+export function supprimerMoyen(ulid: string) {
+  return http.delete<null>(`/admin/moyens-paiement/${ulid}`)
 }

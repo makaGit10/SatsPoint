@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useConfig } from '@/api/config'
+import { CLE_CONFIG, useConfig } from '@/api/config'
 import { CLE_MOI } from '@/api/moi'
 import { useAuth } from '@/auth/store'
 import { queryClient } from '@/lib/queryClient'
@@ -13,7 +13,7 @@ const MOCK = import.meta.env.DEV && import.meta.env.VITE_MOCK_API === 'true'
 /**
  * Monte la connexion temps réel pour la personne connectée et abonne ses canaux.
  * Les rubriques transverses sont traitées ici : `audios` → relecture des manifestes,
- * `preferences` → relecture de `/moi`.
+ * `preferences` → relecture de `/moi`, `catalogues` (pays, langues, moyens du pays) → relecture de `/config` et de la boutique.
  */
 export function TempsReel() {
   const { data: config } = useConfig()
@@ -52,6 +52,10 @@ export function TempsReel() {
     return ecouterSignaux((signal) => {
       if (signal.rubrique === 'audios') invaliderManifestes()
       if (signal.rubrique === 'preferences' || signal.rubrique === 'sessions') void queryClient.invalidateQueries({ queryKey: CLE_MOI })
+      if (signal.rubrique === 'catalogues') {
+        void queryClient.invalidateQueries({ queryKey: CLE_CONFIG })
+        void queryClient.invalidateQueries({ queryKey: ['boutique'] })
+      }
     })
   }, [])
 

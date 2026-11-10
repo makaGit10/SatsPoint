@@ -5,8 +5,9 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { CLE_BOUTIQUE, creerBoutique, enregistrerPaytech, modifierBoutique, useBoutique } from '@/api/boutique'
 import { ErreurApi } from '@/api/client'
+import { useCatalogue, usePaysCourant } from '@/api/catalogue'
 import { CLE_MOI } from '@/api/moi'
-import type { BoutiqueDetail, Utilisateur } from '@/api/types'
+import type { BoutiqueDetail, CodePays, Utilisateur } from '@/api/types'
 import { CLE_VENTES, creerVente } from '@/api/ventes'
 import { CLE_WALLET } from '@/api/wallet'
 import { useAuth } from '@/auth/store'
@@ -15,9 +16,11 @@ import { Champ } from '@/composants/Champ'
 import { EnTetePage } from '@/composants/EnTetePage'
 import { EtatVide } from '@/composants/EtatVide'
 import { Segment } from '@/composants/Segment'
+import { Selection } from '@/composants/Selection'
 import { notifier } from '@/composants/toastStore'
 import { ErreurFormulaire } from '@/ecrans/auth/communs'
 import { useMessageErreur } from '@/ecrans/auth/useMessageErreur'
+import { nomPays } from '@/lib/catalogue'
 import { cn } from '@/lib/cn'
 import { NOMBRE_ETAPES_DEMARRAGE } from '@/lib/demarrage'
 import { queryClient } from '@/lib/queryClient'
@@ -158,13 +161,23 @@ function appliquerUtilisateur(utilisateur: Utilisateur) {
   void queryClient.invalidateQueries({ queryKey: CLE_BOUTIQUE })
 }
 
+/** Ville proposée par défaut selon le pays (capitale économique), tant que la personne ne l'a pas modifiée. */
+const VILLE_PAR_PAYS: Record<CodePays, string> = { SN: 'Dakar', CI: 'Abidjan', ML: 'Bamako', BF: 'Ouagadougou', NE: 'Niamey', TG: 'Lomé', BJ: 'Cotonou', GW: 'Bissau' }
+
 function FormulaireBoutique() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const messageErreur = useMessageErreur()
+  const catalogue = useCatalogue()
+  const paysAppareil = usePaysCourant()
+  const [pays, setPays] = useState<CodePays>(paysAppareil)
   const [nom, setNom] = useState('')
   const [telephone, setTelephone] = useState('')
-  const [ville, setVille] = useState('Dakar')
-  useSaisieEnCours(nom !== '' || telephone !== '' || ville !== 'Dakar')
+  const [ville, setVille] = useState(VILLE_PAR_PAYS[paysAppareil] ?? '')
+  useSaisieEnCours(nom !== '' || telephone !== '' || ville !== (VILLE_PAR_PAYS[pays] ?? ''))
+  const changerPays = (code: CodePays) => {
+    if (ville === (VILLE_PAR_PAYS[pays] ?? '')) setVille(VILLE_PAR_PAYS[code] ?? '')
+    setPays(code)
+  }
   const [erreur, setErreur] = useState<string | null>(null)
   const [champs, setChamps] = useState<{ nom?: string; ville?: string }>({})
 
@@ -185,7 +198,7 @@ function FormulaireBoutique() {
     if (!ville.trim()) c.ville = t('auth.champRequis')
     setChamps(c)
     if (Object.keys(c).length) return
-    creation.mutate({ nom: nom.trim(), telephone: telephone.trim() || null, ville: ville.trim() })
+    creation.mutate({ nom: nom.trim(), telephone: telephone.trim() || null, ville: ville.trim(), pays })
   }
 
   return (
@@ -195,6 +208,16 @@ function FormulaireBoutique() {
         <Champ libelle={t('reglages.telephone')} mentionOptionnel={t('commun.optionnel')} value={telephone} onChange={(e) => setTelephone(e.target.value)} inputMode="tel" autoComplete="tel" />
         <Champ libelle={t('reglages.ville')} value={ville} onChange={(e) => setVille(e.target.value)} erreur={champs.ville} autoComplete="address-level2" />
       </div>
+      {catalogue.pays.length > 1 && (
+        <Selection
+          libelle={t('reglages.pays')}
+          value={pays}
+          onChange={(e) => changerPays(e.target.value as CodePays)}
+          options={catalogue.pays.map((p) => ({ valeur: p.code, libelle: nomPays(p, i18n.language) }))}
+          aide={t('demarrage.paysAide')}
+          data-champ-pays
+        />
+      )}
       <ErreurFormulaire message={erreur} />
       <Bouton type="submit" icone={<Store />} voix="demarrage.creerBoutique" chargement={creation.isPending} pleineLargeur className="md:w-auto md:self-start">
         {t('demarrage.creerBoutique')}

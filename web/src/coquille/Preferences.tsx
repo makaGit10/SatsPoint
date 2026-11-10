@@ -1,13 +1,14 @@
 import { Monitor, Moon, Sun } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useConfig } from '@/api/config'
-import type { LangueAudio, Theme } from '@/api/types'
+import { useCatalogue, usePaysCourant } from '@/api/catalogue'
+import type { CodePays, Theme } from '@/api/types'
 import { Interrupteur } from '@/composants/Interrupteur'
 import { localeCourante, LOCALES } from '@/i18n'
+import { languesProposees } from '@/lib/catalogue'
 import { cn } from '@/lib/cn'
 import { THEMES, useTheme } from '@/lib/theme'
 import { HautParleur } from '@/voix/HautParleur'
-import { LANGUES_AUDIO, useVoix } from '@/voix/store'
+import { useVoix } from '@/voix/store'
 import { usePreferences } from './usePreferences'
 
 const ICONES_THEME = { clair: Sun, sombre: Moon, auto: Monitor } as const
@@ -49,17 +50,23 @@ function Segment<T extends string>({
   )
 }
 
-/** Préférences d'affichage et de voix : thème, langue d'interface, aide vocale, langue de la voix. */
-export function PanneauPreferences({ className }: { className?: string }) {
+/**
+ * Préférences d'affichage et de voix : thème, langue d'interface, aide vocale, langue de la voix.
+ * Langues de la voix = celles du pays (de la boutique, sinon de l'appareil) + le français ; la langue en cours reste visible.
+ */
+export function PanneauPreferences({ className, pays }: { className?: string; pays?: CodePays }) {
   const { t, i18n } = useTranslation()
   void i18n.language
   const theme = useTheme((s) => s.theme)
   const langueAudio = useVoix((s) => s.langueAudio)
   const aideVocale = useVoix((s) => s.activee)
-  const { data: config } = useConfig()
+  const catalogue = useCatalogue()
+  const paysAppareil = usePaysCourant()
   const { changerTheme, changerLocale, changerLangueAudio, changerAideVocale } = usePreferences()
 
-  const langues = config?.langues_audio ?? LANGUES_AUDIO.map((code) => ({ code, nom: t(`langue.${code}`), nom_local: t(`langue.${code}`) }))
+  const proposees = languesProposees(catalogue.langues, pays ?? paysAppareil)
+  const enCours = catalogue.langues.find((l) => l.code === langueAudio)
+  const langues = enCours && !proposees.includes(enCours) ? [enCours, ...proposees] : proposees
 
   return (
     <div className={cn('flex flex-col gap-4', className)}>
@@ -107,12 +114,13 @@ export function PanneauPreferences({ className }: { className?: string }) {
                     type="button"
                     role="radio"
                     aria-checked={actif}
-                    onClick={() => changerLangueAudio(l.code as LangueAudio)}
+                    onClick={() => changerLangueAudio(l.code)}
+                    lang={l.code}
                     className="h-full flex-1 truncate px-2 text-left"
                   >
                     {l.nom_local}
                   </button>
-                  <HautParleur cle={`langue.${l.code}`} langue={l.code as LangueAudio} className="mr-0.5" />
+                  <HautParleur cle={`langue.${l.code}`} langue={l.code} className="mr-0.5" />
                 </div>
               )
             })}

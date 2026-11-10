@@ -101,5 +101,88 @@
       "titre": "Vous êtes seul pour l'instant",
       "texte": "Invitez un caissier ou un gérant : il encaisse pour vous, sans accès à votre argent."
     }
+  },
+  "reglages": {
+    "titre": "Réglages",
+    "boutique": "Ma boutique",
+    "paiements": "Moyens de paiement",
+    "preferences": "Préférences",
+    "securite": "Sécurité",
+    "nom": "Nom de la boutique",
+    "telephone": "Téléphone",
+    "ville": "Ville",
+    "expiration": "Durée d'une demande de paiement",
+    "expirationAide": "Entre 2 et 15 minutes.",
+    "minutes": "{{count}} min",
+    "montantMax": "Montant maximum par vente",
+    "moyens": "Moyens actifs",
+    "lightning": "Bitcoin (Lightning)",
+    "paytech": "Mobile money (PayTech)",
+    "waveManuel": "Wave direct",
+    "messageRecu": "Message sur le reçu",
+    "messageRecuAide": "Affiché en bas du reçu du client.",
+    "waveLien": "Lien Wave direct",
+    "waveLienAide": "Lien de votre page marchand Wave (https://pay.wave.com/m/…).",
+    "paytechTitre": "PayTech",
+    "paytechTexte": "Vos clés restent chiffrées et ne sont jamais réaffichées. L'argent arrive sur votre propre compte PayTech.",
+    "apiKey": "Clé API",
+    "apiSecret": "Secret API",
+    "secretAide": "Laissez vide pour conserver la valeur enregistrée.",
+    "environnement": "Environnement",
+    "test": "Test",
+    "prod": "Production",
+    "configure": "Configuré",
+    "nonConfigure": "Non configuré",
+    "tester": "Tester la connexion",
+    "supprimerCles": "Supprimer les clés",
+    "supprimerTitre": "Supprimer les clés PayTech ?",
+    "supprimerTexte": "Le mobile money sera désactivé jusqu'à la saisie de nouvelles clés.",
+    "enregistre": "Réglages enregistrés",
+    "unMoyenRequis": "Au moins un moyen de paiement doit rester actif.",
+    "vide": {
+      "titre": "Réglages de la boutique",
+      "texte": "Nom, ville, durée des demandes de paiement, montant maximum et message du reçu : tout se règle ici."
+    },
+    "pays": "Pays de la boutique",
+    "paysAide": "Changer de pays désactive les moyens de paiement de l'ancien pays.",
+    "paysProprietaire": "Seul le propriétaire peut changer le pays.",
+    "moyensPays": {
+      "titre": "Moyens de paiement du pays",
+      "aide": "Activez ceux que vos clients utilisent, avec votre numéro ou votre lien marchand. Vous confirmez vous-même chaque paiement reçu.",
+      "vide": "Aucun moyen de paiement n'est encore proposé pour ce pays.",
+      "activer": "Activer ce moyen de paiement",
+      "numero": "Numéro marchand",
+      "lien": "Lien de paiement marchand",
+      "numeroAide": "Numéro international (+225…) ou code marchand",
+      "lienAide": "Lien https fourni par l'opérateur",
+      "valeurRequise": "Indiquez d'abord votre numéro ou votre lien."
+    }
+  },
+  "demarrage": {
+    "titre": "Démarrage guidé",
+    "sousTitre": "Quatre étapes, environ trois minutes.",
+    "commencer": "Commencer",
+    "etapes": {
+      "boutique": "Ma boutique",
+      "boutiqueTexte": "Nom, téléphone et ville.",
+      "portefeuille": "Mon portefeuille",
+      "portefeuilleTexte": "Lien Nostr Wallet Connect.",
+      "mobileMoney": "Mobile money",
+      "mobileMoneyTexte": "Clés PayTech ou lien Wave (facultatif).",
+      "test": "Paiement test",
+      "testTexte": "100 FCFA pour vérifier que tout marche."
+    },
+    "creerBoutique": "Créer ma boutique",
+    "passer": "Passer cette étape",
+    "lancerTest": "Lancer le paiement test",
+    "testExplication": "Créez une demande de 100 FCFA et payez-la vous-même : vous verrez l'écran vert et saurez que tout fonctionne.",
+    "termine": "Votre caisse est prête",
+    "termineTexte": "Tout fonctionne. Encaissez votre première vente.",
+    "etapeSuivante": "Étape suivante",
+    "vide": {
+      "titre": "Votre boutique n'est pas encore créée",
+      "texte": "Le démarrage guidé vous accompagne jusqu'au premier paiement test."
+    },
+    "paysAide": "Il fixe les langues et les moyens de paiement proposés."
   }
 }

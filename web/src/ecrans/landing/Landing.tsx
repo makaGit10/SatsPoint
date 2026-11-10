@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  MapPin,
   ChartColumn,
   Check,
   ChevronDown,
@@ -21,12 +22,15 @@ import {
 import { useEffect, useRef, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import type { LangueAudio } from '@/api/types'
+import { useCatalogue, usePaysCourant } from '@/api/catalogue'
+import type { CodePays, LangueAudio } from '@/api/types'
 import { SelecteurLangue, SelecteurTheme } from '@/coquille/Selecteurs'
+import { localeCourante } from '@/i18n'
+import { languesProposees, nomPays } from '@/lib/catalogue'
 import { cn } from '@/lib/cn'
 import { annoncer } from '@/voix/annoncer'
 import { HautParleur } from '@/voix/HautParleur'
-import { LANGUES_AUDIO, useVoix } from '@/voix/store'
+import { useVoix } from '@/voix/store'
 /** Logo unique de l'appli (public/logo.svg). */
 const logo = '/logo.svg'
 import './landing.css'
@@ -91,13 +95,18 @@ function Tuile({ icone, titre, texte, voix, className, children }: { icone: Reac
 /**
  * « Écouter en » : une personne qui ne lit pas choisit sa langue d'un geste ; l'aide vocale s'active,
  * le message de bienvenue est lu et les haut-parleurs apparaissent à côté des textes importants.
+ * Les langues proposées sont celles du pays choisi (catalogue du super-admin) + le français.
  */
 function ChoixVoix() {
   const { t } = useTranslation()
   const langue = useVoix((s) => s.langueAudio)
   const activee = useVoix((s) => s.activee)
+  const { pays, langues } = useCatalogue()
+  const paysCourant = usePaysCourant()
+  const proposees = languesProposees(langues, paysCourant)
   const choisir = (code: LangueAudio) => {
     const voix = useVoix.getState()
+    voix.definirPays(paysCourant)
     voix.definirLangue(code)
     voix.definirActivee(true)
     void annoncer('landing.voix.bienvenue')
@@ -109,14 +118,26 @@ function ChoixVoix() {
         {t('landing.voix.titre')}
       </span>
       <div className="choix-voix-langues">
-        {LANGUES_AUDIO.map((code) => {
-          const actif = activee && langue === code
+        {pays.length > 1 && (
+          <span className="choix-voix-pays">
+            <MapPin aria-hidden="true" />
+            <select aria-label={t('langue.pays')} value={paysCourant} onChange={(e) => useVoix.getState().definirPays(e.target.value as CodePays)}>
+              {pays.map((p) => (
+                <option key={p.code} value={p.code}>
+                  {nomPays(p, localeCourante())}
+                </option>
+              ))}
+            </select>
+          </span>
+        )}
+        {proposees.map((l) => {
+          const actif = activee && langue === l.code
           return (
-            <span key={code} className={cn('choix-voix-langue', actif && 'actif')}>
-              <button type="button" aria-pressed={actif} onClick={() => choisir(code)}>
-                {t(`langue.${code}`)}
+            <span key={l.code} className={cn('choix-voix-langue', actif && 'actif')}>
+              <button type="button" aria-pressed={actif} lang={l.code} onClick={() => choisir(l.code)}>
+                {l.nom_local}
               </button>
-              <HautParleur cle={`langue.${code}`} langue={code} />
+              <HautParleur cle={`langue.${l.code}`} langue={l.code} />
             </span>
           )
         })}

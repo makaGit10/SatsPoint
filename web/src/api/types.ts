@@ -4,7 +4,10 @@ import type { InfosPagination } from '@/lib/pagination'
 
 export type { InfosPagination }
 
-export type LangueAudio = 'wo' | 'srr' | 'ff' | 'dyo' | 'fr'
+/** Code de langue audio, dynamique depuis le catalogue (CONTRAT_API § 14) : `^[a-z]{2,8}(-[a-z]{2,3})?$` (wo, srr, ff, dyo, fr, bm…). */
+export type LangueAudio = string
+/** Pays de la zone XOF (UEMOA) — CONTRAT_API § 14. */
+export type CodePays = 'SN' | 'CI' | 'ML' | 'BF' | 'NE' | 'TG' | 'BJ' | 'GW'
 export type Theme = 'clair' | 'sombre' | 'auto'
 export type LocaleInterface = 'fr' | 'en'
 export type RoleBoutique = 'proprietaire' | 'gerant' | 'caissier'
@@ -16,11 +19,32 @@ export interface LangueAudioDecrite {
   nom_local: string
 }
 
+export interface PaysPublic {
+  code: CodePays
+  nom_fr: string
+  nom_en: string
+  indicatif: string
+}
+
+export interface LanguePublique {
+  code: LangueAudio
+  /** Nom dans la langue elle-même (« Wolof », « Bamanankan »). */
+  nom_local: string
+  nom_fr: string
+  nom_en: string
+  /** Pays où la langue est proposée ; vide = tous les pays (le français). */
+  pays: CodePays[]
+  ordre: number
+}
+
 export interface Config {
   app: { nom: string; env: string; demo: boolean; version: string }
   reverb: { cle: string; hote: string; port: number; schema: 'http' | 'https' }
   locales: LocaleInterface[]
   langues_audio: LangueAudioDecrite[]
+  /** Catalogue actif (§ 14.1) ; absent des anciennes réponses : le front se replie sur le Sénégal. */
+  pays?: PaysPublic[]
+  langues?: LanguePublique[]
 }
 
 export interface Preferences {
@@ -113,7 +137,7 @@ export interface SignalDonnees {
 // Vague 2 — contrat `docs/CONTRAT_API.md` (caisse, paiements, ventes, tableau de bord, portefeuille, réglages, équipe)
 // ---------------------------------------------------------------------------
 
-export type MethodePaiement = 'lightning' | 'paytech' | 'wave_manuel'
+export type MethodePaiement = 'lightning' | 'paytech' | 'wave_manuel' | 'moyen_pays'
 export type Operateur = 'wave' | 'orange_money' | 'free_money'
 export type StatutPaiement = 'en_attente' | 'reussi' | 'expire' | 'echoue' | 'annule'
 export type StatutVente = 'en_attente' | 'payee' | 'annulee' | 'expiree'
@@ -132,10 +156,37 @@ export interface Paiement {
   payment_hash_abrege: string | null
   paytech: { redirect_url: string; token: string } | null
   wave_lien: string | null
+  /** Moyen de paiement du pays (méthode `moyen_pays`) : photographie prise à la création de la tentative (§ 14.4). */
+  moyen?: MoyenPaiementPhoto | null
   simule: boolean
   cree_le: string
   expire_le: string | null
   regle_le: string | null
+}
+
+export type CouleurMoyen = 'bleu' | 'ciel' | 'orange' | 'jaune' | 'vert' | 'rouge' | 'violet' | 'gris'
+export type TypeMoyen = 'lien' | 'numero'
+
+export interface MoyenPaiementPhoto {
+  ulid: string
+  nom: string
+  type: TypeMoyen
+  couleur: CouleurMoyen
+  valeur: string
+  instructions_fr: string | null
+  instructions_en: string | null
+}
+
+/** Moyen du pays vu par la boutique (§ 14.3) : `active` + `valeur` (numéro ou lien marchand). */
+export interface MoyenBoutique {
+  ulid: string
+  nom: string
+  type: TypeMoyen
+  couleur: CouleurMoyen
+  instructions_fr: string | null
+  instructions_en: string | null
+  active: boolean
+  valeur: string | null
 }
 
 export interface VenteCourte {
@@ -148,6 +199,8 @@ export interface VenteCourte {
   /** Méthode de la tentative encore en attente (icône dans la liste tant que la vente n'est pas payée). */
   methode_en_cours: MethodePaiement | null
   montant_sats_reussi: number | null
+  /** Nom du moyen du pays quand `methode_reussie = 'moyen_pays'` (§ 14.4). */
+  moyen_reussi?: string | null
   caissier: { ulid: string; nom: string }
   note: string | null
   alerte: AlerteVente | null
@@ -183,6 +236,8 @@ export interface CorpsCreationVente {
   lignes?: Array<{ article_ulid?: string; libelle: string; quantite: number; prix_unitaire_xof: number }>
   methode: MethodePaiement
   operateur?: Operateur
+  /** Ulid du moyen du pays (méthode `moyen_pays`). */
+  moyen?: string
 }
 
 export interface ReponsePaiement {
@@ -216,6 +271,8 @@ export interface RecuPublic {
   paye_le: string
   boutique: { nom: string; ville: string }
   message: string | null
+  /** Nom du moyen du pays (§ 14.4). */
+  moyen?: string | null
 }
 
 export interface TableauDeBord {
@@ -291,9 +348,13 @@ export interface BoutiqueDetail {
   telephone: string | null
   ville: string
   devise: 'XOF'
+  /** Pays de la boutique (§ 14.3) ; absent = Sénégal. */
+  pays?: CodePays
   reglages: ReglagesBoutique
   configuration: ConfigurationBoutique
   paytech: { configure: boolean; environnement: 'test' | 'prod' }
+  /** Moyens du pays activés par la boutique (prêts pour la caisse). */
+  moyens_pays?: MoyenBoutique[]
 }
 
 export interface Article {
@@ -370,8 +431,15 @@ export interface CouvertureLangue {
   pct?: number
 }
 
+export interface LangueMatrice {
+  code: LangueAudio
+  nom: string
+  nom_local?: string
+  pays?: CodePays[]
+}
+
 export interface MatriceAudio {
-  langues: Array<{ code: LangueAudio; nom: string }>
+  langues: LangueMatrice[]
   ecrans: string[]
   couverture: Partial<Record<LangueAudio, CouvertureLangue>>
   cles: CleAudio[]
@@ -494,4 +562,34 @@ export interface InvitationPublique {
   role: RoleBoutique
   contact_masque: string
   expire_le: string
+}
+
+// ---------------------------------------------------------------------------
+// § 14 — Catalogues de la console (pays, langues, moyens de paiement par pays)
+// ---------------------------------------------------------------------------
+
+export interface PaysAdmin extends PaysPublic {
+  devise: 'XOF'
+  actif: boolean
+  ordre: number
+  /** Nombre de boutiques de ce pays. */
+  boutiques: number
+}
+
+export interface LangueAdmin extends LanguePublique {
+  actif: boolean
+  audios_publies: number
+}
+
+export interface MoyenCatalogue {
+  ulid: string
+  pays: CodePays
+  nom: string
+  type: TypeMoyen
+  couleur: CouleurMoyen
+  instructions_fr: string | null
+  instructions_en: string | null
+  actif: boolean
+  ordre: number
+  boutiques_actives?: number
 }

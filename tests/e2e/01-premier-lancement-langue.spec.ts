@@ -19,6 +19,8 @@ test.describe('01 · Premier lancement et langue', () => {
     await expect(page.getByRole('heading', { name: 'Choisissez votre langue', level: 1 })).toBeVisible();
     const tuiles = page.getByRole('list', { name: 'Choisissez votre langue' }).getByRole('button', { name: /^(Wolof|Seereer|Pulaar|Joola|Français|English) / });
     await expect(tuiles).toHaveCount(6);
+    // Pays d'abord (Sénégal par défaut, CONTRAT_API § 14) : les six tuiles du Sénégal restent inchangées.
+    await expect(page.getByRole('combobox', { name: 'Votre pays' })).toHaveValue('SN');
     for (const nom of ['Wolof wo', 'Seereer srr', 'Pulaar ff', 'Joola dyo', 'Français fr', 'English en']) {
       await expect(page.getByRole('button', { name: nom })).toBeVisible();
     }

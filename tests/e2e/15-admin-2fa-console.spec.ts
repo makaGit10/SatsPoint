@@ -122,7 +122,7 @@ test.describe('15 · Super-admin : 2FA et console', () => {
     await page.getByRole('tab', { name: 'Journal' }).click();
     await ecranPret(page, 'admin');
     const filtre = page.waitForResponse((r) => r.url().includes('/api/v1/admin/journal') && r.url().includes('action=plateforme.'));
-    await page.getByRole('combobox', { name: "Type d'action" }).selectOption({ label: 'Plateforme (suspensions)' });
+    await page.getByRole('combobox', { name: "Type d'action" }).selectOption({ label: 'Plateforme (boutiques, catalogues)' });
     expect((await filtre).status()).toBe(200);
     await expect(page.getByRole('list', { name: 'Journal' })).toContainText('Boutique suspendue');
     await capturer(page, '15-console-journal');
