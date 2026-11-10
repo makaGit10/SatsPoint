@@ -48,6 +48,7 @@
   --l-barre: rgba(18, 16, 12, 0.72);
   --l-pastille: #f6c34a;
   --l-pastille-texte: #2a1c00;
+  --l-pastille-texte-voix: #2a1c00;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) .landing {
@@ -67,6 +68,7 @@
     --l-barre: rgba(18, 16, 12, 0.72);
     --l-pastille: #f6c34a;
     --l-pastille-texte: #2a1c00;
+    --l-pastille-texte-voix: #2a1c00;
   }
 }
 
@@ -152,6 +154,101 @@
 .landing .btn svg {
   width: 18px;
   height: 18px;
+}
+.landing .btn {
+  position: relative;
+}
+.landing .btn [data-haut-parleur] {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+}
+.landing .btn [data-haut-parleur] svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Aide vocale : choix de la langue d'écoute + haut-parleurs à côté des textes */
+.landing .choix-voix {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 10px 12px 10px 18px;
+  border-radius: 24px;
+  margin-bottom: 18px;
+  width: fit-content;
+  max-width: 100%;
+}
+.landing .choix-voix-titre {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--l-or-texte);
+}
+.landing .choix-voix-titre svg {
+  width: 18px;
+  height: 18px;
+}
+.landing .choix-voix-langues {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.landing .choix-voix-langue {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--l-carte);
+  border: 1px solid var(--l-ligne);
+  padding-right: 2px;
+  transition: background-color 160ms ease;
+}
+.landing .choix-voix-langue button {
+  height: 40px;
+  padding: 0 4px 0 14px;
+  font: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--l-texte);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.landing .choix-voix-langue.actif {
+  background: var(--l-pastille, var(--l-encre));
+  border-color: var(--l-pastille, var(--l-encre));
+}
+.landing .choix-voix-langue.actif button,
+.landing .choix-voix-langue.actif [data-haut-parleur] {
+  color: var(--l-pastille-texte-voix, #f6c34a);
+}
+.landing .choix-voix-couper {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--l-ligne);
+  background: var(--l-carte);
+  color: var(--l-texte-2);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.landing .choix-voix-couper svg {
+  width: 18px;
+  height: 18px;
+}
+.landing .hp-titre {
+  vertical-align: middle;
+  margin-left: 10px;
+  translate: 0 -0.15em;
+}
+.landing .hp-texte {
+  vertical-align: middle;
+  margin-left: 2px;
 }
 .landing .btn:hover {
   transform: translateY(-1px);

@@ -12,6 +12,7 @@
 /** Écrans dans l'ordre d'apparition (parcours d'encaissement d'abord). `essentielle` = parcours d'encaissement + langue. */
 export const ECRANS = [
   { motif: 'ecrans/Langue.tsx', ecran: 'langue', libelle: 'Choix de la langue', essentielle: true },
+  { motif: 'ecrans/landing/', ecran: 'landing', libelle: 'Page de présentation', essentielle: true },
   { motif: 'ecrans/Accueil.tsx', ecran: 'accueil', libelle: 'Accueil', essentielle: true },
   { motif: 'ecrans/auth/Connexion.tsx', ecran: 'connexion', libelle: 'Connexion', essentielle: true },
   { motif: 'ecrans/Caisse.tsx', ecran: 'caisse', libelle: 'Caisse', essentielle: true },

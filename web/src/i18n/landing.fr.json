@@ -120,6 +120,11 @@
       "fait": "Fait à Dakar · Dakar Bitcoin Hack 2026",
       "code": "Code source",
       "connexion": "Connexion"
+    },
+    "voix": {
+      "titre": "Écouter en",
+      "couper": "Couper la voix",
+      "bienvenue": "Bienvenue sur SatsPoint, la caisse qui encaisse tout : bitcoin, Wave, Orange Money et Free Money. Touchez un haut-parleur pour écouter."
     }
   }
 }

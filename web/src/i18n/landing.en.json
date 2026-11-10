@@ -120,6 +120,11 @@
       "fait": "Made in Dakar · Dakar Bitcoin Hack 2026",
       "code": "Source code",
       "connexion": "Sign in"
+    },
+    "voix": {
+      "titre": "Listen in",
+      "couper": "Turn the voice off",
+      "bienvenue": "Welcome to SatsPoint, the checkout that accepts everything: bitcoin, Wave, Orange Money and Free Money. Tap a speaker to listen."
     }
   }
 }

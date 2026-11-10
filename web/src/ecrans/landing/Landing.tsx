@@ -14,13 +14,19 @@ import {
   Store,
   Users,
   Volume2,
+  VolumeX,
   Wallet,
   Zap,
 } from 'lucide-react'
 import { useEffect, useRef, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import type { LangueAudio } from '@/api/types'
 import { SelecteurLangue, SelecteurTheme } from '@/coquille/Selecteurs'
+import { cn } from '@/lib/cn'
+import { annoncer } from '@/voix/annoncer'
+import { HautParleur } from '@/voix/HautParleur'
+import { LANGUES_LOCALES, useVoix } from '@/voix/store'
 /** Logo unique de l'appli (public/logo.svg). */
 const logo = '/logo.svg'
 import './landing.css'
@@ -67,16 +73,60 @@ function Titre({ id, surTitre, titre, titreOr, texte }: { id: string; surTitre: 
   )
 }
 
-function Tuile({ icone, titre, texte, className, children }: { icone: ReactNode; titre: string; texte: string; className?: string; children?: ReactNode }) {
+function Tuile({ icone, titre, texte, voix, className, children }: { icone: ReactNode; titre: string; texte: string; voix?: string; className?: string; children?: ReactNode }) {
   return (
     <article className={`tuile reveler ${className ?? ''}`}>
       <span className="tuile-icone" aria-hidden="true">
         {icone}
       </span>
-      <h3>{titre}</h3>
+      <h3>
+        {titre} {voix && <HautParleur cle={voix} className="hp-texte" />}
+      </h3>
       <p>{texte}</p>
       {children}
     </article>
+  )
+}
+
+/**
+ * « Écouter en » : une personne qui ne lit pas choisit sa langue d'un geste ; l'aide vocale s'active,
+ * le message de bienvenue est lu et les haut-parleurs apparaissent à côté des textes importants.
+ */
+function ChoixVoix() {
+  const { t } = useTranslation()
+  const langue = useVoix((s) => s.langueAudio)
+  const activee = useVoix((s) => s.activee)
+  const choisir = (code: LangueAudio) => {
+    const voix = useVoix.getState()
+    voix.definirLangue(code)
+    voix.definirActivee(true)
+    void annoncer('landing.voix.bienvenue')
+  }
+  return (
+    <div className="choix-voix verre" role="group" aria-label={t('landing.voix.titre')} data-choix-voix>
+      <span className="choix-voix-titre">
+        <Volume2 aria-hidden="true" />
+        {t('landing.voix.titre')}
+      </span>
+      <div className="choix-voix-langues">
+        {LANGUES_LOCALES.map((code) => {
+          const actif = activee && langue === code
+          return (
+            <span key={code} className={cn('choix-voix-langue', actif && 'actif')}>
+              <button type="button" aria-pressed={actif} onClick={() => choisir(code)}>
+                {t(`langue.${code}`)}
+              </button>
+              <HautParleur cle={`langue.${code}`} langue={code} />
+            </span>
+          )
+        })}
+        {activee && (
+          <button type="button" className="choix-voix-couper" onClick={() => useVoix.getState().definirActivee(false)} aria-label={t('landing.voix.couper')} title={t('landing.voix.couper')}>
+            <VolumeX aria-hidden="true" />
+          </button>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -182,19 +232,25 @@ export default function Landing() {
       <main id="haut">
         <section className="conteneur hero" aria-labelledby="titre-hero">
           <div className="hero-texte">
+            <ChoixVoix />
             <p className="pastille verre">
               <b>{t('landing.hero.badge')}</b> {t('landing.hero.badgeTexte')}
             </p>
             <h1 id="titre-hero">
               {t('landing.hero.titreDebut')} <span className="degrade">{t('landing.hero.titreOr')}</span>.
+              <HautParleur cle="landing.voix.bienvenue" taille={16} className="hp-titre" />
             </h1>
-            <p className="lead lead-hero">{t('landing.hero.texte')}</p>
+            <p className="lead lead-hero">
+              {t('landing.hero.texte')} <HautParleur cle="landing.hero.texte" className="hp-texte" />
+            </p>
             <div className="actions">
               <Link className="btn btn-or" to="/inscription">
                 {t('landing.hero.creer')} <ArrowRight aria-hidden="true" />
+                <HautParleur cle="landing.hero.creer" dansBouton />
               </Link>
               <Link className="btn btn-blanc" to="/connexion">
                 {t('landing.hero.connexion')}
+                <HautParleur cle="landing.hero.connexion" dansBouton />
               </Link>
             </div>
             <ul className="confiance">
@@ -228,11 +284,11 @@ export default function Landing() {
         <section className="conteneur section" id="comment" aria-labelledby="titre-comment">
           <Titre id="titre-comment" surTitre={t('landing.etapes.surTitre')} titre={t('landing.etapes.titre')} titreOr={t('landing.etapes.titreOr')} />
           <ol className="etapes">
-            {([
-              [1, <Store key="s" />],
-              [2, <ScanLine key="q" />],
-              [3, <CircleCheck key="c" />],
-            ] as const).map(([n, icone]) => (
+            {[
+              { n: 1, icone: <Store />, voix: 'landing.etapes.e1Texte' },
+              { n: 2, icone: <ScanLine />, voix: 'landing.etapes.e2Texte' },
+              { n: 3, icone: <CircleCheck />, voix: 'landing.etapes.e3Texte' },
+            ].map(({ n, icone, voix }) => (
               <li key={n} className="etape verre reveler">
                 <div className="etape-tete">
                   <span className="etape-num">{n}</span>
@@ -240,7 +296,9 @@ export default function Landing() {
                     {icone}
                   </span>
                 </div>
-                <h3>{t(`landing.etapes.e${n}Titre`)}</h3>
+                <h3>
+                  {t(`landing.etapes.e${n}Titre`)} <HautParleur cle={voix} className="hp-texte" />
+                </h3>
                 <p>{t(`landing.etapes.e${n}Texte`)}</p>
               </li>
             ))}
@@ -250,7 +308,7 @@ export default function Landing() {
         <section className="conteneur section" id="fonctions" aria-labelledby="titre-fonctions">
           <Titre id="titre-fonctions" surTitre={t('landing.fonctions.surTitre')} titre={t('landing.fonctions.titre')} titreOr={t('landing.fonctions.titreOr')} />
           <div className="bento">
-            <Tuile className="noire large" icone={<Volume2 />} titre={t('landing.fonctions.voixTitre')} texte={t('landing.fonctions.voixTexte')}>
+            <Tuile className="noire large" icone={<Volume2 />} titre={t('landing.fonctions.voixTitre')} texte={t('landing.fonctions.voixTexte')} voix="landing.fonctions.voixTexte">
               <ul className="langues">
                 {['Wolof', 'Seereer', 'Pulaar', 'Joola', 'Français', 'English'].map((l) => (
                   <li key={l}>{l}</li>
@@ -262,13 +320,13 @@ export default function Landing() {
                 ))}
               </div>
             </Tuile>
-            <Tuile className="or" icone={<Zap />} titre={t('landing.fonctions.vitesseTitre')} texte={t('landing.fonctions.vitesseTexte')}>
+            <Tuile className="or" icone={<Zap />} titre={t('landing.fonctions.vitesseTitre')} texte={t('landing.fonctions.vitesseTexte')} voix="landing.fonctions.vitesseTexte">
               <p className="gros-chiffre">{t('landing.fonctions.vitesseChiffre')}</p>
             </Tuile>
-            <Tuile className="verre" icone={<Wallet />} titre={t('landing.fonctions.fondsTitre')} texte={t('landing.fonctions.fondsTexte')} />
-            <Tuile className="verre" icone={<RefreshCw />} titre={t('landing.fonctions.directTitre')} texte={t('landing.fonctions.directTexte')} />
-            <Tuile className="verre" icone={<ChartColumn />} titre={t('landing.fonctions.tableauTitre')} texte={t('landing.fonctions.tableauTexte')} />
-            <Tuile className="verre" icone={<Users />} titre={t('landing.fonctions.equipeTitre')} texte={t('landing.fonctions.equipeTexte')} />
+            <Tuile className="verre" icone={<Wallet />} titre={t('landing.fonctions.fondsTitre')} texte={t('landing.fonctions.fondsTexte')} voix="landing.fonctions.fondsTexte" />
+            <Tuile className="verre" icone={<RefreshCw />} titre={t('landing.fonctions.directTitre')} texte={t('landing.fonctions.directTexte')} voix="landing.fonctions.directTexte" />
+            <Tuile className="verre" icone={<ChartColumn />} titre={t('landing.fonctions.tableauTitre')} texte={t('landing.fonctions.tableauTexte')} voix="landing.fonctions.tableauTexte" />
+            <Tuile className="verre" icone={<Users />} titre={t('landing.fonctions.equipeTitre')} texte={t('landing.fonctions.equipeTexte')} voix="landing.fonctions.equipeTexte" />
           </div>
         </section>
 
@@ -331,6 +389,7 @@ export default function Landing() {
             <div className="actions">
               <Link className="btn btn-or" to="/inscription">
                 {t('landing.cta.creer')} <ArrowRight aria-hidden="true" />
+                <HautParleur cle="landing.cta.creer" dansBouton />
               </Link>
               <Link className="btn btn-sombre" to="/connexion">
                 {t('landing.cta.connexion')}
