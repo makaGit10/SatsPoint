@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { Copy, Mail, MessageCircle, ShieldCheck, UserCheck, UserPlus, Users, UserX, X } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ErreurApi } from '@/api/client'
 import { annulerInvitation, CLE_EQUIPE, inviter, modifierMembre, retirerMembre, useEquipe } from '@/api/equipe'
@@ -12,6 +12,7 @@ import { Champ } from '@/composants/Champ'
 import { Dialogue } from '@/composants/Dialogue'
 import { EnTetePage } from '@/composants/EnTetePage'
 import { EtatVide } from '@/composants/EtatVide'
+import { Pagination } from '@/composants/Pagination'
 import { Pastille, type TonPastille } from '@/composants/Pastille'
 import { Selection } from '@/composants/Selection'
 import { SqueletteListe } from '@/composants/Squelette'
@@ -23,6 +24,7 @@ import { cn } from '@/lib/cn'
 import { copier, lienWhatsApp } from '@/lib/retours'
 import { queryClient } from '@/lib/queryClient'
 import { tempsRelatif } from '@/lib/temps'
+import { usePaginationLocale } from '@/lib/usePagination'
 import { useDonneesEnDirect } from '@/temps-reel/useDonneesEnDirect'
 import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
 
@@ -30,7 +32,10 @@ const TON_ROLE: Record<RoleBoutique, TonPastille> = { proprietaire: 'accent', ge
 const ROLES: RoleBoutique[] = ['proprietaire', 'gerant', 'caissier']
 const DESCRIPTION_ROLE: Record<RoleBoutique, string> = { proprietaire: 'equipe.roleProprietaire', gerant: 'equipe.roleGerant', caissier: 'equipe.roleCaissier' }
 
-/** Équipe : membres, rôles, activation, invitations (72 h). */
+/** Membres (et invitations) par page : pagination côté écran, la liste complète est déjà chargée. */
+const PAR_PAGE = 20
+
+/** Équipe : membres, rôles, activation, invitations (72 h), paginés par 20. */
 export default function Equipe() {
   const { t, i18n } = useTranslation()
   void i18n.language
@@ -68,6 +73,11 @@ export default function Equipe() {
 
   const membres = data?.membres ?? []
   const invitations = data?.invitations ?? []
+  // Deux listes, deux pages indépendantes dans l'adresse (`?page=` et `?page_invitations=`).
+  const pageMembres = usePaginationLocale(data?.membres, { parPage: PAR_PAGE })
+  const pageInvitations = usePaginationLocale(data?.invitations, { parPage: PAR_PAGE, param: 'page_invitations' })
+  const hautMembres = useRef<HTMLUListElement>(null)
+  const hautInvitations = useRef<HTMLUListElement>(null)
   const vide = !isPending && membres.length <= 1 && invitations.length === 0
   const peutAgirSur = (m: Membre) => !m.est_moi && (proprietaire || m.role !== 'proprietaire')
 
@@ -107,8 +117,8 @@ export default function Equipe() {
       {membres.length > 0 && (
         <section aria-label={t('equipe.membres')}>
           <h2 className="mb-1.5 text-xs font-semibold tracking-wide text-texte-3 uppercase">{t('equipe.membres')}</h2>
-          <ul className="divide-y divide-bordure verre rounded-xl">
-            {membres.map((m) => (
+          <ul ref={hautMembres} className="divide-y divide-bordure verre rounded-xl">
+            {pageMembres.visibles.map((m) => (
               <LigneMembre
                 key={m.ulid}
                 membre={m}
@@ -119,17 +129,27 @@ export default function Equipe() {
               />
             ))}
           </ul>
+          <Pagination page={pageMembres.page} parPage={PAR_PAGE} total={pageMembres.total} pages={pageMembres.pages} onChange={pageMembres.allerA} ancre={hautMembres} libelle={t('equipe.membres')} />
         </section>
       )}
 
       {invitations.length > 0 && (
         <section aria-label={t('equipe.invitations')} className="mt-4">
           <h2 className="mb-1.5 text-xs font-semibold tracking-wide text-texte-3 uppercase">{t('equipe.invitations')}</h2>
-          <ul className="divide-y divide-bordure rounded-lg border border-dashed border-bordure-forte bg-surface">
-            {invitations.map((inv) => (
+          <ul ref={hautInvitations} className="divide-y divide-bordure rounded-lg border border-dashed border-bordure-forte bg-surface">
+            {pageInvitations.visibles.map((inv) => (
               <LigneInvitation key={inv.ulid} invitation={inv} onAnnuler={() => annulation.mutate(inv.ulid)} />
             ))}
           </ul>
+          <Pagination
+            page={pageInvitations.page}
+            parPage={PAR_PAGE}
+            total={pageInvitations.total}
+            pages={pageInvitations.pages}
+            onChange={pageInvitations.allerA}
+            ancre={hautInvitations}
+            libelle={t('equipe.invitations')}
+          />
         </section>
       )}
 

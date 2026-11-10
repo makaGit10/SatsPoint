@@ -91,5 +91,9 @@
     "xlsxDetail": "Classeur .xlsx",
     "pdf": "PDF",
     "pdfDetail": "Rapport à imprimer"
+  },
+  "articles": {
+    "rechercher": "Rechercher un article",
+    "aucunResultat": "Aucun article ne correspond à « {{terme}} »"
   }
 }

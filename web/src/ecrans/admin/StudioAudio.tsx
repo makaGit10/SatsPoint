@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { CheckCheck, Filter, Mic, Search, Send, Zap } from 'lucide-react'
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CLE_MATRICE, publierAudios, useMatriceAudio } from '@/api/admin'
 import type { LangueAudio } from '@/api/types'
@@ -9,6 +9,7 @@ import { Champ } from '@/composants/Champ'
 import { Dialogue } from '@/composants/Dialogue'
 import { EnTetePage } from '@/composants/EnTetePage'
 import { EtatVide } from '@/composants/EtatVide'
+import { Pagination } from '@/composants/Pagination'
 import { Selection } from '@/composants/Selection'
 import { SqueletteListe } from '@/composants/Squelette'
 import { notifier } from '@/composants/toastStore'
@@ -17,6 +18,7 @@ import { cn } from '@/lib/cn'
 import { queryClient } from '@/lib/queryClient'
 import { ecrireStockage, lireStockage } from '@/lib/stockage'
 import { useEstBureau } from '@/lib/useMediaQuery'
+import { usePaginationLocale } from '@/lib/usePagination'
 import { useDonneesEnDirect } from '@/temps-reel/useDonneesEnDirect'
 import { HautParleur } from '@/voix/HautParleur'
 import { estLangueAudio } from '@/voix/store'
@@ -29,6 +31,8 @@ import { useEnregistreur } from './studio/useEnregistreur'
 
 const CLE_LANGUE = 'satspoint.studio.langue'
 const CLE_RAFALE = 'satspoint.studio.rafale'
+/** Lignes de la matrice par page (lignes compactes : 50 restent lisibles d'un coup d'œil). */
+const CLES_PAR_PAGE = 50
 
 /**
  * Studio audio (super-admin, cahier § 6.13) : couverture par langue, matrice clés × langues, enregistrement au micro
@@ -55,6 +59,13 @@ export default function StudioAudio() {
 
   const langue = filtres.langue
   const cles = useMemo(() => (matrice ? filtrerCles(matrice.cles, filtres) : []), [matrice, filtres])
+  // Filtres et recherche d'abord, puis pagination ; la page suit la case choisie (mode rafale, clavier).
+  const pagination = usePaginationLocale(matrice ? cles : undefined, { parPage: CLES_PAR_PAGE })
+  const hautMatrice = useRef<HTMLDivElement>(null)
+  const filtrer = (maj: (f: FiltresStudio) => FiltresStudio) => {
+    setFiltres(maj)
+    pagination.reinitialiser()
+  }
   const toutes = useMemo(() => (matrice ? filtrerCles(matrice.cles, { ...filtres, ecran: null, manquants: false, q: '' }) : []), [matrice, filtres])
   // Par défaut : la première case à enregistrer dans la langue de travail.
   const selection = selectionChoisie ?? (matrice ? (prochaineManquante(toutes, langue, null) ?? toutes[0]?.cle ?? null) : null)
@@ -74,6 +85,9 @@ export default function StudioAudio() {
   const selectionner = (cle: string, auto = false) => {
     rec.reinitialiser()
     setSelectionChoisie(cle)
+    const rang = cles.findIndex((c) => c.cle === cle)
+    const pageCle = rang >= 0 ? Math.floor(rang / CLES_PAR_PAGE) + 1 : pagination.page
+    if (pageCle !== pagination.page) pagination.allerA(pageCle, { remplacer: true })
     if (auto) setTimeout(() => rec.demarrer(), 350)
   }
 
@@ -81,7 +95,9 @@ export default function StudioAudio() {
     if (l === langue) return
     ecrireStockage(CLE_LANGUE, l)
     rec.reinitialiser()
-    setFiltres((f) => ({ ...f, langue: l }))
+    // « Manquants seulement » dépend de la langue : la liste change, on repart de la page 1.
+    if (filtres.manquants) filtrer((f) => ({ ...f, langue: l }))
+    else setFiltres((f) => ({ ...f, langue: l }))
   }
   const choisir = (cle: string, l: LangueAudio) => {
     choisirLangue(l)
@@ -183,7 +199,7 @@ export default function StudioAudio() {
               icone={<Search />}
               placeholder={t('studio.rechercher')}
               value={filtres.q}
-              onChange={(e) => setFiltres((f) => ({ ...f, q: e.target.value }))}
+              onChange={(e) => filtrer((f) => ({ ...f, q: e.target.value }))}
               className="h-9 text-sm md:h-8"
               classeConteneur="min-w-0 flex-1 basis-full sm:basis-48 [&>label]:sr-only"
               autoComplete="off"
@@ -193,11 +209,11 @@ export default function StudioAudio() {
               libelleVisible={false}
               taille="sm"
               value={filtres.ecran ?? ''}
-              onChange={(e) => setFiltres((f) => ({ ...f, ecran: e.target.value || null }))}
+              onChange={(e) => filtrer((f) => ({ ...f, ecran: e.target.value || null }))}
               options={[{ valeur: '', libelle: t('studio.tousEcrans') }, ...matrice.ecrans.map((e) => ({ valeur: e, libelle: t(`studio.ecrans.${e}`, { defaultValue: e }) }))]}
               classeConteneur="basis-36"
             />
-            <Puce actif={filtres.manquants} icone={<Filter />} voix="studio.manquantsSeulement" onClick={() => setFiltres((f) => ({ ...f, manquants: !f.manquants }))}>
+            <Puce actif={filtres.manquants} icone={<Filter />} voix="studio.manquantsSeulement" onClick={() => filtrer((f) => ({ ...f, manquants: !f.manquants }))}>
               {t('studio.manquantsSeulement')}
             </Puce>
             <Puce actif={rafale} icone={<Zap />} voix="studio.rafale" onClick={basculerRafale} titre={t('studio.rafaleAide')}>
@@ -214,15 +230,28 @@ export default function StudioAudio() {
                 titre={filtres.manquants ? t('studio.vide.toutFait', { langue: nomLangue }) : t('studio.vide.titre')}
                 texte={t('studio.vide.texte')}
                 action={
-                  <Bouton variante="secondaire" voix="studio.effacerFiltres" onClick={() => setFiltres((f) => ({ ...f, ecran: null, manquants: false, q: '' }))}>
+                  <Bouton variante="secondaire" voix="studio.effacerFiltres" onClick={() => filtrer((f) => ({ ...f, ecran: null, manquants: false, q: '' }))}>
                     {t('studio.effacerFiltres')}
                   </Bouton>
                 }
               />
-            ) : bureau ? (
-              <MatriceBureau cles={cles} langues={matrice.langues} langue={langue} selection={selection} onChoisir={choisir} />
             ) : (
-              <MatriceMobile cles={cles} langues={matrice.langues} langue={langue} selection={selection} onChoisir={choisir} />
+              <div ref={hautMatrice} className="min-w-0">
+                {bureau ? (
+                  <MatriceBureau cles={pagination.visibles} langues={matrice.langues} langue={langue} selection={selection} onChoisir={choisir} />
+                ) : (
+                  <MatriceMobile cles={pagination.visibles} langues={matrice.langues} langue={langue} selection={selection} onChoisir={choisir} />
+                )}
+                <Pagination
+                  page={pagination.page}
+                  parPage={CLES_PAR_PAGE}
+                  total={pagination.total}
+                  pages={pagination.pages}
+                  onChange={pagination.allerA}
+                  ancre={hautMatrice}
+                  libelle={t('studio.matrice')}
+                />
+              </div>
             )}
             {bureau && panneau && (
               <aside className="sticky top-[calc(var(--hauteur-entete)+12px)] verre rounded-xl p-3 shadow-xs">{panneau}</aside>

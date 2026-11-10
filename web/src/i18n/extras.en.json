@@ -91,5 +91,9 @@
     "xlsxDetail": ".xlsx workbook",
     "pdf": "PDF",
     "pdfDetail": "Printable report"
+  },
+  "articles": {
+    "rechercher": "Search items",
+    "aucunResultat": "No item matches “{{terme}}”"
   }
 }

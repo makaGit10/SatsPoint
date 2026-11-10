@@ -81,11 +81,11 @@ Précisions back (vague 2) :
 
 | Route | Paramètres | Réponse |
 |---|---|---|
-| `GET /ventes` | `periode=aujourdhui\|hier\|7j\|30j\|perso`, `du`, `au` (YYYY-MM-DD, fuseau boutique), `statut`, `methode`, `caissier` (ulid), `q` (numéro ou montant), `curseur`, `limite` (≤ 100, défaut 30) | `{ ventes: VenteCourte[], curseur_suivant: string \| null, totaux: { nombre, montant_xof, payees_xof } }` — caissier : uniquement ses ventes du jour |
+| `GET /ventes` | `periode=aujourdhui\|hier\|7j\|30j\|perso`, `du`, `au` (YYYY-MM-DD, fuseau boutique), `statut`, `methode`, `caissier` (ulid), `q` (numéro ou montant), `page` (≥ 1), `par_page` (10–100, défaut 20) — voir **§ 13 Pagination** | `{ ventes: VenteCourte[], pagination: Pagination, totaux: { nombre, montant_xof, payees_xof } }` — caissier : uniquement ses ventes du jour |
 | `GET /ventes/{ulid}` | — | `{ vente: Vente }` |
 | `GET /exports/ventes` | mêmes filtres + `format=csv` (P0) `\|xlsx\|pdf` (P1) | fichier (UTF-8 BOM pour CSV) ; propriétaire/gérant |
 
-Précisions back : `q` accepte un numéro (`V-000012`, `12`) ou un montant exact ; tout autre texte renvoie une liste vide (pas de recherche libre). `methode` filtre sur la tentative réussie, ou sur la tentative en attente si la vente n'est pas payée. `perso` exige `du` (et `au ≥ du`). Le curseur est opaque (`cursorPaginate`, tri `cree_le` puis `ulid` décroissants). Totaux calculés sur tout l'ensemble filtré. CSV : séparateur `;`, en-têtes français, colonnes Numéro, Date, Heure, Montant (FCFA), Statut, Moyen, Opérateur, Montant (sats), Cours (FCFA/BTC), Caissier, Note, Alerte, Payée le, Reçu (URL absolue) ; 6 exports/min.
+Précisions back : `q` accepte un numéro (`V-000012`, `12`) ou un montant exact ; tout autre texte renvoie une liste vide (pas de recherche libre). `methode` filtre sur la tentative réussie, ou sur la tentative en attente si la vente n'est pas payée. `perso` exige `du` (et `au ≥ du`). Tri `cree_le` puis identifiant décroissants (le plus récent d'abord). `pagination.total` = `totaux.nombre` (un seul comptage). Totaux calculés sur tout l'ensemble filtré, quelle que soit la page. CSV : séparateur `;`, en-têtes français, colonnes Numéro, Date, Heure, Montant (FCFA), Statut, Moyen, Opérateur, Montant (sats), Cours (FCFA/BTC), Caissier, Note, Alerte, Payée le, Reçu (URL absolue) ; 6 exports/min.
 
 ## 5. Reçu public
 
@@ -187,6 +187,36 @@ Signal temps réel émis par le mock (et attendu du back) après chaque transiti
 
 ---
 
+## 13. Pagination des listes (10 novembre — remplace `curseur` / `limite` / `curseur_suivant`)
+
+Listes paginées côté serveur : `GET /ventes`, `GET /admin/boutiques`, `GET /admin/journal`.
+
+| Paramètre | Règle (Form Request) | Défaut |
+|---|---|---|
+| `page` | entier, 1 ≤ page ≤ 10 000 | 1 |
+| `par_page` | entier, 10 ≤ par_page ≤ 100 | ventes 20 · boutiques 20 · journal 30 |
+
+Hors bornes ou non entier → `422` (erreurs de validation habituelles). `curseur` et `limite` ne sont plus lus (ignorés s'ils sont envoyés).
+
+```ts
+type Pagination = {
+  page: number       // page renvoyée (celle demandée)
+  par_page: number   // taille de page effective
+  total: number      // nombre de lignes de l'ensemble filtré (toutes pages)
+  pages: number      // nombre de pages = max(1, ⌈total / par_page⌉) — une liste vide a 1 page (vide)
+}
+// Réponse : les données gardent leur nom habituel, à côté de `pagination`.
+// GET /ventes          → { ventes: VenteCourte[], pagination: Pagination, totaux }
+// GET /admin/boutiques → { boutiques: BoutiqueAdmin[], pagination: Pagination }
+// GET /admin/journal   → { entrees: EntreeJournal[], pagination: Pagination }
+```
+
+- **Page au-delà de la dernière** (`page > pages`) : `200`, liste vide, `pagination` exacte (`page` = page demandée, `total` et `pages` réels). Choix assumé : le serveur ne déplace pas la page en silence ; **le client revient à la dernière page** (`pages`) et met son adresse à jour. Cas typique : la dernière ligne d'une page a été supprimée ou un filtre change pendant qu'un autre écran est ouvert.
+- Filtres, tri, cloisonnement par boutique (`BoutiqueScope`), Policies et limites de débit inchangés : `pagination.total` est calculé sur le même ensemble filtré que les données.
+- Front : numéro de page dans l'adresse (`?page=2`), retour à la page 1 quand un filtre change ; le rechargement en direct (`useDonneesEnDirect`) relit la page courante.
+- `GET /wallet/transactions` garde `limite` / `decalage` (la passerelle NWC ne donne pas de total) : le front demande `limite = par_page + 1` pour savoir s'il existe une page suivante et affiche « Page N » sans total.
+- Listes chargées en entier (`GET /articles`, `GET /equipe`, `GET /admin/audio/matrice`) : pagination côté écran (20 par page ; 50 pour la matrice du studio), recherche et filtres appliqués avant la pagination. Aucun changement d'API.
+
 # Vague 3 — aide vocale, studio audio, 2FA, console plateforme, recherche, import/export
 
 Mêmes conventions que ci-dessus. Le back fait foi ; toute précision est ajoutée ici.
@@ -220,10 +250,10 @@ Le back l'importe (`php artisan audio:synchroniser`, lancé au démarrage) dans 
 Sans 2FA validée, `/api/v1/admin/*` → `403 { code: 'DEUX_FA_REQUISE' }`.
 
 ## V3.5 Console plateforme (super-admin + 2FA ; aucun accès aux ventes, portefeuilles ou PayTech des boutiques)
-- `GET /api/v1/admin/boutiques?q=&statut=&curseur=` → `{ boutiques: [{ ulid, nom, ville, statut, cree_le, proprietaire: { nom, contact }, configuration: { wallet, paytech, paiement_test }, activite: { ventes_7j, derniere_vente_le } }], curseur_suivant }`
+- `GET /api/v1/admin/boutiques?q=&statut=&page=&par_page=` (défaut 20, § 13) → `{ boutiques: [{ ulid, nom, ville, statut, cree_le, proprietaire: { nom, contact }, configuration: { wallet, paytech, paiement_test }, activite: { ventes_7j, derniere_vente_le } }], pagination: Pagination }`
 - `PATCH /api/v1/admin/boutiques/{ulid}` `{ statut: 'active'|'suspendue' }` → `{ boutique }`
 - `GET /api/v1/admin/sante` → `{ base, redis, reverb, passerelle, cours: { age_s, disponible }, files: { en_attente, echouees }, audio: { fichiers, octets } }`
-- `GET /api/v1/admin/journal?action=&boutique=&du=&au=&curseur=` → `{ entrees: [{ id, action, utilisateur: { ulid, nom } | null, boutique: { ulid, nom } | null, ip, details, cree_le }], curseur_suivant }`
+- `GET /api/v1/admin/journal?action=&boutique=&du=&au=&page=&par_page=` (défaut 30, § 13) → `{ entrees: [{ id, action, utilisateur: { ulid, nom } | null, boutique: { ulid, nom } | null, ip, details, cree_le }], pagination: Pagination }`
 - `GET /api/v1/admin/statistiques` → `{ commercants_actifs_semaine, paiements_par_commercant_semaine, delai_median_confirmation_ms, part_sats_pct, part_mobile_money_pct, couverture_audio: { [langue]: pct } }`
 
 ## V3.6 Recherche globale
@@ -244,7 +274,7 @@ Sans 2FA validée, `/api/v1/admin/*` → `403 { code: 'DEUX_FA_REQUISE' }`.
 - **Studio** : `GET /admin/audio/matrice` → `langues: [{ code, nom }]` ; `etats[langue].statut` = statut de la dernière version (`erreur` compte comme manquant dans `couverture`, avec `erreur: string`) ; `url` = URL publique pour `publie`, URL d'écoute pour `brouillon` ; quand une version publiée existe ET qu'une nouvelle est en préparation : `nouvelle_version: { statut, id, url, duree_ms, mis_a_jour_le }`. `couverture[langue].pct` (entier). `POST /admin/audio/publier` → `{ publies, audios: Audio[] }`. `Audio` = `{ id, cle, langue, statut, duree_ms (null en traitement), url_ecoute (null tant que non traité), erreur (null sauf statut erreur), url (publique, publié/archivé), taille, publie_le, mis_a_jour_le }`. Erreurs : `AUDIO_TYPE_INVALIDE`, `AUDIO_ILLISIBLE`, `AUDIO_TROP_LONG` (422), `AUDIO_NON_PUBLIABLE`, `AUDIO_NON_SUPPRIMABLE` (409), `AUDIO_INTROUVABLE` (404). Statuts d'un audio : `en_traitement → brouillon → publie → archive`, ou `erreur`.
 - **Temps réel** : fin de traitement, dépôt, suppression et synchronisation des clés → rubrique `audio` sur `private-admin` ; publication → rubrique `audios` sur `plateforme` (public). Suspension d'une boutique → `parametres` sur `private-boutique.{ulid}` (les écrans relisent et reçoivent `403 BOUTIQUE_SUSPENDUE`). Import : `imports` (progression tous les 50 lignes en mode `ignorer_erreurs`, et à la fin) puis `articles`.
 - **Boutique suspendue** : toute route de l'espace connecté → `403 { code: 'BOUTIQUE_SUSPENDUE' }`, sauf `GET /moi` et la déconnexion ; les sessions des membres sont révoquées à la suspension.
-- **Console** : `GET /admin/sante` → `files: { en_attente: number|null, par_file: { paiements, audio, imports, default }, connexion, echouees, echouees_24h }`, `audio: { fichiers, publies, octets, disque_libre_octets }`, plus `statut`, `cours.sources`, `cours.recupere_le`, `version`, `horodatage`. `GET /admin/journal` accepte aussi `utilisateur=` (ulid), `limite=` (1-100), `action=prefixe.*` ; chaque entrée a aussi `cible: { type, id } | null`. `GET /admin/boutiques` accepte `limite=` (1-100). `GET /admin/statistiques` ajoute `paiements_reussis_30j`, `boutiques: { total, actives, nouvelles_7j }`, `periode`. Délai médian et parts sur 30 jours de paiements réussis ; actifs et paiements par commerçant sur 7 jours.
+- **Console** : `GET /admin/sante` → `files: { en_attente: number|null, par_file: { paiements, audio, imports, default }, connexion, echouees, echouees_24h }`, `audio: { fichiers, publies, octets, disque_libre_octets }`, plus `statut`, `cours.sources`, `cours.recupere_le`, `version`, `horodatage`. `GET /admin/journal` accepte aussi `utilisateur=` (ulid), `action=prefixe.*` ; chaque entrée a aussi `cible: { type, id } | null`. `limite` / `curseur` sont remplacés par `page` / `par_page` (§ 13). `GET /admin/statistiques` ajoute `paiements_reussis_30j`, `boutiques: { total, actives, nouvelles_7j }`, `periode`. Délai médian et parts sur 30 jours de paiements réussis ; actifs et paiements par commerçant sur 7 jours.
 - **Recherche** : `POST /recherche/recentes` → `204`. Un caissier ne voit que ses propres ventes. Les articles se trouvent aussi par prix exact (« 1500 », « 1 500 »).
 - **Import** : `POST /imports/analyser` → `201` ; `import` contient aussi `format`, `encodage`, `separateur`, `nom_fichier`, `memorisee` (correspondance du dernier import de la boutique, déjà fusionnée dans `suggestions`), `correspondance`, `mode`, `lignes_en_erreur` (total réel ; `erreurs` est borné à 100), `cree_le`, `mis_a_jour_le`. `GET /imports/{ulid}/rapport` → CSV (résumé + erreurs). Mode `creer` / `creer_et_mettre_a_jour` : si une ligne est en erreur, rien n'est écrit (`statut: 'echoue'`, toutes les erreurs listées) ; `ignorer_erreurs` : les lignes valides sont importées. Erreurs : `IMPORT_VIDE`, `IMPORT_TROP_GRAND` (5 000 lignes), `FICHIER_ILLISIBLE`, `CORRESPONDANCE_INVALIDE` (422), `IMPORT_DEJA_EXECUTE` (409). `nom` et `prix_xof` doivent être associés.
 - **Exports** : 6 / min ; `ventes` reprend les filtres de `GET /ventes` ; `articles?actifs=1` ; `paiements?periode=&du=&au=&statut=&methode=`. Caissier → 403.

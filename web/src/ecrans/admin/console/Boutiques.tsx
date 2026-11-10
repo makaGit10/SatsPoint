@@ -1,8 +1,8 @@
 import { useMutation } from '@tanstack/react-query'
-import { ChevronDown, FlaskConical, PauseCircle, PlayCircle, Search, Smartphone, Store, Wallet } from 'lucide-react'
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { FlaskConical, PauseCircle, PlayCircle, Search, Smartphone, Store, Wallet } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CLE_ADMIN, changerStatutBoutique, useBoutiquesAdmin, type FiltresBoutiquesAdmin } from '@/api/admin'
+import { BOUTIQUES_PAR_PAGE, CLE_ADMIN, changerStatutBoutique, useBoutiquesAdmin, type FiltresBoutiquesAdmin } from '@/api/admin'
 import type { BoutiqueAdmin } from '@/api/types'
 import { Bouton } from '@/composants/Bouton'
 import { BoutonIcone } from '@/composants/BoutonIcone'
@@ -10,6 +10,7 @@ import { Champ } from '@/composants/Champ'
 import { Dialogue } from '@/composants/Dialogue'
 import { EtatVide } from '@/composants/EtatVide'
 import { Infobulle } from '@/composants/Infobulle'
+import { Pagination } from '@/composants/Pagination'
 import { Pastille } from '@/composants/Pastille'
 import { Segment } from '@/composants/Segment'
 import { SqueletteListe } from '@/composants/Squelette'
@@ -18,6 +19,7 @@ import { useMessageErreur } from '@/ecrans/auth/useMessageErreur'
 import { cn } from '@/lib/cn'
 import { queryClient } from '@/lib/queryClient'
 import { tempsRelatif } from '@/lib/temps'
+import { useCorrectionPage, usePageUrl } from '@/lib/usePagination'
 
 type FiltreStatut = 'toutes' | BoutiqueAdmin['statut']
 
@@ -53,15 +55,29 @@ export function BoutiquesAdmin({ actif }: { actif: boolean }) {
   const [statut, setStatut] = useState<FiltreStatut>('toutes')
   const [q, setQ] = useState('')
   const [cible, setCible] = useState<BoutiqueAdmin | null>(null)
+  const { page, allerA, reinitialiser } = usePageUrl()
+  const haut = useRef<HTMLUListElement>(null)
 
+  // Recherche (250 ms) et statut ramènent à la page 1.
   useEffect(() => {
-    const id = setTimeout(() => setQ(recherche.trim()), 250)
+    const terme = recherche.trim()
+    if (terme === q) return
+    const id = setTimeout(() => {
+      setQ(terme)
+      reinitialiser()
+    }, 250)
     return () => clearTimeout(id)
-  }, [recherche])
+  }, [recherche, q, reinitialiser])
+  const changerStatut = (s: FiltreStatut) => {
+    setStatut(s)
+    reinitialiser()
+  }
 
   const filtres: FiltresBoutiquesAdmin = useMemo(() => ({ ...(q ? { q } : {}), ...(statut !== 'toutes' ? { statut } : {}) }), [q, statut])
-  const requete = useBoutiquesAdmin(filtres, actif)
-  const boutiques = useMemo(() => (requete.data?.pages ?? []).flatMap((p) => p.boutiques), [requete.data])
+  const requete = useBoutiquesAdmin(filtres, page, actif)
+  const boutiques = requete.data?.boutiques ?? []
+  const pagination = requete.data?.pagination
+  useCorrectionPage(actif ? pagination : undefined, allerA)
 
   const changement = useMutation({
     mutationFn: (b: BoutiqueAdmin) => changerStatutBoutique(b.ulid, b.statut === 'active' ? 'suspendue' : 'active'),
@@ -95,7 +111,7 @@ export function BoutiquesAdmin({ actif }: { actif: boolean }) {
           libelle={t('admin.boutiques.statut')}
           taille="sm"
           valeur={statut}
-          onChange={setStatut}
+          onChange={changerStatut}
           className="sm:w-auto"
           options={[
             { valeur: 'toutes', libelle: t('admin.boutiques.toutes'), voix: 'admin.boutiques.toutes' },
@@ -109,11 +125,11 @@ export function BoutiquesAdmin({ actif }: { actif: boolean }) {
         <div data-chargement="boutiques" aria-busy="true">
           <SqueletteListe lignes={6} />
         </div>
-      ) : boutiques.length === 0 ? (
+      ) : boutiques.length === 0 && (pagination?.total ?? 0) === 0 ? (
         <EtatVide ton="neutre" icone={<Store />} titre={t('admin.boutiques.vide')} />
       ) : (
         <>
-          <ul className="divide-y divide-bordure verre rounded-xl" aria-label={t('admin.onglets.boutiques')}>
+          <ul ref={haut} className={cn('divide-y divide-bordure verre rounded-xl transition-opacity duration-150', requete.isPlaceholderData && 'opacity-70')} aria-label={t('admin.onglets.boutiques')}>
             {boutiques.map((b) => {
               const derniere = b.activite.derniere_vente_le ? tempsRelatif(b.activite.derniere_vente_le) : null
               return (
@@ -159,12 +175,18 @@ export function BoutiquesAdmin({ actif }: { actif: boolean }) {
               )
             })}
           </ul>
-          {requete.hasNextPage && (
-            <div className="flex justify-center">
-              <Bouton variante="secondaire" icone={<ChevronDown />} voix="commun.voirPlus" chargement={requete.isFetchingNextPage} onClick={() => void requete.fetchNextPage()}>
-                {t('commun.voirPlus')}
-              </Bouton>
-            </div>
+          {pagination && (
+            <Pagination
+              page={page}
+              parPage={pagination.par_page || BOUTIQUES_PAR_PAGE}
+              total={pagination.total}
+              pages={pagination.pages}
+              onChange={allerA}
+              ancre={haut}
+              libelle={t('admin.onglets.boutiques')}
+              chargement={requete.isPlaceholderData}
+              className="mt-1"
+            />
           )}
         </>
       )}

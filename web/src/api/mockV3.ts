@@ -1,17 +1,18 @@
 /**
  * Mode mock — routes de la vague 3 (CONTRAT_API § V3), branchées par `mock.ts`. Jamais inclus en production.
  *
- * - Studio audio : matrice d'environ 40 clés (tirées du vrai registre `voix/cles-vocales.json`) × 5 langues, couverture partielle ;
+ * - Studio audio : matrice d'environ 90 clés (tirées du vrai registre `voix/cles-vocales.json`) × 5 langues, couverture partielle ;
  *   dépôt → `en_traitement` → `brouillon` après 1,5 s + signal `audio` (canal `admin`) ; publication → manifeste mis à jour
  *   + signal `audios` (canal `plateforme`). Les enregistrements déposés sont réellement réécoutables (URL `blob:`).
  * - 2FA : code `123456` (ou un code de secours affiché à l'activation). Le super-admin a la 2FA active, non validée.
  *   Levier `sessionStorage['satspoint.mock.2fa']` = `inactive` | `active` | `validee`.
- * - Console : statistiques, boutiques (suspendre / réactiver), santé, journal (curseur).
+ * - Console : statistiques, boutiques (suspendre / réactiver), santé, journal (pagination par numéro de page).
  * - Recherche (ventes, articles, équipe, pages), dernières recherches ; import d'articles avec suggestions ; invitation `demo`.
  */
 import { suggererCorrespondance } from '@/ecrans/articles/correspondance'
 import { pertinence } from '@/lib/texte'
 import { emettreSignal } from '@/temps-reel/signaux'
+import { lirePagination, paginer } from './mockPagination'
 import registre from '@/voix/cles-vocales.json'
 import type {
   Article,
@@ -116,12 +117,12 @@ interface CelluleStudio extends EtatCleAudio {
 }
 
 const entrees = registre as Array<{ cle: string; ecran: string; contexte: string; texte_fr: string; texte_en: string; essentielle: boolean }>
-/** ~40 clés : les essentielles d'abord, puis un échantillon des autres écrans. */
+/** ~90 clés (deux pages de matrice) : les essentielles d'abord, puis un échantillon des autres écrans. */
 const CLES_STUDIO = (() => {
-  const essentielles = entrees.filter((e) => e.essentielle).slice(0, 28)
+  const essentielles = entrees.filter((e) => e.essentielle).slice(0, 50)
   const autres = entrees.filter((e) => !e.essentielle)
-  const pas = Math.max(1, Math.floor(autres.length / 12))
-  return [...essentielles, ...autres.filter((_, i) => i % pas === 0).slice(0, 12)]
+  const pas = Math.max(1, Math.floor(autres.length / 40))
+  return [...essentielles, ...autres.filter((_, i) => i % pas === 0).slice(0, 40)]
 })()
 
 const PUBLIES: Record<LangueAudio, number> = { fr: 30, wo: 18, srr: 9, ff: 5, dyo: 2 }
@@ -521,10 +522,11 @@ export async function repondreV3(ctx: ContexteMock): Promise<Response | null> {
     if (route === '/admin/boutiques' && methode === 'GET') {
       const q = (url.searchParams.get('q') ?? '').trim()
       const statut = url.searchParams.get('statut')
-      const decalage = Number(url.searchParams.get('curseur') ?? 0) || 0
+      const lecture = lirePagination(url.searchParams, 20)
+      if ('erreur' in lecture) return lecture.erreur
       const filtrees = boutiques.filter((b) => (!statut || b.statut === statut) && (!q || pertinence(`${b.nom} ${b.ville} ${b.proprietaire?.nom ?? ''}`, q) > 0))
-      const page = filtrees.slice(decalage, decalage + 12)
-      return json(200, { boutiques: page, curseur_suivant: decalage + 12 < filtrees.length ? String(decalage + 12) : null })
+      const { elements, pagination } = paginer(filtrees, lecture)
+      return json(200, { boutiques: elements, pagination })
     }
     m = /^\/admin\/boutiques\/([^/]+)$/.exec(route)
     if (m && methode === 'PATCH') {
@@ -542,10 +544,11 @@ export async function repondreV3(ctx: ContexteMock): Promise<Response | null> {
       const action = url.searchParams.get('action')
       const du = url.searchParams.get('du')
       const au = url.searchParams.get('au')
-      const decalage = Number(url.searchParams.get('curseur') ?? 0) || 0
+      const lecture = lirePagination(url.searchParams, 30)
+      if ('erreur' in lecture) return lecture.erreur
       const filtrees = journal.filter((e) => (!action || e.action.startsWith(action)) && (!du || e.cree_le.slice(0, 10) >= du) && (!au || e.cree_le.slice(0, 10) <= au))
-      const page = filtrees.slice(decalage, decalage + 20)
-      return json(200, { entrees: page, curseur_suivant: decalage + 20 < filtrees.length ? String(decalage + 20) : null })
+      const { elements, pagination } = paginer(filtrees, lecture)
+      return json(200, { entrees: elements, pagination })
     }
     return json(404, { message: 'Route inconnue (mock).' })
   }

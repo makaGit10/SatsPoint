@@ -206,7 +206,7 @@ it('annule une vente en attente (caissier : les siennes seulement) et journalise
     connecte($proprio)->postJson("/api/v1/ventes/{$vente->ulid}/annuler")->assertStatus(409)->assertJsonPath('code', 'VENTE_NON_ANNULABLE');
 });
 
-it('liste les ventes avec filtres, curseur et totaux ; le caissier ne voit que ses ventes du jour', function () {
+it('liste les ventes avec filtres, pagination et totaux ; le caissier ne voit que ses ventes du jour', function () {
     ['user' => $proprio, 'boutique' => $boutique] = boutiquePrete();
     ['user' => $caissier] = boutiqueAvec('caissier', $boutique);
 
@@ -221,15 +221,14 @@ it('liste les ventes avec filtres, curseur et totaux ; le caissier ne voit que s
     });
     venteAvecTentative(Boutique::factory()->create(), User::factory()->create()); // autre boutique
 
-    $reponse = connecte($proprio)->getJson('/api/v1/ventes?periode=aujourdhui&limite=2')->assertOk()
-        ->assertJsonCount(2, 'ventes')
+    connecte($proprio)->getJson('/api/v1/ventes?periode=aujourdhui')->assertOk()
+        ->assertJsonCount(3, 'ventes')
         ->assertJsonPath('totaux', ['nombre' => 3, 'montant_xof' => 3900, 'payees_xof' => 2500])
+        ->assertJsonPath('pagination', ['page' => 1, 'par_page' => 20, 'total' => 3, 'pages' => 1])
         ->assertJsonPath('ventes.0.numero', 'V-000003')
-        ->assertJsonStructure(['ventes' => [['ulid', 'numero', 'montant_xof', 'statut', 'methode_reussie', 'operateur_reussi', 'montant_sats_reussi', 'caissier', 'note', 'alerte', 'cree_le', 'payee_le']], 'curseur_suivant', 'totaux']);
-
-    $curseur = $reponse->json('curseur_suivant');
-    expect($curseur)->not->toBeNull();
-    $this->getJson('/api/v1/ventes?periode=aujourdhui&limite=2&curseur='.urlencode($curseur))->assertOk()->assertJsonCount(1, 'ventes')->assertJsonPath('ventes.0.numero', 'V-000001')->assertJsonPath('curseur_suivant', null);
+        ->assertJsonPath('ventes.2.numero', 'V-000001')
+        ->assertJsonStructure(['ventes' => [['ulid', 'numero', 'montant_xof', 'statut', 'methode_reussie', 'operateur_reussi', 'montant_sats_reussi', 'caissier', 'note', 'alerte', 'cree_le', 'payee_le']], 'pagination' => ['page', 'par_page', 'total', 'pages'], 'totaux'])
+        ->assertJsonMissingPath('curseur_suivant');
 
     $this->getJson('/api/v1/ventes?periode=hier')->assertOk()->assertJsonCount(1, 'ventes')->assertJsonPath('ventes.0.montant_xof', 9000);
     $this->getJson('/api/v1/ventes?periode=7j')->assertOk()->assertJsonPath('totaux.nombre', 4);
@@ -242,11 +241,61 @@ it('liste les ventes avec filtres, curseur et totaux ; le caissier ne voit que s
     $this->getJson("/api/v1/ventes?q=' OR 1=1 --")->assertOk()->assertJsonCount(0, 'ventes');
     $this->getJson('/api/v1/ventes?periode=perso&du=2026-01-01&au=2025-01-01')->assertStatus(422);
     $this->getJson('/api/v1/ventes?statut=volee')->assertStatus(422);
-    $this->getJson('/api/v1/ventes?limite=101')->assertStatus(422);
+    $this->getJson('/api/v1/ventes?par_page=101')->assertStatus(422);
 
     // Caissier : ses ventes du jour, quels que soient les filtres.
     connecte($caissier)->getJson('/api/v1/ventes?periode=7j&caissier='.$proprio->ulid)->assertOk()
         ->assertJsonCount(2, 'ventes')->assertJsonPath('totaux.nombre', 2)->assertJsonPath('totaux.montant_xof', 2900);
+});
+
+it('pagine les ventes par numéro de page : total, bornes, page hors limites, filtres et isolation entre boutiques', function () {
+    ['user' => $proprio, 'boutique' => $boutique] = boutiquePrete();
+    ['user' => $caissier] = boutiqueAvec('caissier', $boutique);
+    foreach (range(1, 23) as $i) {
+        venteAvecTentative($boutique, $i % 2 ? $proprio : $caissier, 'wave_manuel', vente: ['montant_xof' => 100 * $i]);
+    }
+    ['user' => $proprioB, 'boutique' => $boutiqueB] = boutiqueAvec('proprietaire');
+    foreach (range(1, 5) as $i) {
+        venteAvecTentative($boutiqueB, $proprioB, 'wave_manuel');
+    }
+
+    connecte($proprio);
+    $vus = [];
+    foreach ([1 => 10, 2 => 10, 3 => 3] as $numero => $attendu) {
+        $r = $this->getJson("/api/v1/ventes?page={$numero}&par_page=10")->assertOk()
+            ->assertJsonCount($attendu, 'ventes')
+            ->assertJsonPath('pagination', ['page' => $numero, 'par_page' => 10, 'total' => 23, 'pages' => 3])
+            // Totaux sur tout l'ensemble filtré, quelle que soit la page.
+            ->assertJsonPath('totaux.nombre', 23);
+        $vus = array_merge($vus, array_column($r->json('ventes'), 'numero'));
+    }
+    // Plus récent d'abord, sans doublon ni trou.
+    expect($vus)->toBe(array_map(fn ($n) => sprintf('V-%06d', $n), range(23, 1)));
+
+    // Page au-delà de la dernière : liste vide, pagination exacte (le client revient à la dernière page).
+    $this->getJson('/api/v1/ventes?page=4&par_page=10')->assertOk()->assertJsonCount(0, 'ventes')
+        ->assertJsonPath('pagination', ['page' => 4, 'par_page' => 10, 'total' => 23, 'pages' => 3]);
+
+    // Par défaut : 20 par page.
+    $this->getJson('/api/v1/ventes')->assertOk()->assertJsonCount(20, 'ventes')->assertJsonPath('pagination.pages', 2);
+
+    // Bornes : page ≥ 1 (≤ 10 000), 10 ≤ par_page ≤ 100, entiers seulement.
+    foreach (['page=0', 'page=-1', 'page=abc', 'page=10001', 'par_page=9', 'par_page=101', 'par_page=1.5'] as $mauvais) {
+        $this->getJson("/api/v1/ventes?{$mauvais}")->assertStatus(422);
+    }
+    $this->getJson('/api/v1/ventes?page=1&par_page=100')->assertOk()->assertJsonCount(23, 'ventes');
+
+    // Filtres conservés avec la pagination.
+    $this->getJson('/api/v1/ventes?caissier='.$caissier->ulid.'&par_page=10&page=2')->assertOk()
+        ->assertJsonCount(1, 'ventes')->assertJsonPath('pagination.total', 11)->assertJsonPath('ventes.0.caissier.ulid', $caissier->ulid);
+
+    // Isolation : l'autre boutique ne voit que ses 5 ventes, sur une seule page.
+    connecte($proprioB)->getJson('/api/v1/ventes?par_page=10')->assertOk()
+        ->assertJsonCount(5, 'ventes')->assertJsonPath('pagination', ['page' => 1, 'par_page' => 10, 'total' => 5, 'pages' => 1]);
+    $this->getJson('/api/v1/ventes?page=2&par_page=10')->assertOk()->assertJsonCount(0, 'ventes')->assertJsonPath('pagination.total', 5);
+
+    // Caissier : ses ventes du jour seulement, total compris.
+    connecte($caissier)->getJson('/api/v1/ventes?par_page=10')->assertOk()->assertJsonPath('pagination.total', 11)->assertJsonCount(10, 'ventes');
 });
 
 it('exporte les ventes en CSV UTF-8 avec BOM pour le propriétaire et le gérant, jamais pour le caissier', function () {

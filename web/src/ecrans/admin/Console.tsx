@@ -26,6 +26,8 @@ export default function Console() {
 
   const changer = (valeur: string) => {
     const suivant = new URLSearchParams(params)
+    // Chaque onglet a sa propre liste : la page repart de 1.
+    suivant.delete('page')
     if (valeur === 'ensemble') suivant.delete('onglet')
     else suivant.set('onglet', valeur)
     setParams(suivant, { replace: true })

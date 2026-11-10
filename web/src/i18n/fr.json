@@ -34,8 +34,15 @@
     "suivant": "Suivant",
     "aucun": "Aucun",
     "tout": "Tout",
-    "enregistre": "Enregistré",
-    "voirPlus": "Voir plus"
+    "enregistre": "Enregistré"
+  },
+  "pagination": {
+    "libelle": "Pages de la liste",
+    "resume": "{{debut}}–{{fin}} sur {{total}}",
+    "pageSur": "Page {{page}} / {{pages}}",
+    "page": "Page {{page}}",
+    "precedente": "Page précédente",
+    "suivante": "Page suivante"
   },
   "langue": {
     "titre": "Choisissez votre langue",
@@ -67,7 +74,7 @@
       "motDePasse": "Mot de passe",
       "afficherMotDePasse": "Afficher le mot de passe",
       "masquerMotDePasse": "Masquer le mot de passe",
-      "seSouvenir": "Rester connecté sur cet appareil",
+      "seSouvenir": "Se souvenir de moi",
       "valider": "Me connecter",
       "oubli": "Mot de passe oublié ?",
       "pasDeCompte": "Pas encore de boutique ?",
@@ -117,7 +124,9 @@
       "telephoneSenegal": "Ce numéro n'est pas complet. Un numéro du Sénégal a 9 chiffres, par exemple 77 123 45 67.",
       "telephoneInvalide": "Ce numéro ne semble pas valide. Vérifiez l'indicatif du pays et le nombre de chiffres.",
       "emailInvalide": "Cette adresse e-mail n'est pas valide. Vérifiez qu'elle ressemble à nom@exemple.com.",
-      "invalide": "Ce n'est ni un numéro ni un e-mail. Écrivez votre numéro de téléphone ou votre adresse e-mail."
+      "invalide": "Ce n'est ni un numéro ni un e-mail. Écrivez votre numéro de téléphone ou votre adresse e-mail.",
+      "suggestions": "Identifiants déjà utilisés sur cet appareil",
+      "oublier": "Oublier {{identifiant}}"
     },
     "motDePasse": {
       "minimum": "{{count}} caractères minimum.",
@@ -367,8 +376,6 @@
     "nombre_other": "{{count}} ventes",
     "total": "Total",
     "encaisse": "Encaissé",
-    "voirPlus": "Voir plus",
-    "finListe": "Toutes les ventes sont affichées.",
     "detail": "Détail de la vente",
     "lignes": "Articles",
     "tentatives": "Tentatives de paiement",

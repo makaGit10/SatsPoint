@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { http } from './client'
 import type { ApercuEnvoi, ReponseRecevoir, ResultatEnvoi, TransactionWallet, Wallet } from './types'
 
@@ -9,12 +9,19 @@ export function useWallet(actif = true) {
   return useQuery({ queryKey: CLE_WALLET, queryFn: () => http.get<Wallet>('/wallet'), enabled: actif })
 }
 
-export function useTransactionsWallet(actif = true, limite = 30) {
+export const TRANSACTIONS_PAR_PAGE = 10
+
+/**
+ * Historique paginé. La passerelle (NWC) ne donne pas de total : on demande une ligne de plus
+ * (`limite = par_page + 1`, `decalage`) pour savoir s'il existe une page suivante (CONTRAT_API § 13).
+ */
+export function useTransactionsWallet(actif: boolean, page: number, parPage = TRANSACTIONS_PAR_PAGE) {
   return useQuery({
-    queryKey: [...CLE_TRANSACTIONS, limite],
-    queryFn: () => http.get<{ transactions: TransactionWallet[] }>(`/wallet/transactions?limite=${limite}`),
+    queryKey: [...CLE_TRANSACTIONS, page, parPage],
+    queryFn: () => http.get<{ transactions: TransactionWallet[] }>(`/wallet/transactions?limite=${parPage + 1}&decalage=${(page - 1) * parPage}`),
     enabled: actif,
-    select: (r) => r.transactions,
+    placeholderData: keepPreviousData,
+    select: (r) => ({ transactions: r.transactions.slice(0, parPage), suivante: r.transactions.length > parPage }),
   })
 }
 

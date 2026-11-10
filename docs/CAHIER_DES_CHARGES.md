@@ -277,7 +277,7 @@ Matrice « clés × langues » → choisir une case manquante → **enregistrer 
 ### 6.7 Ventes (P0)
 - Liste compacte : n°, heure, montant, moyen (icône ⚡ / icône mobile money), statut (pastille), caissier.
 - Filtres : période (aujourd'hui, hier, 7 j, 30 j, personnalisée), statut, moyen de paiement, caissier ; recherche par n° ou montant.
-- Pagination par curseur (rapide sur gros volumes), filtres et page conservés lors des mises à jour en direct.
+- Pagination par numéro de page avec total (« 21–40 sur 248 », page dans l'adresse), filtres et page conservés lors des mises à jour en direct (CONTRAT_API § 13).
 - Détail : lignes, tentatives de paiement, horodatages, cours appliqué, reçu.
 - Actions en icônes : 🧾 reçu, ✕ annuler (en attente seulement), ✔ confirmer manuellement (Wave direct).
 - Export CSV (P0), Excel / PDF (P1), respectant les filtres.
@@ -635,7 +635,7 @@ Rédigé dans `docs/THREAT_MODEL.md` (méthode STRIDE). Menaces prioritaires et 
 | Règlement → écran vert | ≤ 2 s |
 | Recherche globale | ≤ 150 ms serveur |
 
-Moyens : index sur toutes les colonnes filtrées, pas de N+1 (chargements groupés, test qui échoue en cas de requête paresseuse), pagination par curseur,
+Moyens : index sur toutes les colonnes filtrées, pas de N+1 (chargements groupés, test qui échoue en cas de requête paresseuse), pagination par numéro de page bornée (10 à 100 lignes, 10 000 pages au plus),
 cache Redis du cours et du manifeste audio, compression Brotli, polices sous-ensemble, images légères, service worker (coquille de l'application en cache),
 préchargement de l'écran de paiement pendant la saisie du montant.
 

@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { http } from './client'
 import { telecharger } from './telechargement'
 import type { FormatExport } from './exports'
@@ -22,27 +22,33 @@ export function useVente(ulid: string | null | undefined) {
   })
 }
 
-export function parametresVentes(filtres: FiltresVentes, curseur?: string | null): URLSearchParams {
+/** Ventes par page (liste compacte, lisible au téléphone) — même valeur que le défaut du serveur. */
+export const VENTES_PAR_PAGE = 20
+
+export function parametresVentes(filtres: FiltresVentes): URLSearchParams {
   const p = new URLSearchParams()
   for (const [cle, valeur] of Object.entries(filtres)) {
     if (valeur !== undefined && valeur !== null && valeur !== '') p.set(cle, String(valeur))
   }
-  if (curseur) p.set('curseur', curseur)
   return p
 }
 
-export function chargerVentes(filtres: FiltresVentes, curseur?: string | null) {
-  return http.get<PageVentes>(`/ventes?${parametresVentes(filtres, curseur)}`)
+export function chargerVentes(filtres: FiltresVentes, page = 1, parPage = VENTES_PAR_PAGE) {
+  const p = parametresVentes(filtres)
+  p.set('page', String(page))
+  p.set('par_page', String(parPage))
+  return http.get<PageVentes>(`/ventes?${p}`)
 }
 
-/** Liste paginée par curseur (« voir plus ») ; les pages chargées sont conservées lors d'un rechargement silencieux. */
-export function useVentes(filtres: FiltresVentes) {
-  return useInfiniteQuery({
-    queryKey: ['ventes', 'liste', filtres],
-    queryFn: ({ pageParam }) => chargerVentes(filtres, pageParam),
-    initialPageParam: null as string | null,
-    getNextPageParam: (derniere) => derniere.curseur_suivant,
-    placeholderData: (precedent) => precedent,
+/**
+ * Liste paginée par numéro de page (CONTRAT_API § 13). Pendant le changement de page ou de filtre,
+ * la page précédente reste affichée (pas de liste vidée) ; le rechargement en direct relit la page courante.
+ */
+export function useVentes(filtres: FiltresVentes, page: number, parPage = VENTES_PAR_PAGE) {
+  return useQuery({
+    queryKey: ['ventes', 'liste', filtres, page, parPage],
+    queryFn: () => chargerVentes(filtres, page, parPage),
+    placeholderData: keepPreviousData,
   })
 }
 

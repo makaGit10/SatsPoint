@@ -1,5 +1,9 @@
 /** Types du contrat API `/api/v1` (voir web/README.md et docs/CAHIER_DES_CHARGES.md § 11). */
 
+import type { InfosPagination } from '@/lib/pagination'
+
+export type { InfosPagination }
+
 export type LangueAudio = 'wo' | 'srr' | 'ff' | 'dyo' | 'fr'
 export type Theme = 'clair' | 'sombre' | 'auto'
 export type LocaleInterface = 'fr' | 'en'
@@ -194,12 +198,11 @@ export interface FiltresVentes {
   methode?: MethodePaiement
   caissier?: string
   q?: string
-  limite?: number
 }
 
 export interface PageVentes {
   ventes: VenteCourte[]
-  curseur_suivant: string | null
+  pagination: InfosPagination
   totaux: { nombre: number; montant_xof: number; payees_xof: number }
 }
 
@@ -403,7 +406,7 @@ export interface BoutiqueAdmin {
 
 export interface PageBoutiquesAdmin {
   boutiques: BoutiqueAdmin[]
-  curseur_suivant: string | null
+  pagination: InfosPagination
 }
 
 export interface SanteAdmin {
@@ -432,7 +435,7 @@ export interface EntreeJournal {
 
 export interface PageJournal {
   entrees: EntreeJournal[]
-  curseur_suivant: string | null
+  pagination: InfosPagination
 }
 
 export interface StatistiquesAdmin {

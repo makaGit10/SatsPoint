@@ -149,6 +149,7 @@ const ECRANS = [
       await page.waitForSelector('[role="dialog"] dl, [role="dialog"] ul')
     },
   },
+  { nom: '15b-ventes-page-2', chemin: '/ventes?page=2', attendre: '[data-ecran="ventes"] nav[data-pagination]', session: PROPRIO },
   { nom: '16-ventes-caissier', chemin: '/ventes', attendre: '[data-ecran="ventes"] li', session: CAISSIER, uniquement: ['mobile'] },
   {
     nom: '17-tableau-de-bord',
@@ -180,6 +181,7 @@ const ECRANS = [
   { nom: '24-demarrage-en-cours', chemin: '/demarrage', attendre: '[data-ecran="demarrage"]', session: PROPRIO, stockage: { 'satspoint.mock.wallet': 'deconnecte' } },
   { nom: '25-equipe', chemin: '/equipe', attendre: '[data-ecran="equipe"] li', session: PROPRIO },
   { nom: '26-articles', chemin: '/articles', attendre: '[data-ecran="articles"] li', session: PROPRIO },
+  { nom: '26b-articles-page-2', chemin: '/articles?page=2', attendre: '[data-ecran="articles"] nav[data-pagination]', session: PROPRIO, uniquement: ['mobile'] },
   { nom: '27-recu', chemin: '/r/demo', attendre: '[data-ecran="recu"] dl', bandeau: false },
   { nom: '28-introuvable', chemin: '/une/page/qui/n/existe/pas', attendre: '[data-ecran="introuvable"]', bandeau: false, uniquement: ['mobile'] },
   {
@@ -210,6 +212,7 @@ const ECRANS = [
   },
   { nom: '34-console-ensemble', chemin: '/admin', attendre: '[data-ecran="admin"] [data-vue="ensemble"]', session: SUPER, stockage: ADMIN_VALIDE },
   { nom: '35-console-boutiques', chemin: '/admin?onglet=boutiques', attendre: '[data-vue="boutiques"] li', session: SUPER, stockage: ADMIN_VALIDE },
+  { nom: '35b-console-journal-page-2', chemin: '/admin?onglet=journal&page=2', attendre: '[data-vue="journal"] nav[data-pagination]', session: SUPER, stockage: ADMIN_VALIDE, uniquement: ['bureau'] },
   { nom: '36-console-sante', chemin: '/admin?onglet=sante', attendre: '[data-vue="sante"] li', session: SUPER, stockage: ADMIN_VALIDE },
   { nom: '37-console-journal', chemin: '/admin?onglet=journal', attendre: '[data-vue="journal"] li', session: SUPER, stockage: ADMIN_VALIDE },
   {

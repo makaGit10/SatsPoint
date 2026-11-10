@@ -1,8 +1,8 @@
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Wallet } from '@/api/types'
-import { CLE_TRANSACTIONS, CLE_WALLET, useTransactionsWallet, useWallet } from '@/api/wallet'
+import { CLE_TRANSACTIONS, CLE_WALLET, TRANSACTIONS_PAR_PAGE, useTransactionsWallet, useWallet } from '@/api/wallet'
 import { peut, useAuth } from '@/auth/store'
 import { Bouton } from '@/composants/Bouton'
 import { Carte } from '@/composants/Carte'
@@ -11,6 +11,7 @@ import { Pastille } from '@/composants/Pastille'
 import { Squelette } from '@/composants/Squelette'
 import { formaterFCFA, formaterSats } from '@/lib/format'
 import { queryClient } from '@/lib/queryClient'
+import { usePageUrl } from '@/lib/usePagination'
 import { tempsRelatif } from '@/lib/temps'
 import { useDonneesEnDirect } from '@/temps-reel/useDonneesEnDirect'
 import { ConnexionWallet } from './portefeuille/ConnexionWallet'
@@ -28,7 +29,13 @@ export default function Portefeuille() {
 
   const { data: wallet, isPending } = useWallet()
   const connecte = Boolean(wallet?.connecte)
-  const transactions = useTransactionsWallet(connecte)
+  const { page, allerA, reinitialiser } = usePageUrl()
+  const transactions = useTransactionsWallet(connecte, page)
+  // Sans total connu : une page vide au-delà de la première (historique raccourci, autre appareil) ramène au début.
+  const pageVide = connecte && page > 1 && transactions.data?.transactions.length === 0
+  useEffect(() => {
+    if (pageVide) reinitialiser()
+  }, [pageVide, reinitialiser])
 
   useDonneesEnDirect(['wallet', 'parametres'], () => {
     void queryClient.invalidateQueries({ queryKey: CLE_WALLET })
@@ -79,7 +86,15 @@ export default function Portefeuille() {
       </Carte>
 
       <div className="grid gap-3 md:grid-cols-2 md:items-start [&>*]:min-w-0">
-        <Historique transactions={connecte ? transactions.data : []} chargement={connecte && transactions.isPending} />
+        <Historique
+          transactions={connecte ? transactions.data?.transactions : []}
+          chargement={connecte && transactions.isPending}
+          page={page}
+          parPage={TRANSACTIONS_PAR_PAGE}
+          suivante={transactions.data?.suivante ?? false}
+          onPage={connecte ? allerA : undefined}
+          rechargement={transactions.isPlaceholderData}
+        />
         {wallet && <ConnexionWallet wallet={wallet} proprietaire={proprietaire} />}
       </div>
 

@@ -14,6 +14,7 @@ use App\Models\Paiement;
 use App\Models\User;
 use App\Models\Vente;
 use App\Services\Audio\StudioAudio;
+use App\Support\Pagination;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +33,8 @@ class ConsolePlateforme
     public function __construct(private readonly Diffuseur $diffuseur) {}
 
     /**
-     * @param  array{q?: ?string, statut?: ?string, curseur?: ?string, limite?: ?int}  $filtres
+     * @param  array{q?: ?string, statut?: ?string, page?: ?int, par_page?: ?int}  $filtres
+     * @return array{boutiques: list<array<string, mixed>>, pagination: array{page: int, par_page: int, total: int, pages: int}}
      */
     public function boutiques(array $filtres): array
     {
@@ -66,11 +68,12 @@ class ConsolePlateforme
             })
             ->orderByDesc('boutiques.created_at')->orderByDesc('boutiques.id');
 
-        $page = $requete->cursorPaginate(min(100, max(1, (int) ($filtres['limite'] ?? 30))), ['*'], 'curseur', $filtres['curseur'] ?? null);
+        ['page' => $numero, 'par_page' => $parPage] = Pagination::lire($filtres, 20);
+        $page = $requete->paginate($parPage, ['*'], 'page', $numero);
 
         $boutiques = array_map(fn (Boutique $b) => $this->boutiqueAdmin($b), $page->items());
 
-        return ['boutiques' => $boutiques, 'curseur_suivant' => $page->nextCursor()?->encode()];
+        return ['boutiques' => $boutiques, 'pagination' => Pagination::forme($page)];
     }
 
     public function boutiqueAdmin(Boutique $b): array
@@ -135,7 +138,8 @@ class ConsolePlateforme
     /**
      * Journal d'audit global, filtrable. Les détails sont déjà assainis à l'écriture (service Audit).
      *
-     * @param  array{action?: ?string, boutique?: ?string, utilisateur?: ?string, du?: ?string, au?: ?string, curseur?: ?string, limite?: ?int}  $filtres
+     * @param  array{action?: ?string, boutique?: ?string, utilisateur?: ?string, du?: ?string, au?: ?string, page?: ?int, par_page?: ?int}  $filtres
+     * @return array{entrees: list<array<string, mixed>>, pagination: array{page: int, par_page: int, total: int, pages: int}}
      */
     public function journal(array $filtres): array
     {
@@ -153,7 +157,8 @@ class ConsolePlateforme
             ->when(filled($filtres['au'] ?? null), fn ($q) => $q->where('created_at', '<', CarbonImmutable::parse($filtres['au'], config('satspoint.boutique.fuseau'))->addDay()->startOfDay()->utc()))
             ->orderByDesc('created_at')->orderByDesc('id');
 
-        $page = $requete->cursorPaginate(min(100, max(1, (int) ($filtres['limite'] ?? 50))), ['*'], 'curseur', $filtres['curseur'] ?? null);
+        ['page' => $numero, 'par_page' => $parPage] = Pagination::lire($filtres, 30);
+        $page = $requete->paginate($parPage, ['*'], 'page', $numero);
 
         $entrees = array_map(fn (JournalAudit $j) => [
             'id' => $j->id,
@@ -166,7 +171,7 @@ class ConsolePlateforme
             'cree_le' => $j->created_at?->toIso8601String(),
         ], $page->items());
 
-        return ['entrees' => $entrees, 'curseur_suivant' => $page->nextCursor()?->encode()];
+        return ['entrees' => $entrees, 'pagination' => Pagination::forme($page)];
     }
 
     /** Indicateurs du pitch (CAHIER § 6.16), calculés sur les paiements RÉUSSIS. */

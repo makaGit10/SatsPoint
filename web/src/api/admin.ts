@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { http } from './client'
 import type {
   AudioStudio,
@@ -84,19 +84,22 @@ export interface FiltresBoutiquesAdmin {
   statut?: BoutiqueAdmin['statut']
 }
 
-export function useBoutiquesAdmin(filtres: FiltresBoutiquesAdmin, actif: boolean) {
-  return useInfiniteQuery({
-    queryKey: ['admin', 'boutiques', filtres],
-    queryFn: ({ pageParam }) => {
+/** Tailles de page de la console (mêmes défauts que le serveur, CONTRAT_API § 13). */
+export const BOUTIQUES_PAR_PAGE = 20
+export const JOURNAL_PAR_PAGE = 30
+
+export function useBoutiquesAdmin(filtres: FiltresBoutiquesAdmin, page: number, actif: boolean) {
+  return useQuery({
+    queryKey: ['admin', 'boutiques', filtres, page],
+    queryFn: () => {
       const p = new URLSearchParams()
       if (filtres.q) p.set('q', filtres.q)
       if (filtres.statut) p.set('statut', filtres.statut)
-      if (pageParam) p.set('curseur', pageParam)
+      p.set('page', String(page))
+      p.set('par_page', String(BOUTIQUES_PAR_PAGE))
       return http.get<PageBoutiquesAdmin>(`/admin/boutiques?${p}`)
     },
-    initialPageParam: null as string | null,
-    getNextPageParam: (derniere) => derniere.curseur_suivant,
-    placeholderData: (precedent) => precedent,
+    placeholderData: keepPreviousData,
     enabled: actif,
   })
 }
@@ -111,18 +114,17 @@ export interface FiltresJournal {
   au?: string
 }
 
-export function useJournalAdmin(filtres: FiltresJournal, actif: boolean) {
-  return useInfiniteQuery({
-    queryKey: ['admin', 'journal', filtres],
-    queryFn: ({ pageParam }) => {
+export function useJournalAdmin(filtres: FiltresJournal, page: number, actif: boolean) {
+  return useQuery({
+    queryKey: ['admin', 'journal', filtres, page],
+    queryFn: () => {
       const p = new URLSearchParams()
       for (const [cle, valeur] of Object.entries(filtres)) if (valeur) p.set(cle, valeur)
-      if (pageParam) p.set('curseur', pageParam)
+      p.set('page', String(page))
+      p.set('par_page', String(JOURNAL_PAR_PAGE))
       return http.get<PageJournal>(`/admin/journal?${p}`)
     },
-    initialPageParam: null as string | null,
-    getNextPageParam: (derniere) => derniere.curseur_suivant,
-    placeholderData: (precedent) => precedent,
+    placeholderData: keepPreviousData,
     enabled: actif,
   })
 }

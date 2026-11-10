@@ -1,11 +1,11 @@
 import { useMutation } from '@tanstack/react-query'
-import { ChevronDown, Download, FileSpreadsheet, FileText, ListFilter, Receipt, Search, Sheet } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { Download, FileSpreadsheet, FileText, ListFilter, Receipt, Search, Sheet } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import type { FormatExport } from '@/api/exports'
 import type { FiltresVentes as TypeFiltres, VenteCourte } from '@/api/types'
-import { CLE_VENTES, exporterVentes, useVentes } from '@/api/ventes'
+import { CLE_VENTES, exporterVentes, useVentes, VENTES_PAR_PAGE } from '@/api/ventes'
 import { peut, roleBoutique, useAuth } from '@/auth/store'
 import { Bouton } from '@/composants/Bouton'
 import { BoutonIcone } from '@/composants/BoutonIcone'
@@ -13,10 +13,13 @@ import { Champ } from '@/composants/Champ'
 import { EnTetePage } from '@/composants/EnTetePage'
 import { EtatVide } from '@/composants/EtatVide'
 import { Menu } from '@/composants/Menu'
+import { Pagination } from '@/composants/Pagination'
 import { SqueletteListe } from '@/composants/Squelette'
 import { notifier } from '@/composants/toastStore'
+import { cn } from '@/lib/cn'
 import { formaterFCFA } from '@/lib/format'
 import { queryClient } from '@/lib/queryClient'
+import { useCorrectionPage, usePageUrl } from '@/lib/usePagination'
 import { useDonneesEnDirect } from '@/temps-reel/useDonneesEnDirect'
 import { DetailVente } from './ventes/DetailVente'
 import { FILTRES_DEFAUT, filtresActifs } from './ventes/filtres'
@@ -25,7 +28,7 @@ import { LigneVente, ListeVentes } from './ventes/LigneVente'
 
 const DEBOUNCE_RECHERCHE = 300
 
-/** Ventes : liste compacte, filtres, recherche, pagination par curseur, totaux, détail et actions, export CSV. */
+/** Ventes : liste compacte, filtres, recherche, pagination par numéro de page (`?page=`), totaux, détail et actions, export. */
 export default function Ventes() {
   const { t, i18n } = useTranslation()
   void i18n.language
@@ -34,6 +37,13 @@ export default function Ventes() {
   const gestion = peut(utilisateur, ['proprietaire', 'gerant'])
 
   const [filtres, setFiltres] = useState<TypeFiltres>({ ...FILTRES_DEFAUT })
+  const { page, allerA, reinitialiser } = usePageUrl()
+  const haut = useRef<HTMLDivElement>(null)
+  // Un filtre qui change ramène à la page 1 (dans le même rendu : une seule requête).
+  const changerFiltres = (suivants: TypeFiltres) => {
+    setFiltres(suivants)
+    reinitialiser()
+  }
   const [recherche, setRecherche] = useState('')
   const [filtresVisibles, setFiltresVisibles] = useState(false)
   const [params, setParams] = useSearchParams()
@@ -53,28 +63,32 @@ export default function Ventes() {
     setParams(suivant, { replace: true })
   }, [venteDemandee, params, setParams])
 
-  // Recherche avec délai : le filtre `q` ne change qu'après 300 ms sans frappe.
+  // Recherche avec délai : le filtre `q` ne change qu'après 300 ms sans frappe (et ramène à la page 1).
+  const qActuel = filtres.q ?? ''
   useEffect(() => {
+    const q = recherche.trim()
+    if (q === qActuel) return
     const id = setTimeout(() => {
-      const q = recherche.trim()
       setFiltres((f) => {
-        if ((f.q ?? '') === q) return f
         const suivant = { ...f }
         if (q) suivant.q = q
         else delete suivant.q
         return suivant
       })
+      reinitialiser()
     }, DEBOUNCE_RECHERCHE)
     return () => clearTimeout(id)
-  }, [recherche])
+  }, [recherche, qActuel, reinitialiser])
 
-  const requete = useVentes(filtres)
+  const requete = useVentes(filtres, page)
+  // Rechargement silencieux de la page courante (filtres et page conservés).
   useDonneesEnDirect(['ventes', 'paiements'], () => void queryClient.invalidateQueries({ queryKey: CLE_VENTES }))
 
-  const pages = requete.data?.pages
-  const ventes = useMemo(() => (pages ?? []).flatMap((p) => p.ventes), [pages])
-  const totaux = pages?.[0]?.totaux
-  const nombrePages = pages?.length ?? 0
+  const donnees = requete.data
+  const ventes = useMemo(() => donnees?.ventes ?? [], [donnees])
+  const totaux = donnees?.totaux
+  const pagination = donnees?.pagination
+  useCorrectionPage(pagination, allerA)
   const caissiers = useMemo(() => {
     const vus = new Map<string, string>()
     for (const v of ventes) vus.set(v.caissier.ulid, v.caissier.nom)
@@ -132,7 +146,7 @@ export default function Ventes() {
           classeConteneur="[&>label]:sr-only"
           autoComplete="off"
         />
-        {filtresVisibles && <FiltresVentes filtres={filtres} onChange={setFiltres} caissiers={caissiers} restreint={caissier} />}
+        {filtresVisibles && <FiltresVentes filtres={filtres} onChange={changerFiltres} caissiers={caissiers} restreint={caissier} />}
       </div>
 
       {totaux && (
@@ -167,25 +181,27 @@ export default function Ventes() {
             </Bouton>
           }
         />
-      ) : ventes.length === 0 ? (
+      ) : ventes.length === 0 && (pagination?.total ?? 0) === 0 ? (
         <EtatVide icone={<Receipt />} titre={t('ventes.vide.titre')} texte={actifs ? t('ventes.vide.filtres') : t('ventes.vide.texte')} />
       ) : (
-        <>
+        <div ref={haut} className={cn('transition-opacity duration-150', requete.isPlaceholderData && 'opacity-70')}>
           <ListeVentes aria-label={t('ventes.titre')}>
             {ventes.map((v) => (
               <LigneVente key={v.ulid} vente={v} onOuvrir={ouvrir} sansCaissier={caissier} />
             ))}
           </ListeVentes>
-          <div className="mt-3 flex justify-center">
-            {requete.hasNextPage ? (
-              <Bouton variante="secondaire" icone={<ChevronDown />} voix="ventes.voirPlus" chargement={requete.isFetchingNextPage} onClick={() => void requete.fetchNextPage()}>
-                {t('ventes.voirPlus')}
-              </Bouton>
-            ) : (
-              nombrePages > 1 && <p className="text-xs text-texte-3">{t('ventes.finListe')}</p>
-            )}
-          </div>
-        </>
+          {pagination && (
+            <Pagination
+              page={page}
+              parPage={pagination.par_page || VENTES_PAR_PAGE}
+              total={pagination.total}
+              pages={pagination.pages}
+              onChange={allerA}
+              ancre={haut}
+              chargement={requete.isPlaceholderData}
+            />
+          )}
+        </div>
       )}
 
       <DetailVente ulid={detail} onFermer={() => setDetail(null)} gestion={gestion} />

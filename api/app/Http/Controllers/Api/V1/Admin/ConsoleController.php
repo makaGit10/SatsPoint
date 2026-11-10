@@ -19,7 +19,7 @@ class ConsoleController extends Controller
 {
     public function __construct(private readonly ConsolePlateforme $console) {}
 
-    /** GET /admin/boutiques?q=&statut=&curseur= */
+    /** GET /admin/boutiques?q=&statut=&page=&par_page= → { boutiques, pagination } */
     public function boutiques(ListerBoutiquesRequest $request): JsonResponse
     {
         return response()->json($this->console->boutiques($request->filtres()));
@@ -31,7 +31,7 @@ class ConsoleController extends Controller
         $boutique = $this->console->changerStatut($boutique, $request->input('statut'), $request->user());
 
         // Relecture avec les agrégats pour renvoyer la même forme que la liste.
-        $liste = $this->console->boutiques(['q' => $boutique->ulid, 'limite' => 1]);
+        $liste = $this->console->boutiques(['q' => $boutique->ulid, 'par_page' => 1]);
 
         return response()->json(['boutique' => $liste['boutiques'][0] ?? ['ulid' => $boutique->ulid, 'statut' => $boutique->statut]]);
     }
@@ -42,7 +42,7 @@ class ConsoleController extends Controller
         return response()->json($etat->detail())->header('Cache-Control', 'no-store, private');
     }
 
-    /** GET /admin/journal?action=&boutique=&utilisateur=&du=&au=&curseur= */
+    /** GET /admin/journal?action=&boutique=&utilisateur=&du=&au=&page=&par_page= → { entrees, pagination } */
     public function journal(JournalRequest $request): JsonResponse
     {
         return response()->json($this->console->journal($request->filtres()));

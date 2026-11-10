@@ -88,32 +88,38 @@ it('renvoie des statistiques à zéro sur une plateforme vide (aucune division p
         ->and(array_slice(array_keys($r->json()), 0, 6))->toBe(['commercants_actifs_semaine', 'paiements_par_commercant_semaine', 'delai_median_confirmation_ms', 'part_sats_pct', 'part_mobile_money_pct', 'paiements_reussis_30j']);
 });
 
-it('pagine le journal par curseur sans doublon ni trou, le plus récent d\'abord', function () {
+it('pagine le journal par numéro de page sans doublon ni trou, le plus récent d\'abord', function () {
     $admin = adminConsole();
-    foreach (range(1, 5) as $i) {
-        JournalAudit::query()->forceCreate(['action' => 'test.action', 'user_id' => $admin->id, 'ip' => '127.0.0.1', 'details' => ['n' => $i], 'created_at' => now()->subMinutes(10 - $i)]);
+    foreach (range(1, 25) as $i) {
+        JournalAudit::query()->forceCreate(['action' => 'test.action', 'user_id' => $admin->id, 'ip' => '127.0.0.1', 'details' => ['n' => $i], 'created_at' => now()->subMinutes(30 - $i)]);
     }
 
     $vus = [];
-    $curseur = null;
-    $pages = 0;
-    do {
-        $r = $this->getJson('/api/v1/admin/journal?action=test.action&limite=2'.($curseur ? '&curseur='.$curseur : ''))->assertOk();
+    foreach ([1 => 10, 2 => 10, 3 => 5] as $numero => $attendu) {
+        $r = $this->getJson("/api/v1/admin/journal?action=test.action&par_page=10&page={$numero}")->assertOk()
+            ->assertJsonCount($attendu, 'entrees')
+            ->assertJsonPath('pagination', ['page' => $numero, 'par_page' => 10, 'total' => 25, 'pages' => 3]);
         $vus = array_merge($vus, array_column(array_column($r->json('entrees'), 'details'), 'n'));
-        $curseur = $r->json('curseur_suivant');
-        $pages++;
-    } while ($curseur !== null && $pages < 10);
+    }
 
-    expect($vus)->toBe([5, 4, 3, 2, 1])->and($pages)->toBe(3);
-    $this->getJson('/api/v1/admin/journal?curseur=pas-un-curseur')->assertOk();
-    $this->getJson('/api/v1/admin/journal?limite=0')->assertStatus(422);
+    expect($vus)->toBe(range(25, 1));
+    // Au-delà de la dernière page : liste vide, total exact (le client revient à la dernière page).
+    $this->getJson('/api/v1/admin/journal?action=test.action&par_page=10&page=9')->assertOk()->assertJsonCount(0, 'entrees')
+        ->assertJsonPath('pagination', ['page' => 9, 'par_page' => 10, 'total' => 25, 'pages' => 3]);
+    // Ancien paramètre de curseur : ignoré (première page).
+    $this->getJson('/api/v1/admin/journal?action=test.action&par_page=10&curseur=pas-un-curseur')->assertOk()->assertJsonPath('pagination.page', 1);
+    foreach (['page=0', 'page=x', 'page=10001', 'par_page=0', 'par_page=9', 'par_page=101'] as $mauvais) {
+        $this->getJson("/api/v1/admin/journal?{$mauvais}")->assertStatus(422);
+    }
     $this->getJson('/api/v1/admin/journal?du=2026-13-45')->assertStatus(422);
 });
 
 it('valide les filtres de la liste des boutiques', function () {
     adminConsole();
 
-    $this->getJson('/api/v1/admin/boutiques?limite=500')->assertStatus(422);
+    $this->getJson('/api/v1/admin/boutiques?par_page=500')->assertStatus(422);
+    $this->getJson('/api/v1/admin/boutiques?par_page=5')->assertStatus(422);
+    $this->getJson('/api/v1/admin/boutiques?page=0')->assertStatus(422);
     $this->getJson('/api/v1/admin/boutiques?q='.str_repeat('x', 200))->assertStatus(422);
     $this->getJson("/api/v1/admin/boutiques?q=' OR 1=1 --")->assertOk()->assertJsonPath('boutiques', []);
 });

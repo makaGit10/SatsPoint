@@ -34,8 +34,15 @@
     "suivant": "Next",
     "aucun": "None",
     "tout": "All",
-    "enregistre": "Saved",
-    "voirPlus": "Show more"
+    "enregistre": "Saved"
+  },
+  "pagination": {
+    "libelle": "List pages",
+    "resume": "{{debut}}–{{fin}} of {{total}}",
+    "pageSur": "Page {{page}} of {{pages}}",
+    "page": "Page {{page}}",
+    "precedente": "Previous page",
+    "suivante": "Next page"
   },
   "langue": {
     "titre": "Choose your language",
@@ -67,7 +74,7 @@
       "motDePasse": "Password",
       "afficherMotDePasse": "Show password",
       "masquerMotDePasse": "Hide password",
-      "seSouvenir": "Stay signed in on this device",
+      "seSouvenir": "Remember me",
       "valider": "Sign in",
       "oubli": "Forgot your password?",
       "pasDeCompte": "No shop yet?",
@@ -117,7 +124,9 @@
       "telephoneSenegal": "This number is incomplete. A Senegal number has 9 digits, for example 77 123 45 67.",
       "telephoneInvalide": "This number doesn't look right. Check the country code and the number of digits.",
       "emailInvalide": "This email address is not valid. Check that it looks like name@example.com.",
-      "invalide": "This is neither a phone number nor an email. Type your phone number or email address."
+      "invalide": "This is neither a phone number nor an email. Type your phone number or email address.",
+      "suggestions": "Sign-ins already used on this device",
+      "oublier": "Forget {{identifiant}}"
     },
     "motDePasse": {
       "minimum": "At least {{count}} characters.",
@@ -367,8 +376,6 @@
     "nombre_other": "{{count}} sales",
     "total": "Total",
     "encaisse": "Collected",
-    "voirPlus": "Show more",
-    "finListe": "All sales are shown.",
     "detail": "Sale details",
     "lignes": "Items",
     "tentatives": "Payment attempts",

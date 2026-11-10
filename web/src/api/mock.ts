@@ -16,6 +16,7 @@
  * - `satspoint.mock.vide` = `1` : boutique sans aucune vente.
  */
 import { emettreSignal } from '@/temps-reel/signaux'
+import { lirePagination, paginer } from './mockPagination'
 import { audiosPublies, etatDeuxFa, reinitialiserDeuxFa, repondreV3, repondreV3Public, type ContexteMock } from './mockV3'
 import type {
   Article,
@@ -124,6 +125,20 @@ const CLES_AUDIO = [
   'langue.fr',
   'langue.en',
   'langue.titre',
+  'landing.voix.bienvenue',
+  'landing.hero.texte',
+  'landing.hero.creer',
+  'landing.hero.connexion',
+  'landing.etapes.e1Texte',
+  'landing.etapes.e2Texte',
+  'landing.etapes.e3Texte',
+  'landing.fonctions.voixTexte',
+  'landing.fonctions.vitesseTexte',
+  'landing.fonctions.fondsTexte',
+  'landing.fonctions.directTexte',
+  'landing.fonctions.tableauTexte',
+  'landing.fonctions.equipeTexte',
+  'landing.cta.creer',
   'accueil.creerBoutique',
   'accueil.meConnecter',
   'auth.connexion.valider',
@@ -300,6 +315,24 @@ const ARTICLES_DEMO: Array<Omit<Article, 'ulid' | 'position'>> = [
   { nom: 'Pastels (×4)', prix_xof: 1000, categorie: 'Snacks', couleur: 'vert', sku: null, actif: true },
   { nom: 'Bazin (le mètre)', prix_xof: 7500, categorie: 'Tissus', couleur: 'violet', sku: 'TX-07', actif: true },
   { nom: 'Recharge 1 000', prix_xof: 1000, categorie: 'Services', couleur: 'gris', sku: null, actif: false },
+  { nom: 'Mafé bœuf', prix_xof: 2500, categorie: 'Plats', couleur: 'orange', sku: 'PL-03', actif: true },
+  { nom: 'Ceebu yapp', prix_xof: 3000, categorie: 'Plats', couleur: 'rouge', sku: 'PL-04', actif: true },
+  { nom: 'Domoda', prix_xof: 2000, categorie: 'Plats', couleur: 'brun', sku: 'PL-05', actif: true },
+  { nom: 'Fataya (×3)', prix_xof: 750, categorie: 'Snacks', couleur: 'jaune', sku: null, actif: true },
+  { nom: 'Beignets (×5)', prix_xof: 500, categorie: 'Snacks', couleur: 'jaune', sku: null, actif: true },
+  { nom: 'Thiakry', prix_xof: 600, categorie: 'Desserts', couleur: 'violet', sku: null, actif: true },
+  { nom: 'Jus de gingembre', prix_xof: 500, categorie: 'Boissons', couleur: 'vert', sku: null, actif: true },
+  { nom: 'Jus de bouye', prix_xof: 600, categorie: 'Boissons', couleur: 'brun', sku: null, actif: true },
+  { nom: 'Kinkéliba', prix_xof: 300, categorie: 'Boissons', couleur: 'vert', sku: null, actif: true },
+  { nom: 'Thé ataya', prix_xof: 200, categorie: 'Boissons', couleur: 'rouge', sku: null, actif: true },
+  { nom: 'Pain tapalapa', prix_xof: 150, categorie: 'Boulangerie', couleur: 'jaune', sku: 'BL-01', actif: true },
+  { nom: 'Sandwich niébé', prix_xof: 400, categorie: 'Snacks', couleur: 'orange', sku: null, actif: true },
+  { nom: 'Wax (6 yards)', prix_xof: 12000, categorie: 'Tissus', couleur: 'violet', sku: 'TX-08', actif: true },
+  { nom: 'Savon de Marseille', prix_xof: 500, categorie: 'Épicerie', couleur: 'bleu', sku: null, actif: true },
+  { nom: 'Sucre (1 kg)', prix_xof: 750, categorie: 'Épicerie', couleur: 'gris', sku: 'EP-01', actif: true },
+  { nom: 'Riz brisé (1 kg)', prix_xof: 450, categorie: 'Épicerie', couleur: 'gris', sku: 'EP-02', actif: true },
+  { nom: 'Huile (1 L)', prix_xof: 1300, categorie: 'Épicerie', couleur: 'jaune', sku: 'EP-03', actif: true },
+  { nom: 'Crédit Wave 5 000', prix_xof: 5000, categorie: 'Services', couleur: 'bleu', sku: null, actif: false },
 ]
 
 const NOTES = ['Table 4', null, null, '2 m de bazin', null, 'Livraison Plateau', null, null, 'Client fidèle', null]
@@ -381,7 +414,7 @@ function creerEtatInitial(): Etat {
   // 30 jours d'historique, du plus ancien au plus récent (la journée en cours est bien remplie).
   for (let j = 30; j >= 0; j--) {
     const debutJour = maintenant - j * JOUR
-    const nombre = j === 0 ? 9 : 1 + Math.floor(alea() * (j % 7 === 0 ? 2 : 5))
+    const nombre = j === 0 ? 24 : 1 + Math.floor(alea() * (j % 7 === 0 ? 2 : 5))
     for (let i = 0; i < nombre; i++) {
       const heure = j === 0 ? Math.min(0.97, 0.1 + (i / nombre) * 0.85) : 0.3 + alea() * 0.55
       const cree = j === 0 ? maintenant - (1 - heure) * 9 * 60 * MINUTE : debutJour - debutJour % JOUR + heure * JOUR
@@ -1188,14 +1221,14 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
   }
 
   if (route === '/ventes' && methode === 'GET') {
+    const lecture = lirePagination(url.searchParams, 20)
+    if ('erreur' in lecture) return lecture.erreur
     const liste = filtrerVentes(url.searchParams, session)
-    const limite = Math.min(100, Number(url.searchParams.get('limite') ?? 30))
-    const curseur = Number(url.searchParams.get('curseur') ?? 0) || 0
-    const page = liste.slice(curseur, curseur + limite)
+    const { elements, pagination } = paginer(liste, lecture)
     const payees = liste.filter((v) => v.statut === 'payee')
     return json(200, {
-      ventes: page.map(courte),
-      curseur_suivant: curseur + limite < liste.length ? String(curseur + limite) : null,
+      ventes: elements.map(courte),
+      pagination,
       totaux: { nombre: liste.length, montant_xof: liste.reduce((s, v) => s + v.montant_xof, 0), payees_xof: payees.reduce((s, v) => s + v.montant_xof, 0) },
     })
   }

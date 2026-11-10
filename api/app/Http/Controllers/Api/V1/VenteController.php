@@ -15,6 +15,7 @@ use App\Services\BoutiqueCourante;
 use App\Services\Caisse;
 use App\Services\MachineEtatPaiement;
 use App\Services\RequeteVentes;
+use App\Support\Pagination;
 use Illuminate\Http\JsonResponse;
 
 class VenteController extends Controller
@@ -25,7 +26,7 @@ class VenteController extends Controller
         private readonly MachineEtatPaiement $machine,
     ) {}
 
-    /** GET /ventes → { ventes: VenteCourte[], curseur_suivant, totaux } */
+    /** GET /ventes → { ventes: VenteCourte[], pagination: { page, par_page, total, pages }, totaux } */
     public function index(ListerVentesRequest $request): JsonResponse
     {
         $boutique = $this->courante->exiger(Boutique::class);
@@ -33,15 +34,17 @@ class VenteController extends Controller
 
         $requete = RequeteVentes::construire($this->courante->membre(), $request->user(), $this->fuseau($boutique), $request->filtres());
         $totaux = RequeteVentes::totaux($requete);
+        ['page' => $numero, 'par_page' => $parPage] = $request->pagination(ListerVentesRequest::PAR_PAGE);
 
+        // Le total est déjà connu par les totaux (même ensemble filtré) : pas de second COUNT.
         $page = (clone $requete)
             ->with(['caissier:id,ulid,nom', 'paiementReussi:id,methode,operateur,montant_sats'])
             ->orderByDesc('ventes.created_at')->orderByDesc('ventes.id')
-            ->cursorPaginate((int) $request->input('limite', 30), ['ventes.*'], 'curseur', $request->input('curseur'));
+            ->paginate($parPage, ['ventes.*'], 'page', $numero, $totaux['nombre']);
 
         return response()->json([
             'ventes' => VenteCourteResource::collection($page->items())->resolve(),
-            'curseur_suivant' => $page->nextCursor()?->encode(),
+            'pagination' => Pagination::forme($page),
             'totaux' => $totaux,
         ]);
     }

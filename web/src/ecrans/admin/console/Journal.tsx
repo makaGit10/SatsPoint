@@ -1,15 +1,16 @@
-import { ArrowDownUp, ChevronDown, KeyRound, Mic, Package, ScrollText, ShieldAlert, Store, Users, Wallet, Zap } from 'lucide-react'
-import { useMemo, useState, type ReactNode } from 'react'
+import { ArrowDownUp, KeyRound, Mic, Package, ScrollText, ShieldAlert, Store, Users, Wallet, Zap } from 'lucide-react'
+import { useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useJournalAdmin, type FiltresJournal } from '@/api/admin'
+import { JOURNAL_PAR_PAGE, useJournalAdmin, type FiltresJournal } from '@/api/admin'
 import type { EntreeJournal } from '@/api/types'
-import { Bouton } from '@/composants/Bouton'
 import { Champ } from '@/composants/Champ'
 import { EtatVide } from '@/composants/EtatVide'
+import { Pagination } from '@/composants/Pagination'
 import { Selection } from '@/composants/Selection'
 import { SqueletteListe } from '@/composants/Squelette'
 import { cn } from '@/lib/cn'
 import { formaterDateHeure, type Locale } from '@/lib/format'
+import { useCorrectionPage, usePageUrl } from '@/lib/usePagination'
 
 const FAMILLES = ['auth', 'audio', 'boutique', 'plateforme', 'equipe', 'wallet', 'paytech', 'vente', 'paiement', 'article', 'import', 'export'] as const
 
@@ -40,22 +41,29 @@ function details(valeur: EntreeJournal['details']): string | null {
   return morceaux.length ? morceaux.join(' · ') : null
 }
 
-/** Journal d'audit global : filtres (famille d'action, période), pagination par curseur. */
+/** Journal d'audit global : filtres (famille d'action, période), pagination par numéro de page. */
 export function JournalAdmin({ actif }: { actif: boolean }) {
   const { t, i18n } = useTranslation()
   const locale: Locale = i18n.language?.startsWith('en') ? 'en' : 'fr'
   const [filtres, setFiltres] = useState<FiltresJournal>({})
-  const requete = useJournalAdmin(filtres, actif)
-  const entrees = useMemo(() => (requete.data?.pages ?? []).flatMap((p) => p.entrees), [requete.data])
+  const { page, allerA, reinitialiser } = usePageUrl()
+  const haut = useRef<HTMLOListElement>(null)
+  const requete = useJournalAdmin(filtres, page, actif)
+  const entrees = requete.data?.entrees ?? []
+  const pagination = requete.data?.pagination
+  useCorrectionPage(actif ? pagination : undefined, allerA)
   if (!actif) return null
 
-  const changer = (cle: keyof FiltresJournal, valeur: string) =>
+  // Un filtre qui change ramène à la page 1.
+  const changer = (cle: keyof FiltresJournal, valeur: string) => {
     setFiltres((f) => {
       const suivant = { ...f }
       if (valeur) suivant[cle] = valeur
       else delete suivant[cle]
       return suivant
     })
+    reinitialiser()
+  }
 
   return (
     <div className="flex flex-col gap-2" data-vue="journal">
@@ -77,11 +85,11 @@ export function JournalAdmin({ actif }: { actif: boolean }) {
         <div data-chargement="journal" aria-busy="true">
           <SqueletteListe lignes={8} />
         </div>
-      ) : entrees.length === 0 ? (
+      ) : entrees.length === 0 && (pagination?.total ?? 0) === 0 ? (
         <EtatVide ton="neutre" icone={<ScrollText />} titre={t('admin.journal.vide')} />
       ) : (
         <>
-          <ol className="divide-y divide-bordure verre rounded-xl" aria-label={t('admin.onglets.journal')}>
+          <ol ref={haut} className={cn('divide-y divide-bordure verre rounded-xl transition-opacity duration-150', requete.isPlaceholderData && 'opacity-70')} aria-label={t('admin.onglets.journal')}>
             {entrees.map((e) => {
               const famille = e.action.split('.')[0] ?? ''
               const alerte = sensible(e.action)
@@ -117,12 +125,18 @@ export function JournalAdmin({ actif }: { actif: boolean }) {
               )
             })}
           </ol>
-          {requete.hasNextPage && (
-            <div className="flex justify-center">
-              <Bouton variante="secondaire" icone={<ChevronDown />} voix="commun.voirPlus" chargement={requete.isFetchingNextPage} onClick={() => void requete.fetchNextPage()}>
-                {t('commun.voirPlus')}
-              </Bouton>
-            </div>
+          {pagination && (
+            <Pagination
+              page={page}
+              parPage={pagination.par_page || JOURNAL_PAR_PAGE}
+              total={pagination.total}
+              pages={pagination.pages}
+              onChange={allerA}
+              ancre={haut}
+              libelle={t('admin.onglets.journal')}
+              chargement={requete.isPlaceholderData}
+              className="mt-1"
+            />
           )}
         </>
       )}

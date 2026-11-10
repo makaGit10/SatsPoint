@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
-import { Check, ChevronDown, ChevronUp, Download, FileSpreadsheet, FileText, Package, Pencil, Plus, Trash2, Upload } from 'lucide-react'
-import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react'
+import { Check, ChevronDown, ChevronUp, Download, FileSpreadsheet, FileText, Package, Pencil, Plus, Search, Trash2, Upload } from 'lucide-react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { CLE_ARTICLES, creerArticle, modifierArticle, ordonnerArticles, supprimerArticle, useArticles, type CorpsArticle } from '@/api/articles'
@@ -16,6 +16,7 @@ import { EnTetePage } from '@/composants/EnTetePage'
 import { EtatVide } from '@/composants/EtatVide'
 import { Interrupteur } from '@/composants/Interrupteur'
 import { Menu } from '@/composants/Menu'
+import { Pagination } from '@/composants/Pagination'
 import { Pastille } from '@/composants/Pastille'
 import { SqueletteListe } from '@/composants/Squelette'
 import { notifier } from '@/composants/toastStore'
@@ -26,13 +27,18 @@ import { classePointCouleur, classesTuile, COULEURS_ARTICLES, couleurDepuis, ver
 import { chargerPaquet } from '@/i18n'
 import { formaterFCFA } from '@/lib/format'
 import { queryClient } from '@/lib/queryClient'
+import { pertinence } from '@/lib/texte'
+import { usePaginationLocale } from '@/lib/usePagination'
 import { useDonneesEnDirect } from '@/temps-reel/useDonneesEnDirect'
 import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
 
 // Assistant d'import : chargé à la demande avec son paquet de traductions (rien pour la caisse).
 const ImportArticles = lazy(() => Promise.all([import('./articles/ImportArticles'), chargerPaquet('admin')]).then(([m]) => m))
 
-/** Articles (P1) : liste compacte réordonnable, formulaire en fenêtre ; caissier en lecture seule. */
+/** Articles par page (pagination côté écran : la liste complète est déjà chargée pour la caisse). */
+const ARTICLES_PAR_PAGE = 20
+
+/** Articles (P1) : liste compacte réordonnable, recherche, pagination (20 par page), formulaire en fenêtre ; caissier en lecture seule. */
 export default function Articles() {
   const { t, i18n } = useTranslation()
   void i18n.language
@@ -47,6 +53,17 @@ export default function Articles() {
   const [suppression, setSuppression] = useState<Article | null>(null)
   const [importOuvert, setImportOuvert] = useState(false)
   const [params, setParams] = useSearchParams()
+  const [recherche, setRecherche] = useState('')
+  const terme = recherche.trim()
+  const haut = useRef<HTMLOListElement>(null)
+
+  // Recherche locale (nom, catégorie, SKU ; accents et petites fautes tolérés) AVANT la pagination.
+  const filtres = useMemo(() => (articles && terme ? articles.filter((a) => pertinence([a.nom, a.categorie, a.sku].filter(Boolean).join(' '), terme) > 0) : articles), [articles, terme])
+  const { visibles, page, pages, total, debut, allerA, reinitialiser } = usePaginationLocale(filtres, { parPage: ARTICLES_PAR_PAGE })
+  const chercher = (valeur: string) => {
+    setRecherche(valeur)
+    reinitialiser()
+  }
 
   // Liens directs (recherche globale) : `?importer=1` ouvre l'assistant, `?article=…` le formulaire (ajusté au rendu).
   const demande = `${params.get('importer') ?? ''}|${params.get('article') ?? ''}`
@@ -156,9 +173,29 @@ export default function Articles() {
         />
       )}
 
-      {articles && articles.length > 0 && (
-        <ol className="divide-y divide-bordure verre rounded-xl" aria-label={t('articles.titre')}>
-          {articles.map((a, i) => (
+      {articles && articles.length > ARTICLES_PAR_PAGE / 2 && (
+        <Champ
+          libelle={t('articles.rechercher')}
+          type="search"
+          inputMode="search"
+          icone={<Search />}
+          placeholder={t('articles.rechercher')}
+          value={recherche}
+          onChange={(e) => chercher(e.target.value)}
+          className="h-10 md:h-9"
+          classeConteneur="mb-3 [&>label]:sr-only"
+          autoComplete="off"
+        />
+      )}
+
+      {articles && articles.length > 0 && total === 0 && <EtatVide ton="neutre" icone={<Search />} titre={t('articles.aucunResultat', { terme })} />}
+
+      {articles && total > 0 && (
+        <ol ref={haut} className="divide-y divide-bordure verre rounded-xl" aria-label={t('articles.titre')}>
+          {visibles.map((a, rang) => {
+            // Rang dans la liste complète : l'ordre se change sur tout le catalogue, pas seulement la page.
+            const i = debut + rang
+            return (
             <li key={a.ulid} className={cn('flex items-center gap-3 px-3 py-2', !a.actif && 'bg-surface-2/60')}>
               <span
                 className={cn('inline-block size-3 shrink-0 rounded-full', classePointCouleur(a.couleur))}
@@ -175,18 +212,23 @@ export default function Articles() {
               <span className="shrink-0 text-sm font-semibold text-texte tabulaire">{formaterFCFA(a.prix_xof)}</span>
               {peutGerer && (
                 <div className="flex shrink-0 items-center gap-0.5">
-                  <span className="hidden items-center sm:flex">
-                    <BoutonIcone taille="sm" libelle={t('articles.monter')} icone={<ChevronUp />} voix="articles.monter" disabled={i === 0 || ordre.isPending} onClick={() => deplacer(i, -1)} />
-                    <BoutonIcone taille="sm" libelle={t('articles.descendre')} icone={<ChevronDown />} voix="articles.descendre" disabled={i === articles.length - 1 || ordre.isPending} onClick={() => deplacer(i, 1)} />
-                  </span>
+                  {/* Ordre : seulement sans recherche (le rang filtré ne correspond pas au catalogue). */}
+                  {!terme && (
+                    <span className="hidden items-center sm:flex">
+                      <BoutonIcone taille="sm" libelle={t('articles.monter')} icone={<ChevronUp />} voix="articles.monter" disabled={i === 0 || ordre.isPending} onClick={() => deplacer(i, -1)} />
+                      <BoutonIcone taille="sm" libelle={t('articles.descendre')} icone={<ChevronDown />} voix="articles.descendre" disabled={i === articles.length - 1 || ordre.isPending} onClick={() => deplacer(i, 1)} />
+                    </span>
+                  )}
                   <BoutonIcone taille="sm" libelle={t('articles.modifier')} icone={<Pencil />} voix="articles.modifier" onClick={() => setFormulaire({ ouvert: true, article: a })} />
                   <BoutonIcone taille="sm" libelle={t('commun.supprimer')} icone={<Trash2 />} voix="commun.supprimer" variante="danger" onClick={() => setSuppression(a)} />
                 </div>
               )}
             </li>
-          ))}
+            )
+          })}
         </ol>
       )}
+      {articles && total > 0 && <Pagination page={page} parPage={ARTICLES_PAR_PAGE} total={total} pages={pages} onChange={allerA} ancre={haut} libelle={t('articles.titre')} />}
 
       {importOuvert && (
         <Suspense fallback={null}>

@@ -47,7 +47,7 @@ it('liste les boutiques avec propriétaire, configuration et activité EN NOMBRE
 
     ['boutique' => $b, 'user' => $proprioB] = boutiqueAvec('proprietaire', Boutique::factory()->create(['nom' => 'Chez Thérèse', 'ville' => 'Thiès']));
 
-    $liste = $this->getJson('/api/v1/admin/boutiques')->assertOk()->assertJsonCount(2, 'boutiques')->assertJsonPath('curseur_suivant', null);
+    $liste = $this->getJson('/api/v1/admin/boutiques')->assertOk()->assertJsonCount(2, 'boutiques')->assertJsonPath('pagination', ['page' => 1, 'par_page' => 20, 'total' => 2, 'pages' => 1]);
 
     $ligneA = collect($liste->json('boutiques'))->firstWhere('ulid', $a->ulid);
     expect(array_keys($ligneA))->toBe(['ulid', 'nom', 'ville', 'statut', 'cree_le', 'proprietaire', 'configuration', 'activite'])
@@ -73,10 +73,16 @@ it('liste les boutiques avec propriétaire, configuration et activité EN NOMBRE
     $this->getJson('/api/v1/admin/boutiques?statut=suspendue')->assertOk()->assertJsonCount(0, 'boutiques');
     $this->getJson('/api/v1/admin/boutiques?statut=bizarre')->assertStatus(422);
 
-    // Pagination par curseur.
-    $page1 = $this->getJson('/api/v1/admin/boutiques?limite=1')->assertOk()->assertJsonCount(1, 'boutiques');
-    expect($page1->json('curseur_suivant'))->toBeString();
-    $this->getJson('/api/v1/admin/boutiques?limite=1&curseur='.$page1->json('curseur_suivant'))->assertOk()->assertJsonCount(1, 'boutiques')->assertJsonPath('curseur_suivant', null);
+    // Pagination par numéro de page (total compris), filtres conservés.
+    Boutique::factory()->count(10)->create(['ville' => 'Thiès', 'created_at' => now()->addMinute()]);
+    $this->getJson('/api/v1/admin/boutiques?par_page=10')->assertOk()->assertJsonCount(10, 'boutiques')
+        ->assertJsonPath('pagination', ['page' => 1, 'par_page' => 10, 'total' => 12, 'pages' => 2]);
+    $page2 = $this->getJson('/api/v1/admin/boutiques?par_page=10&page=2')->assertOk()->assertJsonCount(2, 'boutiques')
+        ->assertJsonPath('pagination', ['page' => 2, 'par_page' => 10, 'total' => 12, 'pages' => 2]);
+    expect(array_column($page2->json('boutiques'), 'ulid'))->toBe([$b->ulid, $a->ulid]); // les plus anciennes en dernier
+    $this->getJson('/api/v1/admin/boutiques?par_page=10&page=3')->assertOk()->assertJsonCount(0, 'boutiques')->assertJsonPath('pagination.total', 12);
+    $this->getJson('/api/v1/admin/boutiques?q=thies&par_page=10&page=2')->assertOk()->assertJsonCount(1, 'boutiques')
+        ->assertJsonPath('pagination', ['page' => 2, 'par_page' => 10, 'total' => 11, 'pages' => 2]);
 });
 
 it('le super-admin n\'a aucun accès aux ventes, au portefeuille, aux articles ni aux réglages d\'une boutique', function () {
@@ -158,7 +164,8 @@ it('expose la santé détaillée (dépendances, files, espace audio) et le journ
     connecte($admin);
     session()->put(DeuxFacteurs::CLE_SESSION, now()->toIso8601String());
 
-    $tout = $this->getJson('/api/v1/admin/journal')->assertOk()->assertJsonStructure(['entrees' => [['id', 'action', 'utilisateur', 'boutique', 'ip', 'details', 'cree_le']], 'curseur_suivant']);
+    $tout = $this->getJson('/api/v1/admin/journal')->assertOk()->assertJsonStructure(['entrees' => [['id', 'action', 'utilisateur', 'boutique', 'ip', 'details', 'cree_le']], 'pagination' => ['page', 'par_page', 'total', 'pages']])
+        ->assertJsonPath('pagination.page', 1)->assertJsonPath('pagination.par_page', 30);
     expect(count($tout->json('entrees')))->toBeGreaterThanOrEqual(3)
         ->and($tout->json('entrees.0.cree_le'))->toBeString(); // le plus récent d'abord
 
@@ -167,7 +174,7 @@ it('expose la santé détaillée (dépendances, files, espace audio) et le journ
     $this->getJson("/api/v1/admin/journal?utilisateur={$proprioB->ulid}")->assertOk()->assertJsonCount(2, 'entrees');
     $this->getJson('/api/v1/admin/journal?action=article.*')->assertOk()->assertJsonCount(2, 'entrees');
     $this->getJson('/api/v1/admin/journal?du='.now()->addDay()->toDateString())->assertOk()->assertJsonCount(0, 'entrees');
-    $this->getJson('/api/v1/admin/journal?du='.now()->subDay()->toDateString().'&au='.now()->toDateString().'&limite=2')->assertOk()->assertJsonCount(2, 'entrees');
+    $this->getJson('/api/v1/admin/journal?du='.now()->subDay()->toDateString().'&au='.now()->toDateString().'&par_page=10')->assertOk()->assertJsonPath('pagination.par_page', 10);
     $this->getJson('/api/v1/admin/journal?action=DROP TABLE')->assertStatus(422);
     $this->getJson('/api/v1/admin/journal?boutique=1')->assertStatus(422);
 
