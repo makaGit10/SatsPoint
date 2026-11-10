@@ -47,7 +47,7 @@ function SelecteurCompact<T extends string>({
         aria-label={libelle}
         value={valeur}
         onChange={(e) => onChange(e.target.value as T)}
-        className="absolute inset-0 h-full w-full cursor-pointer appearance-none opacity-0"
+        className="absolute inset-0 z-10 h-full w-full cursor-pointer appearance-none opacity-0"
       >
         {options.map((o) => (
           <option key={o.valeur} value={o.valeur}>
