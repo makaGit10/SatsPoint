@@ -46,6 +46,7 @@ In Dakar, a shop owner can receive money from almost anyone — except from the 
 - **Instant, trustworthy confirmation** — the wallet notifies the gateway, the API re-verifies the invoice, and the merchant's screen turns green in real time. The client never decides "paid".
 - **Voice guidance** in **Wolof, Serer, Pulaar, Jola** (+ French): a speaker icon on every button and on the language selector itself; audio recorded by the platform admin in a built-in studio and published to every device.
 - **Mobile money fallback** through PayTech (Wave, Orange Money, Free Money) with verified IPN callbacks.
+- **Beyond Senegal (XOF zone)** — shops in Côte d'Ivoire, Mali, Burkina Faso, Niger, Togo, Benin and Guinea-Bissau: the platform admin adds each country's languages (recorded in the same studio) and its mobile-money methods (Orange Money, MTN MoMo, Moov, Wave, Flooz…), which merchants turn on with their own merchant number or link and confirm by hand.
 - **Merchant wallet** (required by the hackathon): balance, receive, send (owner only, with confirmation and budget), history — via **Nostr Wallet Connect**, so funds stay in the merchant's own wallet.
 - **Team roles** (owner, manager, cashier), live dashboard, sales history, shareable receipts, French/English UI, light/dark themes, installable PWA.
 

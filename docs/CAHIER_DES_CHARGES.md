@@ -309,7 +309,7 @@ Matrice « clés × langues » → choisir une case manquante → **enregistrer 
 porte une **clé vocale**. Si un audio existe pour cette clé dans la langue de la personne, un **petit haut-parleur**
 apparaît dans le coin de l'élément. Un toucher sur le haut-parleur **lit l'audio sans déclencher le bouton**.
 
-- **Langues audio** : `wo` (wolof), `srr` (sérère / seereer), `ff` (pulaar), `dyo` (diola / joola) ; `fr` (français) en complément.
+- **Langues audio** : `wo` (wolof), `srr` (sérère / seereer), `ff` (pulaar), `dyo` (diola / joola) ; `fr` (français) en complément. Liste **dynamique** depuis le 10 novembre : la super-admin ajoute les langues des autres pays (§ 6.19).
 - **Source unique des clés** : la clé vocale **est** la clé de traduction (ex. `caisse.encaisser`). Un script de construction extrait toutes les clés vocales du code et les synchronise en base : **toute nouvelle fonctionnalité apparaît automatiquement dans le studio** comme « audio manquant ». Rien ne peut être oublié.
 - **Composants** : `<Bouton voix="caisse.encaisser">`, `<HautParleur cle="…"/>` ; un seul lecteur audio global (un nouveau son coupe le précédent).
 - **Repli** : langue choisie → français → haut-parleur masqué (jamais de haut-parleur muet).
@@ -382,6 +382,14 @@ Chaque message dit **ce qui s'est passé** et **quoi faire**, sans jargon, avec 
 | Identifiants incorrects | « Téléphone ou mot de passe incorrect. » | **Mot de passe oublié ?** |
 | Accès refusé | « Cette page est réservée au propriétaire de la boutique. » | **Retour à la caisse** |
 | Erreur inattendue | « Un problème est survenu. Réessayez dans un instant. » (référence courte pour le support) | **Réessayer** |
+
+### 6.19 Pays, langues et moyens de paiement par pays (P1 — 10 novembre)
+Demande de la propriétaire : d'autres pays que le Sénégal se connectent ; leur administratrice ajoute leurs langues, enregistre les vocaux et met leurs moyens de paiement. Contrat : [CONTRAT_API § 14](CONTRAT_API.md).
+- **Périmètre** : zone franc CFA **XOF** (UEMOA : SN, CI, ML, BF, NE, TG, BJ, GW) — une seule devise, la conversion BTC/XOF reste la même. Les autres devises (GNF, XAF…) sont **hors périmètre** (il faudrait des cours et des bornes par devise).
+- **Boutique** : un pays (Sénégal par défaut, boutiques existantes en SN), choisi au démarrage guidé, modifiable par le **propriétaire** dans les réglages.
+- **Langues** : catalogue géré dans la console (onglet « Langues ») — code, nom dans la langue, noms FR / EN, pays, actif. Une langue active apparaît sur l'écran de choix de la langue de ses pays (après un **sélecteur de pays compact**, déduit du navigateur), dans le bandeau « Écouter en », les préférences et comme **colonne du studio** (filtrable par pays) ; son nom (`langue.{code}`) s'enregistre au studio. Jamais supprimée si elle a des audios : on la désactive.
+- **Moyens de paiement** : catalogue par pays (onglet « Moyens de paiement ») — nom, type **lien** (QR du lien marchand) ou **numéro** (numéro marchand en grand), couleur, instructions courtes FR / EN en texte brut. Le commerçant active ceux de **son** pays avec **son** numéro / lien ; la caisse les propose ; le paiement est **confirmé à la main** par le propriétaire ou le gérant (comme le Wave direct, journalisé). Ils comptent dans « mobile money ».
+- **Sénégal inchangé** : PayTech (Wave, Orange Money, Free Money) et le lien Wave direct restent tels quels ; aucun moyen supplémentaire au catalogue SN.
 
 ## 7. Règles métier
 
@@ -529,6 +537,10 @@ Identifiant interne `bigint` + **identifiant public `ulid`** (seul exposé dans 
 | `recherches_recentes` | user_id, terme, created_at | (user_id, created_at) — 10 conservées, 4 affichées |
 | `imports` | boutique_id, user_id, type, fichier, correspondance (jsonb), statut, rapport (jsonb) | boutique_id |
 | `journal_audit` | user_id, boutique_id, action, cible_type, cible_id, ip, details (jsonb, **sans secret**), created_at | (boutique_id, created_at), (action, created_at) |
+| `pays` (§ 6.19) | code (ISO2, clé), nom_fr, nom_en, indicatif, devise `XOF`, actif, ordre | code primaire ; `boutiques.pays` → `pays.code` |
+| `langues` | code (`[a-z]{2,8}(-[a-z]{2,3})?`), nom_local, nom_fr, nom_en, pays (jsonb, `[]` = tous), actif, ordre | code unique ; `audios.langue` → `langues.code` |
+| `moyens_paiement` | ulid, pays, nom, type (`lien`/`numero`), couleur (liste fermée), instructions_fr/en, actif, ordre | unique (pays, nom) |
+| `moyens_paiement_boutique` | boutique_id, moyen_paiement_id, valeur (numéro ou lien marchand, en clair : donnée publique), active | unique (boutique_id, moyen_paiement_id), scope boutique |
 
 ## 11. API
 
@@ -561,7 +573,7 @@ Application stricte de [DIRECTIVES.md § 3](DIRECTIVES.md#3-synchronisation-temp
 |---|---|---|
 | `private-boutique.{ulid}` | Membres actifs de la boutique (vérifié à l'autorisation) | `ventes`, `paiements`, `articles`, `equipe`, `parametres`, `wallet`, `imports` |
 | `private-user.{ulid}` | L'utilisateur lui-même | `preferences`, `sessions` |
-| `plateforme` (public) | Tout le monde | `audios` (nouveau manifeste publié) |
+| `plateforme` (public) | Tout le monde | `audios` (nouveau manifeste publié), `catalogues` (pays, langues, moyens de paiement par pays) |
 | `private-admin` | `super_admin` | `boutiques`, `sante`, `audio` |
 
 - Signal = `{ rubrique, auteur, horodatage }`, **jamais de donnée métier**.

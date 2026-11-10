@@ -217,6 +217,88 @@ type Pagination = {
 - `GET /wallet/transactions` garde `limite` / `decalage` (la passerelle NWC ne donne pas de total) : le front demande `limite = par_page + 1` pour savoir s'il existe une page suivante et affiche « Page N » sans total.
 - Listes chargées en entier (`GET /articles`, `GET /equipe`, `GET /admin/audio/matrice`) : pagination côté écran (20 par page ; 50 pour la matrice du studio), recherche et filtres appliqués avant la pagination. Aucun changement d'API.
 
+## 14. Pays, langues et moyens de paiement par pays (10 novembre)
+
+**Périmètre** : zone franc CFA **XOF** (UEMOA) — une seule devise, la conversion BTC/XOF existante reste valable. Pays : `SN` Sénégal, `CI` Côte d'Ivoire, `ML` Mali, `BF` Burkina Faso, `NE` Niger, `TG` Togo, `BJ` Bénin, `GW` Guinée-Bissau. Les autres devises (GNF, XAF, GHS, NGN…) sont **hors périmètre** : un pays ne s'ajoute pas par l'API (liste fermée, migration). **Rien ne change pour le Sénégal** : PayTech (Wave / Orange Money / Free Money) et le lien Wave direct (`wave_manuel`) restent tels quels.
+
+```ts
+type CodePays = 'SN' | 'CI' | 'ML' | 'BF' | 'NE' | 'TG' | 'BJ' | 'GW'
+type Pays = { code: CodePays, nom_fr: string, nom_en: string, indicatif: string /* « +221 » */, devise: 'XOF', actif: boolean, ordre: number }
+// Code de langue : ^[a-z]{2,8}(-[a-z]{2,3})?$ (12 caractères au plus) — ex. wo, srr, ff, dyo, bm, dyu, mos, ff-ml
+type Langue = { code: string, nom_local: string /* nom dans la langue elle-même */, nom_fr: string, nom_en: string,
+                pays: CodePays[] /* [] = tous les pays (le français) */, actif: boolean, ordre: number }
+type CouleurMoyen = 'bleu' | 'ciel' | 'orange' | 'jaune' | 'vert' | 'rouge' | 'violet' | 'gris'
+type MoyenCatalogue = { ulid: string, pays: CodePays, nom: string, type: 'lien' | 'numero', couleur: CouleurMoyen,
+                        instructions_fr: string | null, instructions_en: string | null, actif: boolean, ordre: number }
+type MoyenBoutique = { ulid /* du moyen du catalogue */, nom, type, couleur, instructions_fr, instructions_en,
+                       active: boolean /* activé par la boutique */, valeur: string | null /* numéro ou lien marchand */ }
+```
+
+### 14.1 Lecture publique (légère, mise en cache)
+
+`GET /config` ajoute (catalogue **actif** seulement, cache serveur invalidé à chaque écriture du catalogue ; le front le garde 10 min et le relit sur le signal `catalogues`) :
+- `pays: Array<Pick<Pays, 'code'|'nom_fr'|'nom_en'|'indicatif'>>` (triés par `ordre` : Sénégal d'abord) ;
+- `langues: Array<Pick<Langue, 'code'|'nom_local'|'nom_fr'|'nom_en'|'pays'|'ordre'>>` (triées par `ordre`) ;
+- `langues_audio` reste, dérivé des langues actives : `{ code, nom (= nom_fr), nom_local }`.
+
+`GET /api/v1/audio/manifeste/{langue}` accepte tout code de langue **existant** (active ou désactivée : les appareils qui l'avaient choisie gardent leurs audios) ; inconnu → `404`. Fichiers : `GET /audio/{langue}/{cle}.{empreinte8}.mp3` (même motif de code).
+
+### 14.2 Console : catalogues (super-admin + 2FA ; écritures 30 / min ; journal d'audit ; signal `catalogues` sur le canal public `plateforme`)
+
+| Route | Corps | Réponse |
+|---|---|---|
+| `GET /admin/pays` | — | `{ pays: Array<Pays & { boutiques: number }> }` (tous, actifs ou non ; `boutiques` = nombre de boutiques de ce pays) |
+| `PATCH /admin/pays/{code}` | `{ nom_fr?, nom_en?, actif? }` | `{ pays }` — `SN` ne se désactive pas (`409 PAYS_PROTEGE`) ; un pays désactivé n'est plus proposé à la création de boutique (les boutiques existantes le gardent) |
+| `GET /admin/langues` | — | `{ langues: Array<Langue & { audios_publies: number }> }` (toutes) |
+| `POST /admin/langues` | `{ code, nom_local, nom_fr, nom_en, pays: CodePays[], actif?, ordre? }` | `201 { langue }` — crée aussi la clé vocale `langue.{code}` (écran `langue`, essentielle) pour que son nom s'enregistre au studio ; code déjà pris → `422` (`errors.code`) |
+| `PATCH /admin/langues/{code}` | `{ nom_local?, nom_fr?, nom_en?, pays?, actif?, ordre? }` | `{ langue }` — le code ne change jamais ; `fr` ne se désactive pas (`409 LANGUE_PROTEGEE`, c'est la langue de repli) |
+| `DELETE /admin/langues/{code}` | — | `204` seulement si la langue n'a **aucun** audio (brouillon compris) et n'est pas `fr` ; sinon `409 LANGUE_UTILISEE` (« désactivez-la ») / `LANGUE_PROTEGEE` |
+| `GET /admin/moyens-paiement?pays=` | — | `{ moyens: Array<MoyenCatalogue & { boutiques_actives: number }> }` (triés pays, ordre, nom) |
+| `POST /admin/moyens-paiement` | `{ pays, nom, type, couleur, instructions_fr?, instructions_en?, actif?, ordre? }` | `201 { moyen }` |
+| `PATCH /admin/moyens-paiement/{ulid}` | `{ nom?, couleur?, instructions_fr?, instructions_en?, actif?, ordre? }` | `{ moyen }` — `pays` et `type` ne changent pas après création |
+| `DELETE /admin/moyens-paiement/{ulid}` | — | `204` s'il n'a jamais servi (aucune boutique, aucun paiement) ; sinon `409 MOYEN_UTILISE` (désactiver) |
+
+Validation : `code` `^[a-z]{2,8}(-[a-z]{2,3})?$` ; `nom_local` / `nom_fr` / `nom_en` 2–40 caractères (lettres, chiffres, espace, `' ’ - .`) ; `pays` ⊂ codes connus, 0–8 distincts ; `ordre` 0–999 ; moyen : `nom` 2–40 (lettres, chiffres, espace, `' ’ - . & + /`), unique par pays (`422`), `type` ∈ `lien|numero`, `couleur` ∈ `CouleurMoyen`, `instructions_*` ≤ 160 caractères, **texte brut** (aucun `<` ni `>`, pas de retour à la ligne) ; `pays` doit exister. Non super-admin → `403` avant toute validation. Journal : `plateforme.pays_modifie`, `plateforme.langue_creee`, `plateforme.langue_modifiee`, `plateforme.langue_supprimee`, `plateforme.moyen_cree`, `plateforme.moyen_modifie`, `plateforme.moyen_supprime` (détails : codes, noms, champs changés — jamais de donnée de boutique).
+
+Graines (migration, modifiables ensuite) — langues : `wo` Wolof (SN), `srr` Seereer (SN), `ff` Pulaar (SN), `dyo` Joola (SN), `fr` Français (tous pays). Moyens : CI Wave, Orange Money, MTN MoMo, Moov Money · ML Orange Money, Moov Money, Wave · BF Orange Money, Moov Money · NE Airtel Money, Moov Money · TG Mixx by Yas, Flooz · BJ MTN MoMo, Moov Money · GW Orange Money, MTN MoMo. Aucun moyen pour SN (PayTech et Wave direct suffisent).
+
+### 14.3 Boutique
+
+- `GET /boutique` ajoute `pays: CodePays` et `moyens_pays: MoyenBoutique[]` — les moyens **activés** par la boutique, actifs au catalogue et du pays de la boutique (lisible par tous les rôles : la caisse en a besoin ; `valeur` est un numéro ou lien destiné aux clients).
+- `POST /boutique` accepte `pays?` (défaut `SN`, pays actif sinon `422`). `PATCH /boutique` accepte `pays` (**propriétaire seulement**, `403` pour le gérant ; pays actif) : les moyens du pays précédent sont désactivés ; journal `boutique.pays_modifie`.
+- `GET /boutique/moyens-pays` (propriétaire / gérant) → `{ pays: CodePays, moyens: MoyenBoutique[] }` : tous les moyens actifs du catalogue pour le pays de la boutique, avec la configuration de la boutique.
+- `PUT /boutique/moyens-pays/{ulid}` `{ active: boolean, valeur?: string | null }` (propriétaire / gérant, 10 / min) → `{ moyen: MoyenBoutique }`. Moyen inconnu, inactif au catalogue **ou d'un autre pays** → `404` (indiscernable : anti-IDOR). `valeur` : type `lien` → URL `https://` ≤ 300 caractères ; type `numero` → numéro international `+` 8 à 15 chiffres (espaces, points et tirets retirés) ou code marchand de 3 à 12 chiffres. Activer sans valeur (fournie ou déjà enregistrée) → `422` (`errors.valeur`). Journal `boutique.moyen_pays_modifie` (`{ moyen, nom, active, valeur_modifiee }`, jamais la valeur). Signal `parametres`.
+- Stockage : table `moyens_paiement_boutique` (scope boutique). La valeur est **en clair**, comme `reglages.wave_lien` : c'est une donnée publique (affichée en grand à chaque client qui paie), pas un secret d'accès — rien à protéger par chiffrement, contrairement aux clés PayTech ou à l'URI NWC.
+
+### 14.4 Caisse et paiements
+
+- Nouvelle méthode **`moyen_pays`** : `POST /ventes` et `POST /ventes/{ulid}/paiements` acceptent `{ methode: 'moyen_pays', moyen: '<ulid du moyen>' }` (`moyen` requis avec cette méthode, ignoré sinon). Moyen non activé par la boutique, inactif au catalogue ou d'un autre pays → `409 MOYEN_INACTIF` (rien n'est créé).
+- `Paiement.methode` ajoute `'moyen_pays'` ; `Paiement.moyen: { ulid, nom, type, couleur, valeur, instructions_fr, instructions_en } | null` — **photographie** prise à la création de la tentative (un changement ultérieur du numéro ne modifie pas une tentative en cours). `operateur = null`, `expire_le = null` : comme le Wave direct, la tentative n'expire jamais et attend la confirmation ou l'annulation.
+- `POST /paiements/{ulid}/confirmer-manuellement` accepte `wave_manuel` **et** `moyen_pays` (mêmes garde-fous : propriétaire / gérant, `{ confirmation: true }`, journal `paiement.confirme_manuellement`, signaux `paiements` + `ventes`).
+- `VenteCourte` ajoute `moyen_reussi: string | null` (nom du moyen de la tentative réussie quand `methode_reussie = 'moyen_pays'`) ; le reçu public (`GET /r/{jeton}`) ajoute `moyen: string | null`. Filtre `GET /ventes?methode=moyen_pays` ; export CSV : colonne « Moyen » = nom du moyen.
+- Statistiques : `moyen_pays` compte dans **mobile money** (`repartition.mobile_money` du tableau de bord, `part_mobile_money_pct` de la console).
+
+### 14.5 Langues dans le reste de l'API
+
+- `PATCH /moi/preferences` : `langue_audio` ∈ codes des langues **actives** (ou `null`).
+- Studio : `GET /admin/audio/matrice` → `langues: Array<{ code, nom, nom_local, pays: CodePays[] }>` (langues **actives**, triées par `ordre`) ; `couverture` et `etats` portent sur ces langues ; `langue=` (filtre), `POST /admin/audio` et `POST /admin/audio/publier` acceptent toute langue active. `GET /admin/statistiques` : `couverture_audio` par langue active.
+- Clés vocales `langue.{code}` : créées par `POST /admin/langues`, jamais marquées « retirées du code » par `audio:synchroniser` tant que la langue existe.
+
+### 14.6 Temps réel
+
+Écritures sur `pays`, `langues`, `moyens_paiement` → rubrique **`catalogues`** sur le canal public `plateforme` (aucune donnée) : le front relit `/config`, la boutique et les listes de la console. Écritures sur `moyens_paiement_boutique` → `parametres` sur `private-boutique.{ulid}`.
+
+### 14.7 Précisions du back et du front (10 novembre)
+
+- **Ordre des contrôles** (règle 12, comme `/wallet/*`) : `PUT /boutique/moyens-pays/{ulid}` vérifie le droit d'abord (caissier → `403`), puis le moyen (inconnu, inactif ou d'un autre pays → le même `404 INTROUVABLE`, quel que soit le corps), puis seulement le corps (`active` obligatoire). `PATCH /boutique` avec `pays` : pays inconnu ou fermé → `422` (`errors.pays`) ; gérant → `403` dès que le champ est envoyé, même avec le pays actuel (le front ne l'envoie que s'il change, et seulement pour le propriétaire).
+- **Ordre par défaut** : une nouvelle langue prend le dernier `ordre` hors français + 1 ; un nouveau moyen, le dernier `ordre` de son pays + 1.
+- `DELETE /admin/langues/{code}` marque aussi la clé `langue.{code}` « retirée du code » (sans la supprimer : ses éventuels audios dans d'autres langues restent). Les clés `langue.wo|srr|ff|dyo|fr|en` des graines viennent du registre du front (`cles-vocales.json`).
+- **Journal** : détails ajoutés — `plateforme.*_modifie(e)` porte `changements: { champ: { avant, apres } }` ; `paiement.confirme_manuellement` porte aussi `methode` et `moyen` (nom) ; `boutique.creee` porte `pays`. Jamais le numéro ni le lien marchand.
+- **Cache** : le catalogue public est mis en cache (1 h) et vidé par les événements des modèles `Pays`, `Langue`, `MoyenPaiement` ; une écriture directe en base (hors modèles) ne le vide pas.
+- **Front** : `useCatalogue()` (`web/src/api/catalogue.ts`) lit `pays` / `langues` de `/config` avec repli Sénégal + langues de départ (avant la réponse, hors ligne) ; le pays de l'appareil est `localStorage['satspoint.pays']`, sinon la région de `navigator.language` (`fr-CI` → CI), sinon `SN`. Les noms affichés viennent du catalogue (`nom_local` en grand) ; seuls `langue.fr`/`langue.en` gardent une clé i18n. La matrice du studio sans `pays` (ancienne réponse) garde toutes ses colonnes. Numéro marchand affiché groupé (`+225 07 08 09 10 11`).
+- **Mock** : `web/src/api/mockCatalogue.ts` (mêmes graines + bambara ML, dioula CI/BF, mooré BF, éwé TG désactivé) ; levier `sessionStorage['satspoint.mock.pays']='CI'` : boutique démo en Côte d'Ivoire, Wave (lien) et Orange Money (numéro) activés, vente `moyen_pays` en attente `01PDEMOMOYENPAYS0000000001`.
+
+
 # Vague 3 — aide vocale, studio audio, 2FA, console plateforme, recherche, import/export
 
 Mêmes conventions que ci-dessus. Le back fait foi ; toute précision est ajoutée ici.

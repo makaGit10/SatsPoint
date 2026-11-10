@@ -85,6 +85,7 @@ Severity: 🔴 high · 🟠 medium · 🟡 low. Status: ✅ implemented in MVP �
 | T20 | Super-admin account takeover → malicious audio pushed to every device | Elevation / Tampering | 🔴 | Mandatory TOTP 2FA, rate limits, audit log; uploaded files type-checked by signature (not extension), **always re-encoded by ffmpeg** with fixed parameters and a time limit, size ≤ 2 MB, server-generated filenames, content-addressed URLs. | ✅ |
 | T21 | Super-admin reads merchants' money data | Information disclosure | 🟠 | Least privilege: the platform role has **no access** to other shops' sales, wallets or PayTech data — only shop status, health and audio. The super-admin may own **one shop of their own**, reached through an ordinary owner membership (data access always goes through membership + `BoutiqueScope`, never through the platform role); a Pest test checks they still only see that shop. | ✅ |
 | T22 | Audio manifest poisoning (cache) | Tampering | 🟡 | Manifest served by our API with short cache + ETag; files immutable and hash-named. | ✅ |
+| T29 | Tampered **platform catalogues** (countries, languages, country payment methods): a fake method or instructions shown at every till of a country | Tampering / Elevation | 🟠 | Writes only behind `super.admin` + mandatory 2FA, FormRequest `authorize` (403 before any validation), 30 writes/min, audit log `plateforme.*` with before/after values; closed lists (country codes, method type, colour tokens), language code regex reused in route patterns (no path tricks), instructions **plain text** (no `<`, `>` or control characters) always rendered escaped by React. Public read limited to active entries and the fields the UI needs (`GET /config`). | ✅ |
 
 ### 4.5 Availability and abuse
 
@@ -94,6 +95,14 @@ Severity: 🔴 high · 🟠 medium · 🟡 low. Status: ✅ implemented in MVP �
 | T24 | Webhook flood | DoS | 🟡 | 60/min per shop, cheap rejection path before any DB work. | ✅ |
 | T25 | Public receipt enumeration | Information disclosure | 🟡 | 32-char random receipt tokens, 60/min per IP, receipts contain no customer PII. | ✅ |
 | T26 | Dependency vulnerabilities | Tampering | 🟠 | Lockfiles, `composer audit` + `npm audit` in CI, weekly security updates. | ✅ |
+
+### 4.5 bis Country payment methods (manual confirmation)
+
+| # | Threat | Category | Sev. | Mitigation | Status |
+|---|---|---|---|---|---|
+| T30 | A staff member replaces the shop's **merchant number / link** to divert customer payments | Tampering | 🟠 | Owner/manager only (Policy), cashier 403; every change audited (`boutique.moyen_pays_modifie`, never the value itself) and pushed live (`parametres`) to every open screen; the number is **snapshotted** on each attempt, shown in large type to the customer and on the sale detail. The value is public by nature (shown to every payer), so it is stored in clear like `wave_lien` — encryption would protect nothing. | ✅ |
+| T31 | **IDOR**: a shop activates or uses a method of another country / one it never enabled | Elevation | 🟠 | Method resolved by ULID **and** active **and** same country as the shop → otherwise the same 404 (settings) or 409 `MOYEN_INACTIF` (till); configuration rows under `BoutiqueScope`; Pest tests for cross-country and cross-shop access. | ✅ |
+| T32 | Sale marked paid without the money (manual confirmation) | Repudiation | 🟡 | Same guard rails as direct Wave: owner/manager only, explicit confirmation dialog, audit `paiement.confirme_manuellement` (method + method name), flagged as manual in reports. Residual risk accepted: no operator API to verify the transfer. | ✅ / residual |
 
 ### 4.6 Privacy
 
@@ -108,6 +117,7 @@ Severity: 🔴 high · 🟠 medium · 🟡 low. Status: ✅ implemented in MVP �
 2. **Single relay dependency** per wallet connection; mitigated by fallback to mobile money, multi-relay planned.
 3. **PayTech test mode** during the hackathon: real mobile-money settlement requires account activation by PayTech.
 4. **Free-tier hosting** (Render) may sleep; mitigated by uptime pings during judging. Not a security issue, noted for transparency.
+5. **Country payment methods outside Senegal** are confirmed by hand (no operator API): the merchant must check the money really arrived before confirming (T32).
 
 ## 6. Verification
 
