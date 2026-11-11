@@ -56,6 +56,7 @@ class AppServiceProvider extends ServiceProvider
             (string) config('satspoint.audio.ffmpeg', 'ffmpeg'),
             (int) config('satspoint.audio.delai_s', 30),
             (string) config('satspoint.audio.debit', '48k'),
+            (string) config('satspoint.audio.ffprobe', 'ffprobe'),
         ));
 
         // Photos d'articles : bornes figées par la configuration (jamais par l'utilisateur).

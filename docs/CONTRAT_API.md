@@ -384,3 +384,21 @@ Sans 2FA validée, `/api/v1/admin/*` → `403 { code: 'DEUX_FA_REQUISE' }`.
 - **Articles** : `couleur` reste `#RRGGBB` ; le front rattache chaque valeur à la teinte la plus proche de sa palette (jetons clair / sombre) et envoie la valeur de référence de la teinte choisie.
 - **Journal** : les suspensions sont tracées `plateforme.boutique_suspendue` / `plateforme.boutique_reactivee` (famille « plateforme. » du filtre de la console).
 - **Environnement local uniquement** : `php artisan e2e:compte {prefixe} [--nom=] [--super-admin]` (compte de test, mot de passe aléatoire affiché une fois) et `php artisan e2e:nettoyer {prefixe=TEST-E2E-}` (suppression des données de test) — refusées hors `APP_ENV=local|testing`.
+
+## V3.12 Traitement des silences (11 novembre)
+Demande de la propriétaire : les blancs avant la voix (après le 3-2-1) et les pauses pendant l'enregistrement étaient conservés. Aucune forme JSON ne change ; seul le contenu des MP3 produits change.
+
+**Côté serveur** (`App\Services\Audio\TraitementAudio`, job `TraiterAudio`, paramètres figés, aucun paramètre venant de l'utilisateur, délai total 30 s) :
+1. **Mesure** : une passe ffmpeg mesure le niveau RMS par fenêtres de 50 ms (mono 16 kHz, coupe-bas 75 Hz). Bruit de fond = 10e centile, voix = 95e centile.
+2. **Seuil adaptatif** : `min(bruit + 12 dB, mi-chemin bruit/voix)`, borné entre **-55 et -30 dBFS** ; repli **-40 dBFS** si la mesure échoue (`TraitementAudio::seuilAdaptatif()`, fonction pure testée). L'ancien seuil fixe de -45 dB ne coupait rien avec un micro de téléphone (bruit de fond ≈ -48 dBFS).
+3. **Découpe** : `highpass=f=75` ; `silenceremove` début coupé en gardant **100 ms** avant la voix, et `stop_periods=-1:stop_duration=0.25:stop_silence=0` : toute pause interne de plus de **0,25 s** est ramenée à **0,25 s** (les silences > 0,5 s disparaissent, les petites pauses entre les mots restent intactes) ; fin coupée sur le signal retourné (`areverse`) en gardant **120 ms** (fins de mots conservées) ; puis `loudnorm=I=-16:TP=-1.5:LRA=11`, mono 48 kHz, MP3 48 kb/s. Détection RMS, fenêtre 20 ms (ffmpeg 8.1).
+4. **Repli** : si la sortie fait moins de 150 ms (aucune voix au-dessus du seuil), le fichier est ré-encodé **sans découpe** (coupe-bas + loudnorm) : un enregistrement n'est jamais perdu.
+Exemple mesuré (test) : prise de 4,9 s (1,5 s de blanc, mot, 1,2 s de blanc, mot, 1 s de blanc, bruit de téléphone) → **1,68 s**, les deux mots entiers. Le même traitement s'applique aux noms vocaux des articles (même service).
+
+**Reprise des audios déjà enregistrés** : `php artisan audio:retraiter [--langue=wo] [--simulation]`. Les sources déposées ne sont pas conservées : la commande repasse le MP3 stocké en base (`audio_fichiers`) dans le nouveau traitement et ne garde le résultat que s'il est **plus court d'au moins 80 ms** (sinon rien ne change : pas de ré-encodage inutile).
+- **Brouillon** : contenu remplacé en place (même `id`, nouvelle empreinte, nouveau `chemin`, `duree_ms`, `taille` ; copie de cache oubliée).
+- **Publié** : **nouvelle version publiée** (nouvel `id`, nouvelle URL versionnée, `publie_at` = maintenant), l'ancienne passe en `archive` dans la même transaction (archivée d'abord : une seule version publiée par clé et par langue) et **reste servie** aux manifestes encore en cache.
+- Une erreur sur un audio (contenu absent, ffmpeg) n'arrête pas les autres et ne touche jamais la version publiée. `--langue` doit être un code du catalogue (sinon code de sortie ≠ 0, rien n'est fait). `--simulation` n'écrit rien et affiche ce qui serait raccourci.
+- Fin (si au moins un audio a changé) : cache des manifestes vidé, **un** signal `audios` sur `plateforme` (toutes les applications relisent leur manifeste) et `audio` sur `private-admin` (studio). Journal `audio.retraite` par audio : `audio_id`, `nouvel_audio_id`, `cle`, `langue`, `statut`, `duree_avant_ms`, `duree_apres_ms` (jamais de contenu). Résumé : examinés, raccourcis, inchangés, erreurs. Fichiers temporaires générés par le serveur dans `audio-sources/`, toujours supprimés.
+
+Côté navigateur : voir ci-dessous.
