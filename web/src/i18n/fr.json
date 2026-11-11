@@ -189,7 +189,10 @@
   "voix": {
     "ecouter": "Écouter",
     "lectureEnCours": "Lecture en cours",
-    "aucuneLangue": "Aucune"
+    "aucuneLangue": "Aucune",
+    "reecouterAide": "Réécouter l'aide",
+    "ouvrirAide": "Aide vocale ({{langue}})",
+    "coupee": "voix coupée"
   },
   "demo": {
     "bandeau": "Mode démo : paiements simulés"

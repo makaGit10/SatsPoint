@@ -1,0 +1,57 @@
+{
+  "guide": {
+    "landing": "Welcome to SatsPoint, the till that takes bitcoin and mobile money. To start, tap the big yellow button “Create my shop”; if you already have an account, tap the white button right next to it.",
+    "langue": "Tap the big box of your language. The small speaker in the corner of each box says the name of the language.",
+    "accueil": "To open your shop, tap the big yellow button. If you already have an account, tap the white button just below.",
+    "inscription": "Here you create your account with your name, your phone number and a password. If you can't write, ask a relative or a SatsPoint agent to fill in these boxes with you: after that, everything works with pictures and voice.",
+    "connexion": "Type your phone number and your password, then tap the big yellow button “Sign in”. Someone you trust can type them with you.",
+    "motDePasseOublie": "Type the phone number or email address of your account, then tap the yellow button: you will receive a way to choose a new password.",
+    "reinitialisation": "Choose a new password, then tap the yellow button to save it.",
+    "verification2fa": "Open your code app and type the six-digit code it shows. If you lost your phone, type one of your backup codes.",
+    "deuxFacteurs": "To protect this account, scan the black square with a code app, then type the six-digit code it shows. Keep the backup codes in a safe place.",
+    "demarrage": {
+      "boutique": "First step: your shop's name, your phone and your city. If you can't write, ask a relative or a SatsPoint agent to fill in the boxes with you, then tap the yellow button “Create my shop”; the rest works with pictures and voice.",
+      "portefeuille": "Second step: link your bitcoin wallet. Paste its connection link or scan it with the camera; a relative or a SatsPoint agent can do it with you.",
+      "mobileMoney": "Third step, optional: mobile money, to receive Wave, Orange Money or Free Money. You can do it later by tapping “Skip”.",
+      "test": "Last step: a test payment of one hundred francs. Tap the yellow button and pay yourself; when the screen turns green, your till is ready.",
+      "termine": "Your till is ready. Tap the yellow button to go to the till and make your first sale."
+    },
+    "caisse": "Type the price on the big keys, then tap the big yellow “Charge” button at the bottom. The key with the arrow erases the last digit.",
+    "choixMoyen": "Choose how the customer pays: tap the bitcoin box with the lightning bolt, or a mobile money box such as Wave or Orange Money.",
+    "paiement": {
+      "bitcoin": "Show this black square to the customer: they scan it with their bitcoin wallet. When the screen turns green, the money has arrived.",
+      "mobileMoney": "The customer scans this black square with their phone and pays with mobile money. Wait: the screen turns green as soon as the money arrives.",
+      "moyenPays": "The customer pays you with this number or this black square. When the money is in your account, tap the yellow button “Confirm receipt”.",
+      "waveDirect": "The customer scans this black square with Wave and pays you. When the money is in your Wave account, the owner or the manager taps the yellow button “Confirm receipt”."
+    },
+    "succes": "Payment received, the sale is saved. Tap the white button to send the receipt to the customer, or the big yellow button for a new sale.",
+    "ventes": "Here are your sales, the latest at the top. A green badge means paid, a gold badge means pending; tap a sale to see its details.",
+    "venteDetail": "Here are the details of the sale: the amount, the payment method and the time. The buttons at the bottom send the receipt or resume the payment.",
+    "tableau": "Your dashboard: at the top, the money collected and the number of sales; the curve shows your sales day after day. The round buttons at the top change the period.",
+    "portefeuille": "Your bitcoin wallet: the big number is your balance. Tap the yellow button to receive, the white button to send; the history is below.",
+    "equipe": "Your team: each person with their role. Tap the yellow button to invite a cashier or a manager with a link to send them.",
+    "reglages": "Your shop settings: its name, the payment methods and your preferences. After a change, tap the yellow “Save” button of the part you changed.",
+    "recu": "Here is the receipt of the purchase: the amount paid, the shop and the time. You can keep it on your phone or print it.",
+    "invitation": "A shop is inviting you to its team. Tap the yellow button to accept; if you don't have an account yet, you will create one first.",
+    "console": "The platform console: shops, service health, the log, languages and payment methods. Tap a tab at the top to change section.",
+    "studio": "The audio studio: each row is a sentence of the app, each column a language. Tap a box, press the red microphone, speak after three, two, one, then confirm: silences are cut automatically.",
+    "aideProche": "Ask a relative or a SatsPoint agent to fill in these boxes with you. After that, everything works with pictures and voice."
+  },
+  "voix": {
+    "feuille": {
+      "titre": "Voice help",
+      "sousTitre": "Listen to the app in your language.",
+      "activer": "Voice on",
+      "activerAide": "Speakers and the help of each screen.",
+      "langues": "Voice language",
+      "ecouterPage": "Listen to this page's help",
+      "aucuneAide": "This page has no voice help."
+    },
+    "premiere": {
+      "continuer": "Continue in English"
+    },
+    "aideProche": {
+      "titre": "Can't write?"
+    }
+  }
+}

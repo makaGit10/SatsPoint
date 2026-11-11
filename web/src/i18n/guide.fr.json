@@ -1,0 +1,57 @@
+{
+  "guide": {
+    "landing": "Bienvenue sur SatsPoint, la caisse qui encaisse en bitcoin et en mobile money. Pour commencer, touchez le grand bouton jaune « Créer ma boutique » ; si vous avez déjà un compte, touchez le bouton blanc juste à côté.",
+    "langue": "Touchez la grande case de votre langue. Le petit haut-parleur dans le coin de chaque case dit le nom de la langue.",
+    "accueil": "Pour ouvrir votre boutique, touchez le grand bouton jaune. Si vous avez déjà un compte, touchez le bouton blanc juste en dessous.",
+    "inscription": "Ici, on crée votre compte avec votre nom, votre numéro de téléphone et un mot de passe. Si vous ne savez pas écrire, demandez à un proche ou à un agent SatsPoint de remplir ces cases avec vous : ensuite, tout se fait avec les images et la voix.",
+    "connexion": "Tapez votre numéro de téléphone et votre mot de passe, puis touchez le grand bouton jaune « Me connecter ». Une personne de confiance peut les taper avec vous.",
+    "motDePasseOublie": "Tapez le numéro de téléphone ou l'adresse e-mail de votre compte, puis touchez le bouton jaune : vous recevrez de quoi choisir un nouveau mot de passe.",
+    "reinitialisation": "Choisissez un nouveau mot de passe, puis touchez le bouton jaune pour l'enregistrer.",
+    "verification2fa": "Ouvrez votre application de codes et tapez le code à six chiffres qu'elle affiche. Si vous avez perdu votre téléphone, tapez un de vos codes de secours.",
+    "deuxFacteurs": "Pour protéger ce compte, scannez le carré noir avec une application de codes, puis tapez le code à six chiffres qu'elle affiche. Gardez précieusement les codes de secours.",
+    "demarrage": {
+      "boutique": "Première étape : le nom de votre boutique, votre téléphone et votre ville. Si vous ne savez pas écrire, demandez à un proche ou à un agent SatsPoint de remplir les cases avec vous, puis touchez le bouton jaune « Créer ma boutique » ; la suite se fait avec les images et la voix.",
+      "portefeuille": "Deuxième étape : reliez votre portefeuille bitcoin. Collez son lien de connexion ou scannez-le avec l'appareil photo ; un proche ou un agent SatsPoint peut le faire avec vous.",
+      "mobileMoney": "Troisième étape, facultative : le mobile money, pour recevoir Wave, Orange Money ou Free Money. Vous pouvez la faire plus tard en touchant « Passer ».",
+      "test": "Dernière étape : un paiement test de cent francs. Touchez le bouton jaune et payez-vous vous-même ; quand l'écran devient vert, votre caisse est prête.",
+      "termine": "Votre caisse est prête. Touchez le bouton jaune pour aller à la caisse et faire votre première vente."
+    },
+    "caisse": "Tapez le prix sur les grosses touches, puis touchez le grand bouton jaune « Encaisser » en bas. La touche avec la flèche efface le dernier chiffre.",
+    "choixMoyen": "Choisissez comment le client paie : touchez la case bitcoin avec l'éclair, ou une case mobile money comme Wave ou Orange Money.",
+    "paiement": {
+      "bitcoin": "Montrez ce carré noir au client : il le scanne avec son portefeuille bitcoin. Quand l'écran devient vert, l'argent est arrivé.",
+      "mobileMoney": "Le client scanne ce carré noir avec son téléphone et paie avec son mobile money. Attendez : l'écran devient vert dès que l'argent est arrivé.",
+      "moyenPays": "Le client vous paie avec ce numéro ou ce carré noir. Quand l'argent est arrivé sur votre compte, touchez le bouton jaune « Confirmer la réception ».",
+      "waveDirect": "Le client scanne ce carré noir avec Wave et vous paie. Quand l'argent est sur votre compte Wave, le propriétaire ou le gérant touche le bouton jaune « Confirmer la réception »."
+    },
+    "succes": "Paiement reçu, la vente est enregistrée. Touchez le bouton blanc pour envoyer le reçu au client, ou le grand bouton jaune pour une nouvelle vente.",
+    "ventes": "Voici vos ventes, la plus récente en haut. Une pastille verte veut dire payé, une pastille dorée veut dire en attente ; touchez une vente pour voir son détail.",
+    "venteDetail": "Voici le détail de la vente : le montant, le moyen de paiement et l'heure. Les boutons du bas servent à envoyer le reçu ou à reprendre le paiement.",
+    "tableau": "Votre tableau de bord : en haut, l'argent encaissé et le nombre de ventes ; la courbe montre vos ventes jour après jour. Les boutons ronds en haut changent la période.",
+    "portefeuille": "Votre portefeuille bitcoin : le grand chiffre est votre solde. Touchez le bouton jaune pour recevoir, le bouton blanc pour envoyer ; l'historique est en dessous.",
+    "equipe": "Votre équipe : chaque personne avec son rôle. Touchez le bouton jaune pour inviter un caissier ou un gérant avec un lien à lui envoyer.",
+    "reglages": "Les réglages de la boutique : son nom, les moyens de paiement et vos préférences. Après un changement, touchez le bouton jaune « Enregistrer » de la partie modifiée.",
+    "recu": "Voici le reçu de l'achat : le montant payé, la boutique et l'heure. Vous pouvez le garder sur votre téléphone ou l'imprimer.",
+    "invitation": "Une boutique vous invite dans son équipe. Touchez le bouton jaune pour accepter ; si vous n'avez pas encore de compte, vous allez d'abord en créer un.",
+    "console": "La console de la plateforme : les boutiques, la santé du service, le journal, les langues et les moyens de paiement. Touchez un onglet en haut pour changer de rubrique.",
+    "studio": "Le studio audio : chaque ligne est une phrase de l'application, chaque colonne une langue. Touchez une case, appuyez sur le micro rouge, parlez après trois, deux, un, puis validez : les blancs sont coupés tout seuls.",
+    "aideProche": "Demandez à un proche ou à un agent SatsPoint de remplir ces cases avec vous. Ensuite, tout se fait avec les images et la voix."
+  },
+  "voix": {
+    "feuille": {
+      "titre": "Aide vocale",
+      "sousTitre": "Écoutez l'application dans votre langue.",
+      "activer": "Voix activée",
+      "activerAide": "Les haut-parleurs et l'aide de chaque écran.",
+      "langues": "Langue de la voix",
+      "ecouterPage": "Écouter l'aide de cette page",
+      "aucuneAide": "Cette page n'a pas d'aide vocale."
+    },
+    "premiere": {
+      "continuer": "Continuer en français"
+    },
+    "aideProche": {
+      "titre": "Vous ne savez pas écrire ?"
+    }
+  }
+}

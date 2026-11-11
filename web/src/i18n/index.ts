@@ -88,6 +88,12 @@ const PAQUETS = {
     fr: () => import('./landing.fr.json').then((m) => m.default as Record<string, unknown>),
     en: () => import('./landing.en.json').then((m) => m.default as Record<string, unknown>),
   },
+  // Guides vocaux des écrans (textes lus par la voix du navigateur tant qu'aucun enregistrement n'est publié)
+  // et feuille « Aide vocale » (voix/guide.ts, voix/FeuilleVoix.tsx).
+  guide: {
+    fr: () => import('./guide.fr.json').then((m) => m.default as Record<string, unknown>),
+    en: () => import('./guide.en.json').then((m) => m.default as Record<string, unknown>),
+  },
   // Recherche globale, invitation, menus d'export.
   extras: {
     fr: () => import('./extras.fr.json').then((m) => m.default as Record<string, unknown>),

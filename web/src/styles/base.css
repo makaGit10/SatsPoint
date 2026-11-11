@@ -212,8 +212,54 @@
   transform-origin: center;
 }
 
+/* Bouton rond « Réécouter l'aide » (voix/BoutonGuide.tsx) : coin bas droit, au-dessus de la barre du bas sur mobile.
+   Tant qu'il est affiché, les pages réservent sa place en bas (--reserve-guide) : il ne masque jamais une action. */
+:root {
+  --reserve-guide: 0px;
+}
+:root[data-guide-visible] {
+  --reserve-guide: 76px;
+}
+.bouton-guide {
+  position: fixed;
+  z-index: 35;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+@media (max-width: 767.98px) {
+  :root:has([data-coquille]) .bouton-guide {
+    bottom: calc(var(--hauteur-barre-bas) + env(safe-area-inset-bottom, 0px) + 12px);
+  }
+}
+@media (min-width: 768px) {
+  .bouton-guide {
+    right: 24px;
+    bottom: 24px;
+  }
+}
+@keyframes sp-guide {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(224, 162, 31, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(224, 162, 31, 0);
+  }
+}
+@utility anim-guide {
+  animation: sp-guide 1.4s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bouton-guide * {
+    animation: none !important;
+  }
+}
+
 /* Impression (reçu) : fond blanc, rien d'interactif. */
 @media print {
+  .bouton-guide {
+    display: none !important;
+  }
   html,
   body {
     background: #fff !important;

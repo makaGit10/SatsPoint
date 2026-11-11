@@ -318,6 +318,7 @@ apparaît dans le coin de l'élément. Un toucher sur le haut-parleur **lit l'au
 - **Sélecteur de langue** : chaque langue a son haut-parleur, qui dit le nom de la langue dans cette langue.
 - **Chargement** : un manifeste léger par langue (`clé → URL versionnée`) ; fichiers récupérés à la demande (5–20 Ko chacun), mis en cache par le service worker (cache-first, URL immuables). P1 : « télécharger la langue pour l'utiliser hors ligne ».
 - **Mises à jour** : quand la super-admin publie des audios, un signal temps réel (rubrique `audios`, canal public plateforme) fait relire le manifeste par toutes les applications ouvertes.
+- **Guide vocal par écran** (11 novembre) : chaque écran déclare son explication orale avec `useGuideVocal('guide.<écran>')` (`web/src/voix/guide.ts`, option `{ actif }` pour une fenêtre ou une étape). Lue **une fois par session et par langue** à l'arrivée si l'aide vocale est active, seulement après un premier geste, jamais par-dessus un autre son, arrêtée en quittant l'écran ; bouton rond « Réécouter l'aide » en bas à droite. Les clés `guide.…` (paquet i18n `guide`) sont essentielles au studio ; sans enregistrement publié, la voix du navigateur lit le texte en attendant.
 - P1 : appui long (500 ms) sur un bouton = écoute de son audio. P2 : lecture des montants (« quinze mille francs ») assemblée à partir de nombres enregistrés.
 
 ### 6.13 Studio audio — console super-admin (P0)

@@ -5,16 +5,22 @@ import { useSynchroSession } from '@/auth/useMoi'
 import { Bouton } from '@/composants/Bouton'
 import { useToasts } from '@/composants/toastStore'
 import { SqueletteApplication } from '@/coquille/SqueletteEcran'
+import { useGuideCourant } from '@/voix/guide'
 import { LecteurAudio } from '@/voix/LecteurAudio'
+import { useVoix } from '@/voix/store'
 import { definirNavigateur } from './navigation'
 
 // L'affichage des notifications n'est chargé qu'à la première notification.
 const Toasts = lazy(() => import('@/composants/Toast').then((m) => ({ default: m.Toasts })))
+// Bouton « Réécouter l'aide » : chargé seulement quand l'aide vocale est active sur un écran qui a un guide.
+const BoutonGuide = lazy(() => import('@/voix/BoutonGuide'))
 
 /** Racine : synchronise la session, expose la navigation hors React, monte le lecteur audio et les notifications. */
 export function Racine() {
   const navigate = useNavigate()
   const aDesToasts = useToasts((s) => s.toasts.length > 0)
+  const guide = useGuideCourant()
+  const voixActive = useVoix((s) => s.activee)
   useSynchroSession()
   useEffect(() => {
     definirNavigateur((vers, options) => navigate(vers, options))
@@ -27,6 +33,11 @@ export function Racine() {
         <Outlet />
       </Suspense>
       <LecteurAudio />
+      {guide && voixActive && (
+        <Suspense fallback={null}>
+          <BoutonGuide key={guide} cle={guide} />
+        </Suspense>
+      )}
       {aDesToasts && (
         <Suspense fallback={null}>
           <Toasts />
