@@ -26,7 +26,7 @@ beforeEach(function () {
 });
 
 /** Fichier temporaire de test (supprimé par PHP en fin de requête ou laissé dans /tmp). */
-function fichierTemporaire(string $contenu, string $nom, string $mime): UploadedFile
+function fichierArticleTemporaire(string $contenu, string $nom, string $mime): UploadedFile
 {
     $chemin = tempnam(sys_get_temp_dir(), 'sp-test-');
     file_put_contents($chemin, $contenu);
@@ -59,7 +59,7 @@ function jpegAvecExif(int $l = 800, int $h = 400, int $orientation = 6, string $
         .$description;
     $app1 = "\xFF\xE1".pack('n', 2 + 6 + strlen($tiff))."Exif\0\0".$tiff;
 
-    return fichierTemporaire(substr($jpeg, 0, 2).$app1.substr($jpeg, 2), 'photo.jpg', 'image/jpeg');
+    return fichierArticleTemporaire(substr($jpeg, 0, 2).$app1.substr($jpeg, 2), 'photo.jpg', 'image/jpeg');
 }
 
 /** PNG dont l'en-tête annonce des dimensions démesurées (bombe de décompression). */
@@ -68,7 +68,7 @@ function pngGeant(int $l = 20000, int $h = 20000): UploadedFile
     $ihdr = pack('NNCCCCC', $l, $h, 8, 2, 0, 0, 0);
     $chunk = fn (string $type, string $data) => pack('N', strlen($data)).$type.$data.pack('N', crc32($type.$data));
 
-    return fichierTemporaire("\x89PNG\r\n\x1A\n".$chunk('IHDR', $ihdr).$chunk('IDAT', gzcompress(str_repeat("\0", 64))).$chunk('IEND', ''), 'geant.png', 'image/png');
+    return fichierArticleTemporaire("\x89PNG\r\n\x1A\n".$chunk('IHDR', $ihdr).$chunk('IDAT', gzcompress(str_repeat("\0", 64))).$chunk('IEND', ''), 'geant.png', 'image/png');
 }
 
 function articleDe(Boutique $boutique, array $champs = []): Article
@@ -142,8 +142,8 @@ it('lit l\'orientation EXIF sans l\'extension exif et ignore un EXIF absent ou c
         expect($service->orientationJpeg(jpegAvecExif(40, 20, $o)->getRealPath()))->toBe($o);
     }
 
-    $sansExif = fichierTemporaire("\xFF\xD8\xFF\xE0".pack('n', 16)."JFIF\0".str_repeat("\0", 9)."\xFF\xDA", 'x.jpg', 'image/jpeg');
-    $corrompu = fichierTemporaire("\xFF\xD8\xFF\xE1".pack('n', 12)."Exif\0\0MM\0", 'y.jpg', 'image/jpeg');
+    $sansExif = fichierArticleTemporaire("\xFF\xD8\xFF\xE0".pack('n', 16)."JFIF\0".str_repeat("\0", 9)."\xFF\xDA", 'x.jpg', 'image/jpeg');
+    $corrompu = fichierArticleTemporaire("\xFF\xD8\xFF\xE1".pack('n', 12)."Exif\0\0MM\0", 'y.jpg', 'image/jpeg');
     expect($service->orientationJpeg($sansExif->getRealPath()))->toBe(1)
         ->and($service->orientationJpeg($corrompu->getRealPath()))->toBe(1);
 });
@@ -155,15 +155,15 @@ it('refuse les photos au type réel invalide, illisibles, trop lourdes ou démes
     $envoyer = fn (UploadedFile $f) => $this->post($url, ['fichier' => $f], ['Accept' => 'application/json']);
 
     // Script PHP déguisé en .jpg, texte « image/jpeg », GIF et SVG (hors liste) : type réel refusé.
-    $envoyer(fichierTemporaire('<?php system($_GET["c"]); ?>', 'photo.jpg', 'image/jpeg'))->assertStatus(422)->assertJsonPath('code', 'PHOTO_TYPE_INVALIDE');
+    $envoyer(fichierArticleTemporaire('<?php system($_GET["c"]); ?>', 'photo.jpg', 'image/jpeg'))->assertStatus(422)->assertJsonPath('code', 'PHOTO_TYPE_INVALIDE');
     $gif = imagecreatetruecolor(32, 32);
     ob_start();
     imagegif($gif);
-    $envoyer(fichierTemporaire((string) ob_get_clean(), 'photo.png', 'image/png'))->assertStatus(422)->assertJsonPath('code', 'PHOTO_TYPE_INVALIDE');
-    $envoyer(fichierTemporaire('<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"/>', 'photo.webp', 'image/webp'))->assertStatus(422)->assertJsonPath('code', 'PHOTO_TYPE_INVALIDE');
+    $envoyer(fichierArticleTemporaire((string) ob_get_clean(), 'photo.png', 'image/png'))->assertStatus(422)->assertJsonPath('code', 'PHOTO_TYPE_INVALIDE');
+    $envoyer(fichierArticleTemporaire('<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"/>', 'photo.webp', 'image/webp'))->assertStatus(422)->assertJsonPath('code', 'PHOTO_TYPE_INVALIDE');
 
     // Signature JPEG suivie de n'importe quoi (polyglotte) : illisible.
-    $envoyer(fichierTemporaire("\xFF\xD8\xFF\xE0".str_repeat('A', 400), 'photo.jpg', 'image/jpeg'))->assertStatus(422)->assertJsonPath('code', 'PHOTO_ILLISIBLE');
+    $envoyer(fichierArticleTemporaire("\xFF\xD8\xFF\xE0".str_repeat('A', 400), 'photo.jpg', 'image/jpeg'))->assertStatus(422)->assertJsonPath('code', 'PHOTO_ILLISIBLE');
 
     // En-tête annonçant 20 000 × 20 000 px : refusé AVANT tout décodage.
     $envoyer(pngGeant())->assertStatus(422)->assertJsonPath('code', 'PHOTO_TROP_GRANDE');
@@ -173,7 +173,7 @@ it('refuse les photos au type réel invalide, illisibles, trop lourdes ou démes
     $this->post($url, [], ['Accept' => 'application/json'])->assertStatus(422)->assertJsonValidationErrors(['fichier']);
 
     // Création multipart avec une fausse photo : rien n'est créé (tout ou rien).
-    $this->post('/api/v1/articles', ['prix_xof' => '100', 'photo' => fichierTemporaire('pas une image', 'p.jpg', 'image/jpeg')], ['Accept' => 'application/json'])
+    $this->post('/api/v1/articles', ['prix_xof' => '100', 'photo' => fichierArticleTemporaire('pas une image', 'p.jpg', 'image/jpeg')], ['Accept' => 'application/json'])
         ->assertStatus(422)->assertJsonPath('code', 'PHOTO_TYPE_INVALIDE');
 
     expect($article->fresh()->photo_empreinte)->toBeNull()
@@ -196,7 +196,7 @@ it('enregistre le nom dit à voix haute (MP3 ré-encodé) et refuse un faux audi
         // Le silence de tête (1 s) est coupé par le traitement ffmpeg du studio.
         ->and((int) $fichier->duree_ms)->toBeLessThan(2300);
 
-    $this->post($url, ['fichier' => fichierTemporaire(str_repeat('pas un son ', 200), 'nom.wav', 'audio/wav')], ['Accept' => 'application/json'])
+    $this->post($url, ['fichier' => fichierArticleTemporaire(str_repeat('pas un son ', 200), 'nom.wav', 'audio/wav')], ['Accept' => 'application/json'])
         ->assertStatus(422)->assertJsonPath('code', 'AUDIO_TYPE_INVALIDE');
     $this->post($url, ['fichier' => wavGenere(0.2, 8.0, 'long.wav')], ['Accept' => 'application/json'])
         ->assertStatus(422)->assertJsonPath('code', 'AUDIO_TROP_LONG');

@@ -18,9 +18,25 @@ use Illuminate\Validation\Validator;
  */
 class ArticleRequest extends FormRequest
 {
+    /**
+     * Droit vérifié AVANT la validation (règle 12, comme les envois de photo / voix) : un caissier reçoit 403,
+     * jamais le détail des champs ni le traitement d'un fichier. Sans boutique, le contrôleur répond BOUTIQUE_ABSENTE.
+     */
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        $user = $this->user();
+
+        if ($user === null) {
+            return false;
+        }
+
+        if (app(BoutiqueCourante::class)->membre() === null) {
+            return true;
+        }
+
+        $article = $this->route('article');
+
+        return $article instanceof Article ? $user->can('update', $article) : $user->can('create', Article::class);
     }
 
     public function rules(): array
