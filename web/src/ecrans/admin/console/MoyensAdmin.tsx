@@ -100,14 +100,35 @@ export function MoyensAdmin({ actif }: { actif: boolean }) {
           />
         </div>
       )}
-      {pays === PAYS_DEFAUT && <p className="text-xs text-texte-3">{t('admin.moyens.senegal')}</p>}
+      {pays === PAYS_DEFAUT && (
+        // Au Sénégal, les moyens intégrés (PayTech et le lien Wave direct) sont déjà proposés à toutes les boutiques :
+        // on les montre pour que la liste ne paraisse jamais vide.
+        <section className="flex flex-col gap-2" aria-label={t('admin.moyens.integresTitre')}>
+          <h3 className="text-xs font-semibold tracking-wide text-texte-3 uppercase">{t('admin.moyens.integresTitre')}</h3>
+          <ul className="divide-y divide-bordure verre rounded-xl" data-moyens-integres>
+            {(['wave', 'orange_money', 'free_money', 'wave_direct'] as const).map((code) => (
+              <li key={code} className="flex items-center gap-3 px-3 py-2">
+                <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-md bg-mm-doux text-mm-texte [&>svg]:size-4" aria-hidden="true">
+                  {code === 'wave_direct' ? <Link2 /> : <Smartphone />}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-texte">{t(`admin.moyens.integres.${code}`)}</p>
+                  <p className="text-xs text-texte-3">{t(code === 'wave_direct' ? 'admin.moyens.integreLien' : 'admin.moyens.integrePaytech')}</p>
+                </div>
+                <span className="rounded-full bg-succes-doux px-2.5 py-1 text-xs font-semibold text-succes-texte">{t('admin.moyens.integreActif')}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-texte-3">{t('admin.moyens.senegal')}</p>
+        </section>
+      )}
 
       {requete.isPending ? (
         <div data-chargement="moyens" aria-busy="true">
           <SqueletteListe lignes={4} />
         </div>
       ) : moyens.length === 0 ? (
-        <EtatVide ton="neutre" icone={<Smartphone />} titre={t('admin.moyens.vide')} />
+        pays === PAYS_DEFAUT ? null : <EtatVide ton="neutre" icone={<Smartphone />} titre={t('admin.moyens.vide')} />
       ) : (
         <ul className={cn('divide-y divide-bordure verre rounded-xl', requete.isPlaceholderData && 'opacity-70')} aria-label={t('admin.onglets.moyens')}>
           {moyens.map((m) => {

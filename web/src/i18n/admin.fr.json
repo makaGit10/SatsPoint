@@ -253,7 +253,17 @@
       "cree": "Moyen ajouté",
       "enregistre": "Moyen enregistré",
       "supprime": "Moyen supprimé",
-      "paysOuvert": "Pays ouvert aux nouvelles boutiques"
+      "paysOuvert": "Pays ouvert aux nouvelles boutiques",
+      "integresTitre": "Intégrés pour toutes les boutiques",
+      "integres": {
+        "wave": "Wave",
+        "orange_money": "Orange Money",
+        "free_money": "Free Money",
+        "wave_direct": "Lien Wave direct"
+      },
+      "integrePaytech": "Via PayTech · confirmation automatique",
+      "integreLien": "Lien du marchand · confirmation à la main",
+      "integreActif": "Actif"
     }
   },
   "studio": {

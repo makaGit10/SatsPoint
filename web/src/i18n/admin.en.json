@@ -253,7 +253,17 @@
       "cree": "Method added",
       "enregistre": "Method saved",
       "supprime": "Method deleted",
-      "paysOuvert": "Country open to new shops"
+      "paysOuvert": "Country open to new shops",
+      "integresTitre": "Built in for every shop",
+      "integres": {
+        "wave": "Wave",
+        "orange_money": "Orange Money",
+        "free_money": "Free Money",
+        "wave_direct": "Direct Wave link"
+      },
+      "integrePaytech": "Through PayTech · confirmed automatically",
+      "integreLien": "Merchant link · confirmed by hand",
+      "integreActif": "Active"
     }
   },
   "studio": {
