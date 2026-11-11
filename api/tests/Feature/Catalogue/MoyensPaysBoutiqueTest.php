@@ -47,7 +47,8 @@ it('liste les moyens du pays de la boutique, les active avec un numéro validé 
         ->assertJsonCount(1, 'boutique.moyens_pays')->assertJsonPath('boutique.moyens_pays.0.nom', 'Orange Money')->assertJsonPath('boutique.moyens_pays.0.valeur', '458712');
 
     $journal = JournalAudit::query()->where('action', 'boutique.moyen_pays_modifie')->latest('id')->first();
-    expect($journal->details)->toBe(['moyen' => $om->ulid, 'nom' => 'Orange Money', 'active' => true, 'valeur_modifiee' => true])
+    // jsonb range les clés à sa façon : on compare le contenu, pas l'ordre.
+    expect($journal->details)->toEqualCanonicalizing(['moyen' => $om->ulid, 'nom' => 'Orange Money', 'active' => true, 'valeur_modifiee' => true])
         ->and(json_encode($journal->details))->not->toContain('458712');
 
     // Désactiver garde le numéro ; la caisse ne le propose plus.
@@ -124,7 +125,7 @@ it('change le pays de la boutique (propriétaire seulement) et désactive les mo
     expect($boutique->fresh()->pays)->toBe('BJ')
         ->and(MoyenPaiementBoutique::pourBoutique($boutique)->value('active'))->toBeFalse()
         ->and(MoyenPaiementBoutique::pourBoutique($boutique)->value('valeur'))->toBe('+2250701020304')
-        ->and(JournalAudit::query()->where('action', 'boutique.pays_modifie')->sole()->details)->toBe(['avant' => 'CI', 'apres' => 'BJ']);
+        ->and(JournalAudit::query()->where('action', 'boutique.pays_modifie')->sole()->details)->toEqualCanonicalizing(['avant' => 'CI', 'apres' => 'BJ']);
 
     // Le gérant garde la main sur le reste des réglages.
     connecte($gerant)->patchJson('/api/v1/boutique', ['nom' => 'Cotonou Shop'])->assertOk();

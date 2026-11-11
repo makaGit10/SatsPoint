@@ -38,7 +38,7 @@ class Caisse
         // Résolution des articles AVANT la transaction (scope boutique : un ulid étranger est simplement introuvable).
         $lignes = $this->preparerLignes($donnees['lignes'] ?? []);
 
-        return DB::transaction(function () use ($boutique, $caissier, $donnees, $lignes) {
+        return DB::transaction(function () use ($boutique, $caissier, $donnees, $lignes, $moyenPays) {
             $vente = new Vente([
                 'numero' => SequenceVente::suivant($boutique->id),
                 'caissier_id' => $caissier->id,
