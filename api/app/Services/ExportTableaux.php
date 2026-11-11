@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class ExportTableaux
 {
-    private const ENTETES_ARTICLES = ['Nom', 'Prix (FCFA)', 'Catégorie', 'Référence', 'Couleur', 'Actif', 'Position'];
+    private const ENTETES_ARTICLES = ['Nom', 'Prix (FCFA)', 'Catégorie', 'Référence', 'Couleur', 'Actif', 'Position', 'Pictogramme'];
 
     private const ENTETES_PAIEMENTS = ['Vente', 'Date', 'Heure', 'Moyen', 'Opérateur', 'Statut', 'Montant (FCFA)', 'Montant (sats)', 'Cours (FCFA/BTC)', 'Hash (8 car.)', 'Simulé', 'Réglé le'];
 
@@ -50,6 +50,7 @@ class ExportTableaux
             $a->couleur ?? '',
             $a->actif ? 'Oui' : 'Non',
             (int) $a->position,
+            $a->pictogramme ?? '', // identifiant de la liste fermée (pain, riz, the…) : jamais de formule possible
         ];
     }
 

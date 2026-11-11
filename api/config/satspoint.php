@@ -117,6 +117,8 @@ return [
             'lignes_vente' => ['rubrique' => 'ventes', 'canal' => 'boutique'],
             'paiements' => ['rubrique' => 'paiements', 'canal' => 'boutique'],
             'articles' => ['rubrique' => 'articles', 'canal' => 'boutique'],
+            // Photo et nom vocal d'un article (contenu en base) : la caisse et la liste se mettent à jour.
+            'article_fichiers' => ['rubrique' => 'articles', 'canal' => 'boutique'],
             'membres' => ['rubrique' => 'equipe', 'canal' => 'boutique'],
             'invitations' => ['rubrique' => 'equipe', 'canal' => 'boutique'],
             'boutiques' => ['rubrique' => 'parametres', 'canal' => 'boutique'],
@@ -158,6 +160,19 @@ return [
         'dossier_sources' => 'audio-sources', // storage/app/private/audio-sources/{id}.{ext} : source temporaire jusqu'au traitement
         // Au-delà, un audio encore « en_traitement » est considéré interrompu (redémarrage) : statut erreur, à renvoyer.
         'traitement_interrompu_min' => 10,
+    ],
+
+    /*
+    | Articles sans écrire (11 novembre) : photo prise au téléphone et nom dit à voix haute, contenus EN BASE.
+    | Tout est ré-encodé par le serveur (photo → WebP, voix → MP3 par le traitement ffmpeg du studio).
+    */
+    'articles_medias' => [
+        'photo_max_ko' => 4096,           // 4 Mo à l'entrée (le front réduit déjà la photo avant l'envoi)
+        'photo_pixels_max' => 25_000_000, // garde-fou mémoire (bombe de décompression)
+        'photo_cote' => 512,              // côté maximal après ré-encodage
+        'photo_qualite' => 80,            // qualité WebP
+        'voix_max_ko' => 1024,            // 1 Mo à l'entrée
+        'voix_duree_max_ms' => 7_000,     // ~5 s de parole (enregistreur arrêté à 5 s) + marge
     ],
 
     /*

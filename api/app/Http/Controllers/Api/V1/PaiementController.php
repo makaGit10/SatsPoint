@@ -10,6 +10,7 @@ use App\Http\Resources\PaiementResource;
 use App\Http\Resources\VenteResource;
 use App\Models\Boutique;
 use App\Models\Paiement;
+use App\Models\Vente;
 use App\Services\BoutiqueCourante;
 use App\Services\MachineEtatPaiement;
 use App\Services\PaiementsLightning;
@@ -103,7 +104,7 @@ class PaiementController extends Controller
 
     private function reponse(Paiement $paiement): JsonResponse
     {
-        $paiement->load(['vente' => fn ($q) => $q->with(['caissier:id,ulid,nom', 'paiementReussi', 'lignes.article:id,ulid', 'paiements'])]);
+        $paiement->load(['vente' => fn ($q) => $q->with(['caissier:id,ulid,nom', 'paiementReussi', 'lignes.article:'.Vente::COLONNES_ARTICLE_LIGNE, 'paiements'])]);
         $vente = $paiement->vente;
 
         return response()->json([

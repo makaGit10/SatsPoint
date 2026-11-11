@@ -91,7 +91,7 @@ class VenteController extends Controller
 
     private function charger(Vente $vente): Vente
     {
-        return $vente->load(['caissier:id,ulid,nom', 'paiementReussi', 'lignes.article:id,ulid', 'paiements']);
+        return $vente->load(['caissier:id,ulid,nom', 'paiementReussi', 'lignes.article:'.Vente::COLONNES_ARTICLE_LIGNE, 'paiements']);
     }
 
     private function fuseau(Boutique $boutique): string

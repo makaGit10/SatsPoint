@@ -169,18 +169,22 @@ class DemoSeeder extends Seeder
     private function articles(): void
     {
         $articles = [
-            ['nom' => 'Café Touba', 'prix_xof' => 200, 'categorie' => 'Boissons', 'couleur' => '#92400E', 'position' => 1],
-            ['nom' => 'Bissap', 'prix_xof' => 300, 'categorie' => 'Boissons', 'couleur' => '#BE123C', 'position' => 2],
-            ['nom' => 'Eau minérale 1,5 L', 'prix_xof' => 500, 'categorie' => 'Boissons', 'couleur' => '#0284C7', 'position' => 3],
-            ['nom' => 'Thiéboudienne', 'prix_xof' => 1500, 'categorie' => 'Plats', 'couleur' => '#D97706', 'position' => 4],
-            ['nom' => 'Yassa poulet', 'prix_xof' => 2000, 'categorie' => 'Plats', 'couleur' => '#CA8A04', 'position' => 5],
-            ['nom' => 'Pain', 'prix_xof' => 150, 'categorie' => 'Boulangerie', 'couleur' => '#A16207', 'position' => 6],
-            ['nom' => 'Beignets (x3)', 'prix_xof' => 250, 'categorie' => 'Boulangerie', 'couleur' => '#F59E0B', 'position' => 7],
-            ['nom' => 'Pagne wax (2 m)', 'prix_xof' => 6000, 'categorie' => 'Tissus', 'couleur' => '#7C3AED', 'position' => 8],
+            ['nom' => 'Café Touba', 'prix_xof' => 200, 'categorie' => 'Boissons', 'couleur' => '#92400E', 'pictogramme' => 'cafe', 'position' => 1],
+            ['nom' => 'Bissap', 'prix_xof' => 300, 'categorie' => 'Boissons', 'couleur' => '#BE123C', 'pictogramme' => 'jus', 'position' => 2],
+            ['nom' => 'Eau minérale 1,5 L', 'prix_xof' => 500, 'categorie' => 'Boissons', 'couleur' => '#0284C7', 'pictogramme' => 'eau', 'position' => 3],
+            ['nom' => 'Thiéboudienne', 'prix_xof' => 1500, 'categorie' => 'Plats', 'couleur' => '#D97706', 'pictogramme' => 'plat', 'position' => 4],
+            ['nom' => 'Yassa poulet', 'prix_xof' => 2000, 'categorie' => 'Plats', 'couleur' => '#CA8A04', 'pictogramme' => 'poulet', 'position' => 5],
+            ['nom' => 'Pain', 'prix_xof' => 150, 'categorie' => 'Boulangerie', 'couleur' => '#A16207', 'pictogramme' => 'pain', 'position' => 6],
+            ['nom' => 'Beignets (x3)', 'prix_xof' => 250, 'categorie' => 'Boulangerie', 'couleur' => '#F59E0B', 'pictogramme' => 'gateau', 'position' => 7],
+            ['nom' => 'Pagne wax (2 m)', 'prix_xof' => 6000, 'categorie' => 'Tissus', 'couleur' => '#7C3AED', 'pictogramme' => 'tissu', 'position' => 8],
         ];
 
         foreach ($articles as $donnees) {
-            Article::query()->firstOrCreate(['nom' => $donnees['nom']], $donnees + ['actif' => true]);
+            $article = Article::query()->firstOrCreate(['nom' => $donnees['nom']], $donnees + ['actif' => true]);
+            // Boutiques de démo créées avant les pictogrammes : on les complète sans toucher au reste.
+            if ($article->pictogramme === null) {
+                $article->forceFill(['pictogramme' => $donnees['pictogramme']])->save();
+            }
         }
     }
 

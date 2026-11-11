@@ -30,6 +30,9 @@ class RecuController extends Controller
             ->with([
                 'boutique:id,nom,ville,reglages',
                 'paiementReussi' => fn ($q) => $q->withoutGlobalScope(BoutiqueScope::class)->select(['id', 'boutique_id', 'methode', 'operateur', 'montant_sats', 'moyen']),
+                // Lignes + pictogramme de l'article (jamais la photo : elle reste réservée aux membres de la boutique).
+                'lignes' => fn ($q) => $q->withoutGlobalScope(BoutiqueScope::class)->select(['id', 'boutique_id', 'vente_id', 'article_id', 'libelle', 'quantite', 'prix_unitaire_xof'])->orderBy('id'),
+                'lignes.article' => fn ($q) => $q->withoutGlobalScope(BoutiqueScope::class)->select(['id', 'pictogramme', 'couleur']),
             ])
             ->where('recu_jeton', $jeton)
             ->where('statut', Vente::STATUT_PAYEE)
@@ -53,6 +56,14 @@ class RecuController extends Controller
             'boutique' => ['nom' => $vente->boutique->nom, 'ville' => $vente->boutique->ville],
             'message' => $vente->boutique->reglagesComplets()['message_recu'],
             'alerte' => $vente->alerte,
+            // Ajout du 11 novembre : ce qui a été acheté (libellé, quantité, prix, pictogramme), sans donnée personnelle.
+            'lignes' => $vente->lignes->map(fn ($l) => [
+                'libelle' => $l->libelle,
+                'quantite' => (int) $l->quantite,
+                'prix_unitaire_xof' => (int) $l->prix_unitaire_xof,
+                'pictogramme' => $l->article?->pictogramme,
+                'couleur' => $l->article?->couleur,
+            ])->values()->all(),
         ])->header('Cache-Control', 'private, max-age=60')->header('X-Robots-Tag', 'noindex');
     }
 }

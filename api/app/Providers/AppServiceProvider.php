@@ -17,6 +17,7 @@ use App\Policies\InvitationPolicy;
 use App\Policies\MembrePolicy;
 use App\Policies\PaiementPolicy;
 use App\Policies\VentePolicy;
+use App\Services\Articles\TraitementImage;
 use App\Services\Audio\InspecteurAudio;
 use App\Services\Audio\TraitementAudio;
 use App\Services\BoutiqueCourante;
@@ -55,6 +56,13 @@ class AppServiceProvider extends ServiceProvider
             (string) config('satspoint.audio.ffmpeg', 'ffmpeg'),
             (int) config('satspoint.audio.delai_s', 30),
             (string) config('satspoint.audio.debit', '48k'),
+        ));
+
+        // Photos d'articles : bornes figées par la configuration (jamais par l'utilisateur).
+        $this->app->singleton(TraitementImage::class, fn () => new TraitementImage(
+            (int) config('satspoint.articles_medias.photo_pixels_max', 25_000_000),
+            (int) config('satspoint.articles_medias.photo_cote', 512),
+            (int) config('satspoint.articles_medias.photo_qualite', 80),
         ));
     }
 
@@ -161,5 +169,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Catalogues de la plateforme (pays, langues, moyens de paiement) : écritures du super-admin, 30 / min.
         RateLimiter::for('catalogue', fn (Request $request) => Limit::perMinute(30)->by('u:'.($request->user()?->id ?? $request->ip())));
+
+        // Articles sans écrire : envoi de photo / nom vocal (ré-encodage coûteux) 30 / min ; lecture des fichiers
+        // (grille de caisse : une image par article, puis cache du navigateur) 600 / min, hors limite générale.
+        RateLimiter::for('medias-envoi', fn (Request $request) => Limit::perMinute(30)->by('u:'.($request->user()?->id ?? $request->ip())));
+        RateLimiter::for('medias-lecture', fn (Request $request) => Limit::perMinute(600)->by('u:'.($request->user()?->id ?? $request->ip())));
     }
 }

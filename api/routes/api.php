@@ -152,10 +152,18 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         // ---- Articles (CONTRAT_API § 9) ----------------------------------
         Route::get('articles', [ArticleController::class, 'index'])->name('articles.index');
-        Route::post('articles', [ArticleController::class, 'store'])->name('articles.store');
+        Route::post('articles', [ArticleController::class, 'store'])->middleware('throttle:medias-envoi')->name('articles.store');
         Route::post('articles/ordre', [ArticleController::class, 'ordre'])->name('articles.ordre');
         Route::patch('articles/{article}', [ArticleController::class, 'update'])->name('articles.update');
         Route::delete('articles/{article}', [ArticleController::class, 'destroy'])->name('articles.destroy');
+
+        // ---- Articles sans écrire (CONTRAT_API § 15) : photo et nom dit à voix haute, contenus en base.
+        Route::post('articles/{article}/photo', [ArticleController::class, 'envoyerPhoto'])->middleware('throttle:medias-envoi')->name('articles.photo.store');
+        Route::delete('articles/{article}/photo', [ArticleController::class, 'supprimerPhoto'])->name('articles.photo.destroy');
+        Route::post('articles/{article}/voix', [ArticleController::class, 'envoyerVoix'])->middleware('throttle:medias-envoi')->name('articles.voix.store');
+        Route::delete('articles/{article}/voix', [ArticleController::class, 'supprimerVoix'])->name('articles.voix.destroy');
+        Route::get('articles/{article}/photo', [ArticleController::class, 'photo'])->withoutMiddleware('throttle:api')->middleware('throttle:medias-lecture')->name('articles.photo');
+        Route::get('articles/{article}/voix', [ArticleController::class, 'voix'])->withoutMiddleware('throttle:api')->middleware('throttle:medias-lecture')->name('articles.voix');
     });
 
     // ---- Console plateforme (CONTRAT_API vague 3 § 1 et 3) : super-admin + 2FA vérifiée ----

@@ -7,6 +7,7 @@ use App\Models\Membre;
 use App\Models\RechercheRecente;
 use App\Models\User;
 use App\Models\Vente;
+use App\Support\Pictogrammes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -110,9 +111,10 @@ class RechercheGlobale
     {
         $motif = '%'.self::echapperLike($q).'%';
         $prix = preg_match('/^\d{1,3}(?:[\s.]?\d{3})*$/', $q) === 1 ? (int) preg_replace('/\D+/', '', $q) : null;
+        $pictos = Pictogrammes::correspondants($q);
 
         $articles = Article::query()
-            ->where(function ($r) use ($q, $motif, $prix) {
+            ->where(function ($r) use ($q, $motif, $prix, $pictos) {
                 $r->whereRaw('f_unaccent(nom) ILIKE f_unaccent(?)', [$motif])
                     ->orWhereRaw('word_similarity(f_unaccent(?), f_unaccent(nom)) >= ?', [$q, self::SEUIL])
                     ->orWhereRaw('sku ILIKE ?', [$motif])
@@ -120,14 +122,18 @@ class RechercheGlobale
                 if ($prix !== null && $prix <= 50_000_000) {
                     $r->orWhere('prix_xof', $prix);
                 }
+                // Article sans nom écrit : retrouvé par le libellé de son pictogramme (« pain », « riz »…).
+                if ($pictos !== []) {
+                    $r->orWhereIn('pictogramme', $pictos);
+                }
             })
-            ->selectRaw('articles.*, GREATEST(word_similarity(f_unaccent(?), f_unaccent(nom)), CASE WHEN sku ILIKE ? THEN 0.9 ELSE 0 END, CASE WHEN prix_xof = ? THEN 0.8 ELSE 0 END) AS score', [$q, $motif, $prix ?? -1])
+            ->selectRaw('articles.*, GREATEST(word_similarity(f_unaccent(?), f_unaccent(COALESCE(nom, \'\'))), CASE WHEN sku ILIKE ? THEN 0.9 ELSE 0 END, CASE WHEN prix_xof = ? THEN 0.8 ELSE 0 END, CASE WHEN pictogramme = ANY(?::text[]) THEN 0.7 ELSE 0 END) AS score', [$q, $motif, $prix ?? -1, '{'.implode(',', $pictos).'}'])
             ->orderByDesc('score')->orderBy('nom')
             ->limit($limite)
             ->get();
 
         return $articles->map(fn (Article $a) => [
-            'titre' => $a->nom,
+            'titre' => $a->libelle(),
             'sous_titre' => trim(implode(' · ', array_filter([number_format((int) $a->prix_xof, 0, ',', ' ').' FCFA', $a->categorie, $a->sku ? 'Réf. '.$a->sku : null, $a->actif ? null : 'inactif']))),
             'url' => '/articles?article='.$a->ulid,
             'score' => round((float) $a->score, 2),

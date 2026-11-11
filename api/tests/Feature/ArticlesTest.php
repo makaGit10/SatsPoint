@@ -45,7 +45,7 @@ it('valide les champs (bornes, couleur, SKU unique par boutique)', function () {
     avecBoutique(Boutique::factory()->create(), fn () => Article::create(['nom' => 'Autre', 'prix_xof' => 150, 'sku' => 'LIBRE']));
 
     connecte($this->proprio);
-    $this->postJson('/api/v1/articles', ['nom' => '', 'prix_xof' => -1, 'couleur' => 'rouge', 'sku' => 'PAIN'])->assertStatus(422)->assertJsonValidationErrors(['nom', 'prix_xof', 'couleur', 'sku']);
+    $this->postJson('/api/v1/articles', ['nom' => '', 'prix_xof' => -1, 'couleur' => 'rouge', 'sku' => 'PAIN'])->assertStatus(422)->assertJsonValidationErrors(['prix_xof', 'couleur', 'sku']); // nom vide : facultatif depuis le 11 novembre (voir ArticlesSansEcrireTest)
     $this->postJson('/api/v1/articles', ['nom' => 'Beignet', 'prix_xof' => 50_000_001])->assertStatus(422)->assertJsonValidationErrors(['prix_xof']);
     $this->postJson('/api/v1/articles', ['nom' => 'Beignet', 'prix_xof' => 100, 'sku' => 'LIBRE'])->assertCreated(); // SKU libre dans CETTE boutique
     $this->postJson('/api/v1/articles', ['nom' => 'Beignet', 'prix_xof' => 100, 'sku' => 'pain; drop'])->assertStatus(422)->assertJsonValidationErrors(['sku']);

@@ -32,6 +32,9 @@ class Vente extends Model
     /** Longueur du jeton de reçu public (caractères alphanumériques aléatoires). */
     public const LONGUEUR_JETON_RECU = 32;
 
+    /** Colonnes de l'article chargées avec les lignes (visuel : pictogramme, couleur, photo). */
+    public const COLONNES_ARTICLE_LIGNE = 'id,ulid,pictogramme,couleur,photo_empreinte';
+
     /** Délai sans tentative au-delà duquel une vente en attente expire (CAHIER § 7.2). */
     public const EXPIRATION_SANS_TENTATIVE_MIN = 30;
 

@@ -18,7 +18,7 @@ it('renvoie le reçu public en JSON sans session, sans aucune donnée personnell
             'numero' => 'V-000001', 'montant_xof' => 2500, 'montant_sats' => 228, 'methode' => 'lightning', 'operateur' => null, 'moyen' => null,
             'statut' => 'payee', 'paye_le' => $this->vente->fresh()->payee_at->toIso8601String(),
             'boutique' => ['nom' => $this->boutique->nom, 'ville' => $this->boutique->ville],
-            'message' => 'Merci et à bientôt !', 'alerte' => null,
+            'message' => 'Merci et à bientôt !', 'alerte' => null, 'lignes' => [],
         ])
         ->assertHeader('X-Robots-Tag', 'noindex');
 
