@@ -21,6 +21,8 @@ import { copier } from '@/lib/retours'
 import { suiteSure } from '@/routes/navigation'
 import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
 import { ChampCode } from './ChampCode'
+import { CodeLocal } from './CodeLocal'
+import { useGuideVocal } from '@/voix/guide'
 
 /** Secret en groupes de 4 (plus facile à recopier). */
 function grouper(secret: string) {
@@ -30,6 +32,7 @@ function grouper(secret: string) {
 /** Sécurité du compte : activer (QR + code + codes de secours affichés une seule fois) ou désactiver la double authentification. */
 export default function DeuxFacteurs() {
   const { t } = useTranslation()
+  useGuideVocal('guide.deuxFacteurs')
   const utilisateur = useAuth((s) => s.utilisateur)
   const etat = utilisateur?.deux_fa
   const [codes, setCodes] = useState<string[] | null>(null)
@@ -143,6 +146,7 @@ function Activation({ requise, onActive }: { requise: boolean; onActive: (codes:
             <Numero n={3} />
             <form onSubmit={soumettre} noValidate className="flex min-w-0 flex-1 flex-col gap-2">
               <p className="text-sm font-semibold text-texte">{t('deuxFa.etape3.titre')}</p>
+              <CodeLocal actif={Boolean(donnees)} onRemplir={(v) => soumettre(undefined, v)} />
               <ChampCode
                 ref={entree}
                 libelle={t('deuxFa.code')}
@@ -289,7 +293,7 @@ function Desactivation({ requise }: { requise: boolean }) {
             className="flex flex-col gap-3"
           >
             <p className="text-sm text-texte-2">{requise ? t('deuxFa.desactiverRequise') : t('deuxFa.desactiverTexte')}</p>
-            <ChampMotDePasse libelle={t('deuxFa.motDePasse')} value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} autoFocus />
+            <ChampMotDePasse libelle={t('deuxFa.motDePasse')} voix="deuxFa.motDePasse" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} autoFocus />
             <ErreurFormulaire message={erreur} />
             <div className="flex justify-end gap-2">
               <Bouton variante="secondaire" voix="commun.annuler" onClick={() => setOuvert(false)}>

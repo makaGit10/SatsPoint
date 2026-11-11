@@ -91,6 +91,22 @@ class DeuxFacteursController extends Controller
         ]);
     }
 
+    /**
+     * GET /auth/2fa/code-local → { code } — développement LOCAL uniquement (route déclarée seulement si
+     * satspoint.deux_fa_code_local) : le code du moment pour le secret de la personne connectée.
+     */
+    public function codeLocal(Request $request): JsonResponse
+    {
+        abort_unless(app()->environment('local') && config('satspoint.deux_fa_code_local'), 404);
+
+        /** @var User $utilisateur */
+        $utilisateur = $request->user();
+        $code = $this->deuxFa->codeCourant($utilisateur);
+        abort_if($code === null, 404);
+
+        return response()->json(['code' => $code])->header('Cache-Control', 'no-store, private');
+    }
+
     /** DELETE /auth/2fa { password } → 204 */
     public function desactiver(DesactiverDeuxFacteursRequest $request): Response
     {

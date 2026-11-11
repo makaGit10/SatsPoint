@@ -92,6 +92,13 @@ return [
         'nom_boutique' => 'Boutique Démo',
     ],
 
+    /*
+     * Double authentification « virtuelle » pour le développement : en environnement LOCAL uniquement et si
+     * DEUX_FA_CODE_LOCAL=true, GET /auth/2fa/code-local donne le code TOTP du moment (plus besoin d'appli
+     * d'authentification sur le poste de dev). Jamais en production : la route n'est même pas déclarée.
+     */
+    'deux_fa_code_local' => env('APP_ENV') === 'local' && filter_var(env('DEUX_FA_CODE_LOCAL', false), FILTER_VALIDATE_BOOL),
+
     'superadmin' => [
         'email' => env('SUPERADMIN_EMAIL', 'admin@satspoint.local'),
         'mot_de_passe' => env('SUPERADMIN_PASSWORD'),

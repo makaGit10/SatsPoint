@@ -132,6 +132,10 @@
         "article_cree": "Item added",
         "article_modifie": "Item edited",
         "article_supprime": "Item deleted",
+        "article_photo_ajoutee": "Item photo added",
+        "article_photo_supprimee": "Item photo removed",
+        "article_voix_ajoutee": "Item spoken name recorded",
+        "article_voix_supprimee": "Item spoken name deleted",
         "audio_depose": "Audio uploaded",
         "audio_exporte": "Audio exported",
         "audio_importe": "Audio imported",
@@ -436,7 +440,11 @@
     },
     "verifier": "Verify",
     "utiliserSecours": "Use a backup code",
-    "utiliserApplication": "Use the app"
+    "utiliserApplication": "Use the app",
+    "codeLocal": {
+      "texte": "Local mode: the current code is",
+      "remplir": "Fill in"
+    }
   },
   "import": {
     "titre": "Import items",

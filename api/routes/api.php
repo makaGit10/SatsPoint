@@ -76,6 +76,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('verifier', [DeuxFacteursController::class, 'verifier'])->name('verifier');
             Route::delete('/', [DeuxFacteursController::class, 'desactiver'])->name('desactiver');
         });
+        // Développement local uniquement (config satspoint.deux_fa_code_local) : code TOTP du moment. Hors du
+        // groupe « deux-fa » (5/min) pour ne pas consommer le quota des vraies tentatives de code.
+        if (config('satspoint.deux_fa_code_local')) {
+            Route::get('2fa/code-local', [DeuxFacteursController::class, 'codeLocal'])
+                ->middleware(['auth:sanctum', 'session.valide', 'throttle:api'])->name('2fa.code-local');
+        }
     });
 
     // ---- Espace connecté ----------------------------------------------

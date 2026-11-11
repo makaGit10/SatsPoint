@@ -132,6 +132,10 @@
         "article_cree": "Article ajouté",
         "article_modifie": "Article modifié",
         "article_supprime": "Article supprimé",
+        "article_photo_ajoutee": "Photo d'article ajoutée",
+        "article_photo_supprimee": "Photo d'article retirée",
+        "article_voix_ajoutee": "Nom dit d'un article enregistré",
+        "article_voix_supprimee": "Nom dit d'un article effacé",
         "audio_depose": "Audio déposé",
         "audio_exporte": "Audios exportés",
         "audio_importe": "Audios importés",
@@ -436,7 +440,11 @@
     },
     "verifier": "Vérifier",
     "utiliserSecours": "Utiliser un code de secours",
-    "utiliserApplication": "Utiliser l'application"
+    "utiliserApplication": "Utiliser l'application",
+    "codeLocal": {
+      "texte": "Mode local : le code du moment est",
+      "remplir": "Remplir"
+    }
   },
   "import": {
     "titre": "Importer des articles",

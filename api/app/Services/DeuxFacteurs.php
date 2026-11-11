@@ -33,6 +33,14 @@ class DeuxFacteurs
 
     public function __construct(private readonly Google2FA $totp) {}
 
+    /** Code TOTP du moment (outil de développement local, voir DeuxFacteursController::codeLocal). */
+    public function codeCourant(User $utilisateur): ?string
+    {
+        $secret = (string) $utilisateur->two_factor_secret;
+
+        return $secret === '' ? null : $this->totp->getCurrentOtp($secret);
+    }
+
     /** Génère un secret (non activé) et le QR code SVG à scanner. */
     public function initialiser(User $utilisateur): array
     {

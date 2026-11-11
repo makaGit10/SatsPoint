@@ -15,10 +15,13 @@ import { useMessageErreur } from '@/ecrans/auth/useMessageErreur'
 import { suiteSure } from '@/routes/navigation'
 import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
 import { ChampCode } from './ChampCode'
+import { CodeLocal } from './CodeLocal'
+import { useGuideVocal } from '@/voix/guide'
 
 /** Après connexion, si la double authentification est active : code de l'application (ou code de secours). */
 export default function VerificationDeuxFacteurs() {
   const { t } = useTranslation()
+  useGuideVocal('guide.verification2fa')
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const utilisateur = useAuth((s) => s.utilisateur)
@@ -70,6 +73,7 @@ export default function VerificationDeuxFacteurs() {
       </span>
       <TitreAuth titre={t('deuxFa.verification.titre')} sousTitre={secours ? t('deuxFa.verification.texteSecours') : t('deuxFa.verification.texte')} voix="deuxFa.verification.titre" />
       <form onSubmit={soumettre} noValidate className="flex flex-col gap-3">
+        <CodeLocal actif={!secours} onRemplir={(v) => soumettre(undefined, v)} />
         <ChampCode
           ref={entree}
           libelle={secours ? t('deuxFa.codeSecours') : t('deuxFa.code')}

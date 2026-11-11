@@ -48,6 +48,8 @@ x-api-env: &api-env
   LIGHTNING_GATEWAY_URL: http://lightning-gateway:3011
   SUPERADMIN_EMAIL: ${SUPERADMIN_EMAIL:-admin@satspoint.local}
   SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:-}
+  # Double authentification « virtuelle » : n'a d'effet qu'avec APP_ENV=local (jamais en production).
+  DEUX_FA_CODE_LOCAL: ${DEUX_FA_CODE_LOCAL:-false}
   DEMO_SEED: ${DEMO_SEED:-true}
   DEMO_PASSWORD: ${DEMO_PASSWORD:-}
   DEMO_NWC_URI: ${DEMO_NWC_URI:-}
