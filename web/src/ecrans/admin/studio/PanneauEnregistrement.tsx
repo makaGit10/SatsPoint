@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { Check, ChevronLeft, ChevronRight, Loader2, Mic, MicOff, Play, RotateCcw, Send, Square, Star, Trash2, Upload } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, Loader2, Mic, MicOff, Play, RotateCcw, Send, Square, Star, Trash2, Upload, X } from 'lucide-react'
 import { useEffect, useEffectEvent, useRef, useState, type DragEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CLE_MATRICE, deposerAudio, publierAudios, supprimerAudio } from '@/api/admin'
@@ -15,9 +15,12 @@ import { queryClient } from '@/lib/queryClient'
 import { HautParleur } from '@/voix/HautParleur'
 import { lire } from '@/voix/lecteur'
 import { useVoix } from '@/voix/store'
+import { decouperEnregistrement, type ResultatDecoupe } from '@/voix/decoupeAudio'
+import { invaliderManifestes } from '@/voix/useManifesteAudio'
 import { DUREE_MAX_MS, formaterDuree, NOMBRE_BARRES } from './enregistreur'
+import { FormeOnde } from './FormeOnde'
 import { IconeStatut } from './IconeStatut'
-import { EXTENSIONS_AUDIO, verifierFichierAudio, type RefusFichier } from './selection'
+import { EXTENSIONS_AUDIO, TAILLE_MAX_AUDIO, verifierFichierAudio, type RefusFichier } from './selection'
 import type { Enregistreur } from './useEnregistreur'
 
 const TONS: Record<StatutAudio, TonPastille> = { publie: 'succes', brouillon: 'attente', en_traitement: 'neutre', erreur: 'danger', manquant: 'neutre' }
@@ -60,6 +63,21 @@ function raccourciPermis(e: KeyboardEvent): boolean {
   return !(balise === 'INPUT' || balise === 'TEXTAREA' || balise === 'SELECT' || cible.isContentEditable)
 }
 
+/**
+ * Prise prête à envoyer, APRÈS la coupe des blancs (micro ou fichier déposé) : l'aperçu joue la version coupée et
+ * « Valider » l'envoie. Rattachée à sa case (changer de case l'abandonne).
+ */
+interface Apercu {
+  case: string
+  origine: 'micro' | 'fichier'
+  /** Enregistrement ou fichier d'origine. */
+  source: Blob
+  nomOriginal: string
+  resultat: ResultatDecoupe
+  /** URL d'objet de la version à écouter (coupée, ou l'original si ce navigateur ne sait pas le décoder). */
+  url: string
+}
+
 export interface PropsPanneau {
   cle: CleAudio
   langue: LangueAudio
@@ -90,12 +108,62 @@ export function PanneauEnregistrement({ cle, langue, nomLangue, rafale, onValide
   const entreeFichier = useRef<HTMLInputElement>(null)
   const enLecture = useVoix((s) => s.cleEnLecture)
 
+  // Coupe des blancs avant l'aperçu et l'envoi (micro et fichier déposé).
+  const [apercu, setApercuBrut] = useState<Apercu | null>(null)
+  const [traitement, setTraitement] = useState<Blob | null>(null)
+  const generation = useRef(0)
+  const urlApercu = useRef<string | null>(null)
+  const setApercu = (a: Apercu | null) => {
+    if (urlApercu.current && urlApercu.current !== a?.url) URL.revokeObjectURL(urlApercu.current)
+    urlApercu.current = a?.url ?? null
+    setApercuBrut(a)
+  }
+  useEffect(
+    () => () => {
+      if (urlApercu.current) URL.revokeObjectURL(urlApercu.current)
+    },
+    [],
+  )
+  const preparer = async (origine: Apercu['origine'], source: Blob, nomOriginal: string, caseVisee: string) => {
+    const ma = ++generation.current
+    setTraitement(source)
+    const resultat = await decouperEnregistrement(source)
+    if (ma !== generation.current) return null
+    setTraitement(null)
+    const apercuPret: Apercu = { case: caseVisee, origine, source, nomOriginal, resultat, url: URL.createObjectURL(resultat.decoupe && resultat.voix ? resultat.blob : source) }
+    setApercu(apercuPret)
+    return apercuPret
+  }
+  const abandonnerApercu = () => {
+    generation.current++
+    setTraitement(null)
+    setApercu(null)
+  }
+  // Fin d'une prise au micro : coupe des blancs aussitôt (le micro démarre après le 3-2-1, mais on parle rarement tout de suite).
+  const blobPrise = etat.phase === 'pret' ? etat.blob : null
+  useEffect(() => {
+    if (!blobPrise) return
+    void preparer('micro', blobPrise, `${cle.cle}.${extensionPour(blobPrise)}`, idCase)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- une seule découpe par prise
+  }, [blobPrise])
+  // Changement de case : la prise ou le fichier de l'ancienne case est abandonné (URL d'objet libérée).
+  useEffect(() => {
+    if (urlApercu.current) abandonnerApercu()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- seulement au changement de case
+  }, [idCase])
+  const microActif = etat.phase === 'demande' || etat.phase === 'decompte' || etat.phase === 'enregistrement'
+  const apercuVisible =
+    apercu && apercu.case === idCase && !microActif && (apercu.origine === 'fichier' || (etat.phase === 'pret' && etat.blob === apercu.source)) ? apercu : null
+  const enTraitement = traitement !== null && !microActif
+  const pretAEnvoyer = apercuVisible !== null && apercuVisible.resultat.voix
+
   const invalider = () => void queryClient.invalidateQueries({ queryKey: CLE_MATRICE })
 
   const envoi = useMutation({
     mutationFn: ({ fichier, nom }: { fichier: Blob; nom: string }) => deposerAudio(cle.cle, langue, fichier, nom),
     onSuccess: () => {
       rec.reinitialiser()
+      abandonnerApercu()
       invalider()
       if (!rafale) notifier({ type: 'succes', titre: t('studio.envoye'), description: t('studio.envoyeTexte'), voix: 'studio.envoye' })
       onValide()
@@ -106,6 +174,8 @@ export function PanneauEnregistrement({ cle, langue, nomLangue, rafale, onValide
     mutationFn: () => publierAudios({ cle: cle.cle, langue }),
     onSuccess: () => {
       invalider()
+      // Entendu tout de suite sur cet appareil aussi (les autres reçoivent le signal temps réel « audios »).
+      invaliderManifestes()
       notifier({ type: 'succes', titre: t('studio.publie'), voix: 'studio.publie' })
     },
     onError: (e) => notifier({ type: 'erreur', titre: messageErreur(e) }),
@@ -120,8 +190,23 @@ export function PanneauEnregistrement({ cle, langue, nomLangue, rafale, onValide
   })
 
   const valider = () => {
-    if (etat.phase !== 'pret' || !etat.blob || envoi.isPending) return
-    envoi.mutate({ fichier: etat.blob, nom: `${cle.cle}.${extensionPour(etat.blob)}` })
+    if (!apercuVisible || !pretAEnvoyer || envoi.isPending) return
+    const { resultat } = apercuVisible
+    // Version coupée en WAV PCM 16 bits mono ; sinon (format non décodé ici) l'original : le serveur coupe de toute façon.
+    if (resultat.decoupe) envoi.mutate({ fichier: resultat.blob, nom: `${cle.cle}.wav` })
+    else envoi.mutate({ fichier: apercuVisible.source, nom: apercuVisible.nomOriginal })
+  }
+  /** Refaire : nouvelle prise au micro, ou abandon du fichier déposé. */
+  const refaire = () => {
+    if (apercuVisible?.origine === 'fichier') abandonnerApercu()
+    else {
+      abandonnerApercu()
+      rec.refaire()
+    }
+  }
+  const demarrer = () => {
+    abandonnerApercu()
+    rec.demarrer()
   }
   const publier = () => {
     if (cellule.statut === 'brouillon' && !publication.isPending) publication.mutate()
@@ -131,11 +216,21 @@ export function PanneauEnregistrement({ cle, langue, nomLangue, rafale, onValide
     if (!fichier) return
     const r = verifierFichierAudio(fichier)
     if (r) return setRefus(r)
-    const duree = await lireDuree(fichier)
-    if (duree !== null && duree > DUREE_MAX_MS + 500) return setRefus('duree')
     setRefus(null)
     rec.reinitialiser()
-    envoi.mutate({ fichier, nom: fichier.name })
+    const pret = await preparer('fichier', fichier, fichier.name, idCase)
+    if (!pret) return
+    const { resultat } = pret
+    // La limite des 15 s porte sur la durée APRÈS la coupe ; sans décodage ici, on lit la durée du fichier d'origine.
+    const duree = resultat.decoupe ? resultat.dureeMs : await lireDuree(fichier)
+    if (duree !== null && duree > DUREE_MAX_MS + 500) {
+      abandonnerApercu()
+      return setRefus('duree')
+    }
+    if (resultat.decoupe && resultat.blob.size > TAILLE_MAX_AUDIO) {
+      abandonnerApercu()
+      return setRefus('taille')
+    }
   }
 
   // Raccourcis : Espace enregistrer / arrêter, Entrée valider, R refaire, → suivant, ← précédent, P publier.
@@ -151,16 +246,16 @@ export function PanneauEnregistrement({ cle, langue, nomLangue, rafale, onValide
       e.stopPropagation()
       if (e.type !== 'keydown' || e.repeat) return
       if (phase === 'enregistrement' || phase === 'decompte' || phase === 'demande') rec.arreter()
-      else rec.demarrer()
+      else demarrer()
       return
     }
     if (e.type !== 'keydown') return
-    if (e.key === 'Enter' && phase === 'pret') {
+    if (e.key === 'Enter' && pretAEnvoyer) {
       e.preventDefault()
       valider()
-    } else if ((e.key === 'r' || e.key === 'R') && (phase === 'pret' || phase === 'erreur')) {
+    } else if ((e.key === 'r' || e.key === 'R') && (apercuVisible || phase === 'erreur')) {
       e.preventDefault()
-      rec.refaire()
+      refaire()
     } else if (e.key === 'ArrowRight') {
       e.preventDefault()
       onSuivant()
@@ -251,7 +346,17 @@ export function PanneauEnregistrement({ cle, langue, nomLangue, rafale, onValide
         </div>
       )}
 
-      <ZoneMicro rec={rec} envoiEnCours={envoi.isPending} onValider={valider} cleLecture="studio:prise" enLecture={enLecture === 'studio:prise'} />
+      <ZoneMicro
+        rec={rec}
+        apercu={apercuVisible}
+        enTraitement={enTraitement}
+        envoiEnCours={envoi.isPending}
+        onValider={valider}
+        onRefaire={refaire}
+        onDemarrer={demarrer}
+        cleLecture="studio:prise"
+        enLecture={enLecture === 'studio:prise'}
+      />
 
       <label
         onDragOver={(e) => {
@@ -285,13 +390,69 @@ export function PanneauEnregistrement({ cle, langue, nomLangue, rafale, onValide
   )
 }
 
-function ZoneMicro({ rec, envoiEnCours, onValider, cleLecture, enLecture }: { rec: Enregistreur; envoiEnCours: boolean; onValider: () => void; cleLecture: string; enLecture: boolean }) {
+interface PropsZoneMicro {
+  rec: Enregistreur
+  apercu: Apercu | null
+  enTraitement: boolean
+  envoiEnCours: boolean
+  onValider: () => void
+  onRefaire: () => void
+  onDemarrer: () => void
+  cleLecture: string
+  enLecture: boolean
+}
+
+function ZoneMicro({ rec, apercu, enTraitement, envoiEnCours, onValider, onRefaire, onDemarrer, cleLecture, enLecture }: PropsZoneMicro) {
   const { t } = useTranslation()
   const { etat } = rec
   const progression = Math.min(100, (etat.dureeMs / DUREE_MAX_MS) * 100)
 
   let contenu: ReactNode
-  if (etat.phase === 'demande') {
+  if (enTraitement || (etat.phase === 'pret' && !apercu)) {
+    contenu = (
+      <p className="flex items-center gap-2 text-sm text-texte-2" role="status" data-decoupe="en-cours">
+        <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+        {t('studio.decoupe.traitement')}
+      </p>
+    )
+  } else if (apercu) {
+    const { resultat } = apercu
+    const fichier = apercu.origine === 'fichier'
+    contenu = (
+      <div className="flex w-full flex-col items-center gap-2.5" data-apercu={apercu.origine} data-voix={resultat.voix ? 'oui' : 'non'}>
+        {resultat.decoupe && resultat.dureeAvantMs !== null && resultat.dureeMs !== null ? (
+          <FormeOnde avant={resultat.formeAvant} apres={resultat.voix ? resultat.formeApres : []} dureeAvantMs={resultat.dureeAvantMs} dureeMs={resultat.voix ? resultat.dureeMs : 0} />
+        ) : (
+          <p className="max-w-72 text-center text-xs text-texte-3" data-decoupe="impossible">
+            {t('studio.decoupe.nonDecoupe')}
+          </p>
+        )}
+        {fichier && (
+          <p className="max-w-full truncate text-2xs text-texte-3">
+            {t('studio.decoupe.fichier')} · {apercu.nomOriginal}
+          </p>
+        )}
+        {!resultat.voix && (
+          <p role="alert" className="max-w-72 text-center text-xs font-medium text-danger-texte">
+            {t('studio.decoupe.aucuneVoix')}
+          </p>
+        )}
+        <div className="flex flex-wrap items-center justify-center gap-1.5">
+          {resultat.voix && (
+            <BoutonIcone libelle={t('studio.micro.reecouter')} icone={enLecture ? <Square /> : <Play />} voix="studio.micro.reecouter" variante="secondaire" onClick={() => lire(apercu.url, cleLecture)} />
+          )}
+          <Bouton variante="secondaire" icone={fichier ? <X /> : <RotateCcw />} voix={fichier ? 'commun.annuler' : 'studio.micro.refaire'} onClick={onRefaire} disabled={envoiEnCours}>
+            {fichier ? t('commun.annuler') : t('studio.micro.refaire')}
+          </Bouton>
+          {resultat.voix && (
+            <Bouton icone={<Check />} voix="studio.micro.valider" chargement={envoiEnCours} onClick={onValider} data-action="valider">
+              {t('studio.micro.valider')}
+            </Bouton>
+          )}
+        </div>
+      </div>
+    )
+  } else if (etat.phase === 'demande') {
     contenu = (
       <p className="flex items-center gap-2 text-sm text-texte-2" role="status">
         <Loader2 size={16} className="animate-spin" aria-hidden="true" />
@@ -328,22 +489,6 @@ function ZoneMicro({ rec, envoiEnCours, onValider, cleLecture, enLecture }: { re
         </Bouton>
       </div>
     )
-  } else if (etat.phase === 'pret') {
-    contenu = (
-      <div className="flex w-full flex-col items-center gap-2">
-        <Vumetre niveaux={etat.historique} />
-        <p className="text-xs text-texte-2 tabulaire">{t('studio.micro.prise', { duree: formaterDuree(etat.dureeMs) })}</p>
-        <div className="flex flex-wrap items-center justify-center gap-1.5">
-          <BoutonIcone libelle={t('studio.micro.reecouter')} icone={enLecture ? <Square /> : <Play />} voix="studio.micro.reecouter" variante="secondaire" onClick={() => etat.url && lire(etat.url, cleLecture)} />
-          <Bouton variante="secondaire" icone={<RotateCcw />} voix="studio.micro.refaire" onClick={rec.refaire} disabled={envoiEnCours}>
-            {t('studio.micro.refaire')}
-          </Bouton>
-          <Bouton icone={<Check />} voix="studio.micro.valider" chargement={envoiEnCours} onClick={onValider} data-action="valider">
-            {t('studio.micro.valider')}
-          </Bouton>
-        </div>
-      </div>
-    )
   } else {
     const message =
       etat.phase === 'refuse' ? t('studio.micro.refuse') : etat.phase === 'indisponible' ? t('studio.micro.indisponible') : etat.phase === 'erreur' ? t(`studio.micro.erreurs.${etat.erreur ?? 'enregistrement'}`) : null
@@ -352,7 +497,7 @@ function ZoneMicro({ rec, envoiEnCours, onValider, cleLecture, enLecture }: { re
       <div className="flex flex-col items-center gap-2">
         <button
           type="button"
-          onClick={rec.demarrer}
+          onClick={onDemarrer}
           aria-label={t('studio.micro.enregistrer')}
           data-action="enregistrer"
           className={cn(

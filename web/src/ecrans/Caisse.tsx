@@ -17,11 +17,13 @@ import { Champ } from '@/composants/Champ'
 import { Dialogue } from '@/composants/Dialogue'
 import { notifier } from '@/composants/toastStore'
 import { useMessageErreur } from '@/ecrans/auth/useMessageErreur'
+import { chargerPaquet } from '@/i18n'
 import { cn } from '@/lib/cn'
 import { convertirEnSats, formaterFCFA, formaterNombre, formaterSats } from '@/lib/format'
 import { queryClient } from '@/lib/queryClient'
 import { tempsRelatif } from '@/lib/temps'
 import { useDonneesEnDirect } from '@/temps-reel/useDonneesEnDirect'
+import { useGuideVocal } from '@/voix/guide'
 import { HautParleur } from '@/voix/HautParleur'
 import { ajouterAuPanier, changerQuantite, totalPanier, type LignePanier } from './caisse/panier'
 import type { MoyensDisponibles } from './caisse/ChoixMethode'
@@ -32,8 +34,10 @@ export const MONTANT_MIN = 100
 
 // Chargés à la demande : rien dans le JavaScript du premier écran tant qu'on n'en a pas besoin.
 const ChoixMethode = lazy(() => import('./caisse/ChoixMethode').then((m) => ({ default: m.ChoixMethode })))
-const GrilleArticles = lazy(() => import('./caisse/Articles').then((m) => ({ default: m.GrilleArticles })))
-const Panier = lazy(() => import('./caisse/Articles').then((m) => ({ default: m.Panier })))
+// Grille et panier : avec le paquet « articles » (noms des pictogrammes, libellés) chargé en même temps.
+const grille = () => Promise.all([import('./caisse/Articles'), chargerPaquet('articles')]).then(([m]) => m)
+const GrilleArticles = lazy(() => grille().then((m) => ({ default: m.GrilleArticles })))
+const Panier = lazy(() => grille().then((m) => ({ default: m.Panier })))
 const BandeauAucunMoyen = lazy(() => import('./caisse/AucunMoyen').then((m) => ({ default: m.BandeauAucunMoyen })))
 const BoutonBrancherMoyen = lazy(() => import('./caisse/AucunMoyen').then((m) => ({ default: m.BoutonBrancherMoyen })))
 const BandeauDemarrage = lazy(() => import('@/coquille/BandeauDemarrage').then((m) => ({ default: m.BandeauDemarrage })))
@@ -43,6 +47,7 @@ const MONTANT_MAX_DEFAUT = 2_000_000
 export default function Caisse() {
   const { t, i18n } = useTranslation()
   void i18n.language
+  useGuideVocal('guide.caisse')
   const navigate = useNavigate()
   const utilisateur = useAuth((s) => s.utilisateur)
   const gestion = peut(utilisateur, ['proprietaire', 'gerant'])
@@ -119,7 +124,13 @@ export default function Caisse() {
     (methode: MethodePaiement, operateur?: Operateur, moyen?: string) => {
       setErreur(null)
       const lignes = [
-        ...panier.map((l) => ({ article_ulid: l.article.ulid, libelle: l.article.nom, quantite: l.quantite, prix_unitaire_xof: l.article.prix_xof })),
+        // Article sans nom écrit : le nom de son pictogramme (règle de ecrans/articles/libelle.ts, recopiée pour ne rien ajouter au JS de la caisse).
+        ...panier.map((l) => ({
+          article_ulid: l.article.ulid,
+          libelle: l.article.nom?.trim() || t(`pictos.${l.article.pictogramme}`, { defaultValue: t('caisse.article') }),
+          quantite: l.quantite,
+          prix_unitaire_xof: l.article.prix_xof,
+        })),
         ...(panier.length && montantLibre > 0 ? [{ libelle: t('caisse.montantLibre'), quantite: 1, prix_unitaire_xof: montantLibre }] : []),
       ]
       creation.mutate({
@@ -227,15 +238,16 @@ export default function Caisse() {
               </p>
             )}
             {panier.length > 0 && (
-              <button type="button" onClick={() => setArticlesOuverts(true)} className="mt-3 rounded-full bg-accent-doux px-3.5 py-1.5 text-sm font-semibold text-accent-texte md:hidden">
+              <button type="button" onClick={() => setArticlesOuverts(true)} className="relative mt-3 rounded-full bg-accent-doux px-3.5 py-1.5 text-sm font-semibold text-accent-texte md:hidden">
                 {t('caisse.panier')} · {panier.reduce((s, l) => s + l.quantite, 0)} · {formaterFCFA(totalPanier(panier))}
+                <HautParleur cle="caisse.panier" dansBouton />
               </button>
             )}
           </div>
 
           {noteVisible && (
             <Champ
-              libelle={t('caisse.note')}
+              libelle={t('caisse.note')} voix="caisse.note"
               mentionOptionnel={t('commun.optionnel')}
               placeholder={t('caisse.notePlaceholder')}
               value={note}
@@ -263,7 +275,7 @@ export default function Caisse() {
             <Carte className="hidden min-w-0 md:block" rembourrage="md">
               <CarteEnTete titre={t('caisse.articles')} className="mb-3" />
               <Suspense fallback={<div className="h-20" data-chargement="articles" />}>
-                <GrilleArticles articles={articlesActifs} onAjouter={(a) => setPanier((p) => ajouterAuPanier(p, a))} />
+                <GrilleArticles articles={articlesActifs} panier={panier} onAjouter={(a) => setPanier((p) => ajouterAuPanier(p, a))} />
               </Suspense>
               <div className="mt-4 border-t border-bordure pt-3">
                 <h3 className="mb-1 text-xs font-semibold tracking-wide text-texte-3 uppercase">{t('caisse.panier')}</h3>
@@ -285,10 +297,10 @@ export default function Caisse() {
           ) : (
             <Bouton
               taille="xl"
-              pleineLargeur
               icone={<Zap />}
               voix="caisse.encaisser"
-              className="mt-4"
+              // Étiré par la colonne ; sur mobile, la place du bouton rond « Réécouter l'aide » est laissée à droite.
+              className="mt-4 mr-[var(--reserve-guide)] md:mr-0"
               disabled={montant === 0 || horsBornes || aucunMoyenBranche}
               chargement={creation.isPending || (montant > 0 && !horsBornes && !moyensConnus)}
               onClick={encaisser}
@@ -306,10 +318,10 @@ export default function Caisse() {
       )}
 
       {/* Mobile : articles et panier en feuille. */}
-      <Dialogue ouvert={articlesOuverts} onOuvertChange={setArticlesOuverts} titre={t('caisse.articles')} taille="md">
+      <Dialogue ouvert={articlesOuverts} onOuvertChange={setArticlesOuverts} titre={t('caisse.articles')} voix="caisse.articles" taille="md">
         <div className="flex flex-col gap-3 pb-1">
           <Suspense fallback={<div className="h-20" data-chargement="articles" />}>
-            <GrilleArticles articles={articlesActifs} onAjouter={(a) => setPanier((p) => ajouterAuPanier(p, a))} />
+            <GrilleArticles articles={articlesActifs} panier={panier} onAjouter={(a) => setPanier((p) => ajouterAuPanier(p, a))} />
           </Suspense>
           <div className="border-t border-bordure pt-2">
             <h3 className="mb-1 text-xs font-semibold tracking-wide text-texte-3 uppercase">{t('caisse.panier')}</h3>

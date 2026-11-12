@@ -25,12 +25,14 @@ import { DetailVente } from './ventes/DetailVente'
 import { FILTRES_DEFAUT, filtresActifs } from './ventes/filtres'
 import { FiltresVentes } from './ventes/FiltresVentes'
 import { LigneVente, ListeVentes } from './ventes/LigneVente'
+import { useGuideVocal } from '@/voix/guide'
 
 const DEBOUNCE_RECHERCHE = 300
 
 /** Ventes : liste compacte, filtres, recherche, pagination par numéro de page (`?page=`), totaux, détail et actions, export. */
 export default function Ventes() {
   const { t, i18n } = useTranslation()
+  useGuideVocal('guide.ventes')
   void i18n.language
   const utilisateur = useAuth((s) => s.utilisateur)
   const caissier = roleBoutique(utilisateur) === 'caissier'
@@ -135,7 +137,7 @@ export default function Ventes() {
 
       <div className="mb-3 flex flex-col gap-2">
         <Champ
-          libelle={t('ventes.rechercher')}
+          libelle={t('ventes.rechercher')} voix="ventes.rechercher"
           type="search"
           inputMode="search"
           icone={<Search />}

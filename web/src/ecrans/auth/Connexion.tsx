@@ -14,9 +14,12 @@ import { ChampIdentifiant } from './ChampIdentifiant'
 import { ChampMotDePasse, ErreurFormulaire, TitreAuth } from './communs'
 import { SAISIE_VIDE, valeurIdentifiant, type SaisieIdentifiant } from './identifiant'
 import { useMessageErreur } from './useMessageErreur'
+import { useGuideVocal } from '@/voix/guide'
+import { HautParleur } from '@/voix/HautParleur'
 
 export default function Connexion() {
   const { t } = useTranslation()
+  useGuideVocal('guide.connexion')
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const connexion = useConnexion()
@@ -65,7 +68,7 @@ export default function Connexion() {
       <TitreAuth titre={t('auth.connexion.titre')} sousTitre={t('auth.connexion.sousTitre')} voix="auth.connexion.titre" />
       <form onSubmit={soumettre} noValidate className="flex flex-col gap-3.5">
         <ChampIdentifiant
-          libelle={t('auth.connexion.identifiant')}
+          libelle={t('auth.connexion.identifiant')} voix="auth.connexion.identifiant"
           saisie={identifiant}
           onChange={setIdentifiant}
           erreur={erreursChamps.identifiant}
@@ -76,7 +79,7 @@ export default function Connexion() {
           }}
         />
         <ChampMotDePasse
-          libelle={t('auth.connexion.motDePasse')}
+          libelle={t('auth.connexion.motDePasse')} voix="auth.connexion.motDePasse"
           name="password"
           value={motDePasse}
           onChange={(e) => setMotDePasse(e.target.value)}
@@ -92,20 +95,24 @@ export default function Connexion() {
             />
             {t('auth.connexion.seSouvenir')}
           </label>
-          <Link to="/mot-de-passe/oubli" className="shrink-0 text-sm font-medium text-accent-texte hover:underline">
-            {t('auth.connexion.oubli')}
-          </Link>
+          <span className="flex shrink-0 items-center gap-0.5">
+            <Link to="/mot-de-passe/oubli" className="text-sm font-medium text-accent-texte hover:underline">
+              {t('auth.connexion.oubli')}
+            </Link>
+            <HautParleur cle="auth.connexion.oubli" />
+          </span>
         </div>
         <ErreurFormulaire message={erreur} />
         <Bouton type="submit" taille="xl" pleineLargeur className="mt-1 md:h-12 md:text-lg" chargement={connexion.isPending} icone={<LogIn />} voix="auth.connexion.valider">
           {t('auth.connexion.valider')}
         </Bouton>
       </form>
-      <p className="mt-6 text-center text-sm text-texte-2">
+      <p className="mt-6 flex flex-wrap items-center justify-center gap-x-1 text-center text-sm text-texte-2">
         {t('auth.connexion.pasDeCompte')}{' '}
         <Link to={suiteSure(params.get('suite')) ? `/inscription?suite=${encodeURIComponent(suiteSure(params.get('suite'))!)}` : '/inscription'} className="font-medium text-accent-texte hover:underline">
           {t('auth.connexion.creer')}
         </Link>
+        <HautParleur cle="auth.connexion.creer" />
       </p>
     </MiseEnPageInvite>
   )

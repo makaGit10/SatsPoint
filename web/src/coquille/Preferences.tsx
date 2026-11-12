@@ -12,6 +12,14 @@ import { useVoix } from '@/voix/store'
 import { usePreferences } from './usePreferences'
 
 const ICONES_THEME = { clair: Sun, sombre: Moon, auto: Monitor } as const
+/** Clé vocale de chaque thème (le registre lit les propriétés `voix:`). */
+const VOIX_THEME: Record<Theme, string> = Object.fromEntries(
+  [
+    { theme: 'clair', voix: 'theme.clair' },
+    { theme: 'sombre', voix: 'theme.sombre' },
+    { theme: 'auto', voix: 'theme.auto' },
+  ].map((o) => [o.theme, o.voix]),
+) as Record<Theme, string>
 
 function Segment<T extends string>({
   valeur,
@@ -20,7 +28,7 @@ function Segment<T extends string>({
   libelle,
 }: {
   valeur: T
-  options: { valeur: T; libelle: string; icone?: typeof Sun }[]
+  options: { valeur: T; libelle: string; icone?: typeof Sun; voix: string }[]
   onChange: (v: T) => void
   libelle: string
 }) {
@@ -37,12 +45,13 @@ function Segment<T extends string>({
             aria-checked={actif}
             onClick={() => onChange(o.valeur)}
             className={cn(
-              'inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-semibold whitespace-nowrap transition-colors duration-150',
+              'relative inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-semibold whitespace-nowrap transition-colors duration-150',
               actif ? 'bg-inverse text-inverse-texte shadow-sm' : 'text-texte-2 hover:text-texte',
             )}
           >
             {Icone && <Icone size={15} aria-hidden="true" />}
             {o.libelle}
+            <HautParleur cle={o.voix} dansBouton enLigne />
           </button>
         )
       })}
@@ -71,22 +80,28 @@ export function PanneauPreferences({ className, pays }: { className?: string; pa
   return (
     <div className={cn('flex flex-col gap-4', className)}>
       <section className="flex flex-col gap-1.5">
-        <h3 className="text-xs font-semibold tracking-wide text-texte-3 uppercase">{t('theme.titre')}</h3>
+        <h3 className="flex items-center gap-0.5 text-xs font-semibold tracking-wide text-texte-3 uppercase">
+          {t('theme.titre')}
+          <HautParleur cle="theme.titre" className="-my-2" />
+        </h3>
         <Segment<Theme>
           libelle={t('theme.titre')}
           valeur={theme}
           onChange={changerTheme}
-          options={THEMES.map((v) => ({ valeur: v, libelle: t(`theme.${v}`), icone: ICONES_THEME[v] }))}
+          options={THEMES.map((v) => ({ valeur: v, libelle: t(`theme.${v}`), icone: ICONES_THEME[v], voix: VOIX_THEME[v] }))}
         />
       </section>
 
       <section className="flex flex-col gap-1.5">
-        <h3 className="text-xs font-semibold tracking-wide text-texte-3 uppercase">{t('entete.langueInterface')}</h3>
+        <h3 className="flex items-center gap-0.5 text-xs font-semibold tracking-wide text-texte-3 uppercase">
+          {t('entete.langueInterface')}
+          <HautParleur cle="entete.langueInterface" className="-my-2" />
+        </h3>
         <Segment
           libelle={t('entete.langueInterface')}
           valeur={localeCourante()}
           onChange={changerLocale}
-          options={LOCALES.map((v) => ({ valeur: v, libelle: t(`langue.${v}`) }))}
+          options={LOCALES.map((v) => ({ valeur: v, libelle: t(`langue.${v}`), voix: v === 'en' ? 'langue.en' : 'langue.fr' }))}
         />
       </section>
 
@@ -94,11 +109,14 @@ export function PanneauPreferences({ className, pays }: { className?: string; pa
         <Interrupteur
           coche={aideVocale}
           onChange={changerAideVocale}
-          libelle={t('utilisateur.aideVocale')}
+          libelle={t('utilisateur.aideVocale')} voix="utilisateur.aideVocale"
           description={t('utilisateur.aideVocaleAide')}
         />
         <div className="flex flex-col gap-1.5" data-inactif={!aideVocale || undefined}>
-          <h3 className="text-xs font-semibold tracking-wide text-texte-3 uppercase">{t('utilisateur.langueAudio')}</h3>
+          <h3 className="flex items-center gap-0.5 text-xs font-semibold tracking-wide text-texte-3 uppercase">
+            {t('utilisateur.langueAudio')}
+            <HautParleur cle="utilisateur.langueAudio" className="-my-2" />
+          </h3>
           <div role="radiogroup" aria-label={t('utilisateur.langueAudio')} className="grid grid-cols-3 gap-1.5">
             {langues.map((l) => {
               const actif = l.code === langueAudio

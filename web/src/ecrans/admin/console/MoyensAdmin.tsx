@@ -74,7 +74,7 @@ export function MoyensAdmin({ actif }: { actif: boolean }) {
       <p className="text-sm text-texte-2">{t('admin.moyens.aide')}</p>
       <div className="flex flex-wrap items-center gap-2">
         <Selection
-          libelle={t('admin.moyens.pays')}
+          libelle={t('admin.moyens.pays')} voix="admin.moyens.pays"
           libelleVisible={false}
           taille="sm"
           value={pays}
@@ -145,7 +145,7 @@ export function MoyensAdmin({ actif }: { actif: boolean }) {
                   </p>
                   {instructionsMoyen(m, i18n.language) && <p className="hidden truncate text-xs text-texte-3 sm:block">{instructionsMoyen(m, i18n.language)}</p>}
                 </div>
-                <Interrupteur coche={m.actif} onChange={() => bascule.mutate(m)} desactive={bascule.isPending} libelle={<span className="sr-only">{t('admin.moyens.actif')}</span>} className="shrink-0" />
+                <Interrupteur coche={m.actif} onChange={() => bascule.mutate(m)} desactive={bascule.isPending} libelle={<span className="sr-only">{t('admin.moyens.actif')}</span>} voix="admin.moyens.actif" className="shrink-0" />
                 <BoutonIcone libelle={t('admin.moyens.modifier')} icone={<Pencil />} voix="admin.moyens.modifier" taille="sm" onClick={() => setEdition(m)} />
                 {(m.boutiques_actives ?? 0) === 0 ? (
                   <BoutonIcone libelle={t('admin.moyens.supprimer')} icone={<Trash2 />} voix="admin.moyens.supprimer" variante="danger" taille="sm" onClick={() => setASupprimer(m)} />
@@ -163,7 +163,7 @@ export function MoyensAdmin({ actif }: { actif: boolean }) {
       <Dialogue
         ouvert={Boolean(aSupprimer)}
         onOuvertChange={(o) => !o && setASupprimer(null)}
-        titre={t('admin.moyens.supprimerTitre', { nom: aSupprimer?.nom ?? '' })}
+        titre={t('admin.moyens.supprimerTitre', { nom: aSupprimer?.nom ?? '' })} voix="admin.moyens.supprimerTitre"
         description={t('admin.moyens.supprimerTexte')}
         taille="sm"
         pied={
@@ -223,9 +223,9 @@ function FormulaireMoyen({ moyen, pays, onFermer }: { moyen: MoyenCatalogue | nu
   }
 
   return (
-    <Dialogue ouvert onOuvertChange={(o) => !o && onFermer()} titre={moyen ? t('admin.moyens.modifierTitre', { nom: moyen.nom }) : t('admin.moyens.ajouter')} taille="md">
+    <Dialogue ouvert onOuvertChange={(o) => !o && onFermer()} titre={moyen ? t('admin.moyens.modifierTitre', { nom: moyen.nom }) : t('admin.moyens.ajouter')} voix={moyen ? 'admin.moyens.modifierTitre' : 'admin.moyens.ajouter'} taille="md">
       <form onSubmit={soumettre} noValidate className="flex flex-col gap-3" data-formulaire-moyen>
-        <Champ libelle={t('admin.moyens.nom')} value={nom} onChange={(e) => setNom(e.target.value)} maxLength={40} placeholder="Orange Money" erreur={erreurs.nom} />
+        <Champ libelle={t('admin.moyens.nom')} voix="admin.moyens.nom" value={nom} onChange={(e) => setNom(e.target.value)} maxLength={40} placeholder="Orange Money" erreur={erreurs.nom} />
         <div className="flex flex-col gap-1.5">
           <span className="text-sm font-semibold text-texte-2">{t('admin.moyens.type')}</span>
           <Segment<TypeMoyen>
@@ -234,8 +234,8 @@ function FormulaireMoyen({ moyen, pays, onFermer }: { moyen: MoyenCatalogue | nu
             onChange={setType}
             taille="sm"
             options={[
-              { valeur: 'numero', libelle: t('admin.moyens.types.numero'), icone: <Hash />, desactive: Boolean(moyen) },
-              { valeur: 'lien', libelle: t('admin.moyens.types.lien'), icone: <Link2 />, desactive: Boolean(moyen) },
+              { valeur: 'numero', libelle: t('admin.moyens.types.numero'), icone: <Hash />, desactive: Boolean(moyen), voix: 'admin.moyens.types.numero' },
+              { valeur: 'lien', libelle: t('admin.moyens.types.lien'), icone: <Link2 />, desactive: Boolean(moyen), voix: 'admin.moyens.types.lien' },
             ]}
           />
           <p className="text-xs text-texte-3">{t('admin.moyens.typeAide')}</p>
@@ -258,7 +258,7 @@ function FormulaireMoyen({ moyen, pays, onFermer }: { moyen: MoyenCatalogue | nu
           </div>
         </fieldset>
         <Champ
-          libelle={t('admin.moyens.instructionsFr')}
+          libelle={t('admin.moyens.instructionsFr')} voix="admin.moyens.instructionsFr"
           value={instructionsFr}
           onChange={(e) => setInstructionsFr(nettoyer(e.target.value))}
           maxLength={INSTRUCTIONS_MAX}
@@ -266,7 +266,7 @@ function FormulaireMoyen({ moyen, pays, onFermer }: { moyen: MoyenCatalogue | nu
           erreur={erreurs.instructions_fr}
         />
         <Champ
-          libelle={t('admin.moyens.instructionsEn')}
+          libelle={t('admin.moyens.instructionsEn')} voix="admin.moyens.instructionsEn"
           value={instructionsEn}
           onChange={(e) => setInstructionsEn(nettoyer(e.target.value))}
           maxLength={INSTRUCTIONS_MAX}

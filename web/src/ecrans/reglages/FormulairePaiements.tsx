@@ -116,7 +116,7 @@ export function FormulairePaiements({ boutique }: { boutique: BoutiqueDetail }) 
         </div>
 
         <Champ
-          libelle={t('reglages.montantMax')}
+          libelle={t('reglages.montantMax')} voix="reglages.montantMax"
           inputMode="numeric"
           pattern="[0-9]*"
           value={montantMax}
@@ -140,7 +140,7 @@ export function FormulairePaiements({ boutique }: { boutique: BoutiqueDetail }) 
         </div>
 
         <Champ
-          libelle={t('reglages.waveLien')}
+          libelle={t('reglages.waveLien')} voix="reglages.waveLien"
           type="url"
           inputMode="url"
           autoComplete="off"

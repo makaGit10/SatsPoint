@@ -386,7 +386,16 @@
       "divers": "Other"
     },
     "pays": "Country",
-    "tousPays": "All countries"
+    "tousPays": "All countries",
+    "decoupe": {
+      "traitement": "Cutting silences…",
+      "avant": "Before",
+      "apres": "Trimmed",
+      "duree": "Length: {{avant}} before, {{apres}} after cutting silences",
+      "aucuneVoix": "No voice heard. Speak closer to the microphone, then try again.",
+      "nonDecoupe": "This browser cannot read this format: the server will cut the silences on upload.",
+      "fichier": "Dropped file"
+    }
   },
   "deuxFa": {
     "titre": "Two-factor authentication",

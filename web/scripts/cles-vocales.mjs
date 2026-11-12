@@ -5,7 +5,7 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { boutonsSansVoix, construireRegistre, serialiser } from './cles-vocales-lib.mjs'
+import { boutonsSansVoix, construireRegistre, elementsBrutsSansVoix, serialiser } from './cles-vocales-lib.mjs'
 
 const racine = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const src = resolve(racine, 'src')
@@ -53,6 +53,12 @@ if (manquantes.length) {
 }
 if (sansVoix.length) {
   console.error(`Boutons sans clé vocale :\n${sansVoix.map((b) => `  - <${b.composant}> ${b.fichier}:${b.ligne}`).join('\n')}`)
+  code = 1
+}
+// Éléments bruts (<button>, <a>, <summary>, <Link>, <NavLink>) : haut-parleur obligatoire, sauf exception justifiée.
+const brutsSansVoix = elementsBrutsSansVoix(fichiers)
+if (brutsSansVoix.length) {
+  console.error(`Éléments actionnables sans haut-parleur :\n${brutsSansVoix.map((b) => `  - <${b.element}> ${b.fichier}:${b.ligne}`).join('\n')}`)
   code = 1
 }
 

@@ -6,6 +6,8 @@ export interface PropsDialogue {
   ouvert: boolean
   onOuvertChange: (ouvert: boolean) => void
   titre: ReactNode
+  /** Clé vocale du titre : haut-parleur à côté (dit de quoi parle la fenêtre). */
+  voix?: string
   description?: ReactNode
   children?: ReactNode
   /** Boutons d'action en bas. */

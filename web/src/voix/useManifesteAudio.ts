@@ -6,15 +6,22 @@ import { useVoix } from './store'
 
 const UNE_HEURE = 60 * 60_000
 
+/**
+ * Fraîcheur des audios publiés au studio (« disponibles chez tout le monde ») :
+ * - signal temps réel `audios` (canal public `plateforme`) → relecture immédiate dans l'appli connectée ;
+ * - sans connexion temps réel (écrans publics, visiteurs) : relu au retour sur l'onglet au-delà de 2 minutes ;
+ * - chaque relecture revalide auprès du serveur (ETag, 304 léger), jamais l'ancienne copie du navigateur.
+ */
 const OPTIONS_MANIFESTE = (langue: LangueAudio) => ({
   queryKey: CLE_MANIFESTE(langue),
   queryFn: () => chargerManifeste(langue),
-  staleTime: UNE_HEURE,
+  staleTime: 2 * 60_000,
   gcTime: 24 * UNE_HEURE,
+  refetchOnWindowFocus: true,
   retry: 1,
 })
 
-/** Manifeste `clé → URL` d'une langue, mis en cache longtemps (relu sur signal `audios`). */
+/** Manifeste `clé → URL` d'une langue (relu sur signal `audios` et au retour sur l'onglet). */
 export function useManifesteAudio(langue: LangueAudio | null) {
   return useQuery({
     ...OPTIONS_MANIFESTE(langue ?? 'fr'),

@@ -1,10 +1,10 @@
 import { useMutation } from '@tanstack/react-query'
-import { Check, ChevronDown, ChevronUp, Download, FileSpreadsheet, FileText, Package, Pencil, Plus, Search, Trash2, Upload } from 'lucide-react'
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { ChevronDown, ChevronUp, Download, FileSpreadsheet, FileText, Package, Pencil, Plus, Search, Trash2, Upload } from 'lucide-react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
-import { CLE_ARTICLES, creerArticle, modifierArticle, ordonnerArticles, supprimerArticle, useArticles, type CorpsArticle } from '@/api/articles'
-import { ErreurApi } from '@/api/client'
+import { CLE_ARTICLES, useArticles } from '@/api/articles'
+import { ordonnerArticles, supprimerArticle } from '@/api/articlesEcriture'
 import { exporterArticles } from '@/api/exports'
 import type { Article } from '@/api/types'
 import { peut, useAuth } from '@/auth/store'
@@ -14,31 +14,35 @@ import { Champ } from '@/composants/Champ'
 import { Dialogue } from '@/composants/Dialogue'
 import { EnTetePage } from '@/composants/EnTetePage'
 import { EtatVide } from '@/composants/EtatVide'
-import { Interrupteur } from '@/composants/Interrupteur'
 import { Menu } from '@/composants/Menu'
 import { Pagination } from '@/composants/Pagination'
 import { Pastille } from '@/composants/Pastille'
 import { SqueletteListe } from '@/composants/Squelette'
 import { notifier } from '@/composants/toastStore'
-import { ErreurFormulaire } from '@/ecrans/auth/communs'
 import { useMessageErreur } from '@/ecrans/auth/useMessageErreur'
+import { libelleArticle } from './articles/libelle'
 import { cn } from '@/lib/cn'
-import { classePointCouleur, classesTuile, COULEURS_ARTICLES, couleurDepuis, versHex, type CouleurArticle } from '@/lib/couleursArticles'
 import { chargerPaquet } from '@/i18n'
 import { formaterFCFA } from '@/lib/format'
 import { queryClient } from '@/lib/queryClient'
 import { pertinence } from '@/lib/texte'
 import { usePaginationLocale } from '@/lib/usePagination'
 import { useDonneesEnDirect } from '@/temps-reel/useDonneesEnDirect'
-import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
+import { EcouterArticle } from './articles/EcouterArticle'
+import { VignetteArticle } from './articles/VignetteArticle'
 
 // Assistant d'import : chargé à la demande avec son paquet de traductions (rien pour la caisse).
 const ImportArticles = lazy(() => Promise.all([import('./articles/ImportArticles'), chargerPaquet('admin')]).then(([m]) => m))
+// Formulaire sans écrire (photo, pictogrammes, micro, pavé) : chargé à la première ouverture.
+const FormulaireArticle = lazy(() => import('./articles/FormulaireArticle'))
 
 /** Articles par page (pagination côté écran : la liste complète est déjà chargée pour la caisse). */
 const ARTICLES_PAR_PAGE = 20
 
-/** Articles (P1) : liste compacte réordonnable, recherche, pagination (20 par page), formulaire en fenêtre ; caissier en lecture seule. */
+/**
+ * Articles (P1) : liste compacte réordonnable (vignette, haut-parleur qui dit le nom), recherche, pagination (20 par page),
+ * formulaire SANS ÉCRIRE en fenêtre (photo, pictogramme, nom dit, pavé) ; caissier en lecture seule.
+ */
 export default function Articles() {
   const { t, i18n } = useTranslation()
   void i18n.language
@@ -57,8 +61,11 @@ export default function Articles() {
   const terme = recherche.trim()
   const haut = useRef<HTMLOListElement>(null)
 
-  // Recherche locale (nom, catégorie, SKU ; accents et petites fautes tolérés) AVANT la pagination.
-  const filtres = useMemo(() => (articles && terme ? articles.filter((a) => pertinence([a.nom, a.categorie, a.sku].filter(Boolean).join(' '), terme) > 0) : articles), [articles, terme])
+  // Recherche locale (nom, nom du pictogramme, catégorie, SKU ; accents et petites fautes tolérés) AVANT la pagination.
+  const filtres = useMemo(
+    () => (articles && terme ? articles.filter((a) => pertinence([libelleArticle(a, t), a.categorie, a.sku].filter(Boolean).join(' '), terme) > 0) : articles),
+    [articles, terme, t],
+  )
   const { visibles, page, pages, total, debut, allerA, reinitialiser } = usePaginationLocale(filtres, { parPage: ARTICLES_PAR_PAGE })
   const chercher = (valeur: string) => {
     setRecherche(valeur)
@@ -197,19 +204,20 @@ export default function Articles() {
             const i = debut + rang
             return (
             <li key={a.ulid} className={cn('flex items-center gap-3 px-3 py-2', !a.actif && 'bg-surface-2/60')}>
-              <span
-                className={cn('inline-block size-3 shrink-0 rounded-full', classePointCouleur(a.couleur))}
-                role="img"
-                aria-label={t(`articles.couleurs.${couleurDepuis(a.couleur)}`)}
-              />
+              <VignetteArticle article={a} taille="md" />
               <div className="min-w-0 flex-1">
                 <p className="flex items-center gap-1.5 truncate text-sm font-medium text-texte">
-                  <span className="truncate">{a.nom}</span>
+                  <span className={cn('truncate', !a.nom?.trim() && 'text-texte-2 italic')}>{libelleArticle(a, t)}</span>
                   {!a.actif && <Pastille ton="neutre">{t('articles.inactif')}</Pastille>}
                 </p>
-                {(a.categorie || a.sku) && <p className="truncate text-xs text-texte-3">{[a.categorie, a.sku].filter(Boolean).join(' · ')}</p>}
+                {/* Mobile : le prix passe sous le nom (le nom garde la place) ; bureau : prix à droite. */}
+                <p className="truncate text-xs text-texte-3">
+                  <span className="font-semibold text-texte tabulaire sm:hidden">{formaterFCFA(a.prix_xof)}</span>
+                  {(a.categorie || a.sku) && <span className="before:mx-1 before:content-['·'] sm:before:hidden">{[a.categorie, a.sku].filter(Boolean).join(' · ')}</span>}
+                </p>
               </div>
-              <span className="shrink-0 text-sm font-semibold text-texte tabulaire">{formaterFCFA(a.prix_xof)}</span>
+              <EcouterArticle article={a} />
+              <span className="hidden shrink-0 text-sm font-semibold text-texte tabulaire sm:inline">{formaterFCFA(a.prix_xof)}</span>
               {peutGerer && (
                 <div className="flex shrink-0 items-center gap-0.5">
                   {/* Ordre : seulement sans recherche (le rang filtré ne correspond pas au catalogue). */}
@@ -236,12 +244,16 @@ export default function Articles() {
         </Suspense>
       )}
 
-      {formulaire.ouvert && <FormulaireArticle article={formulaire.article} onFermer={() => setFormulaire({ ouvert: false, article: null })} />}
+      {formulaire.ouvert && (
+        <Suspense fallback={null}>
+          <FormulaireArticle article={formulaire.article} onFermer={() => setFormulaire({ ouvert: false, article: null })} />
+        </Suspense>
+      )}
 
       <Dialogue
         ouvert={Boolean(suppression)}
         onOuvertChange={(o) => !o && setSuppression(null)}
-        titre={t('articles.supprimerTitre', { nom: suppression?.nom ?? '' })}
+        titre={t('articles.supprimerTitre', { nom: suppression ? libelleArticle(suppression, t) : '' })}
         description={t('articles.supprimerTexte')}
         taille="sm"
         pied={
@@ -256,101 +268,5 @@ export default function Articles() {
         }
       />
     </div>
-  )
-}
-
-function FormulaireArticle({ article, onFermer }: { article: Article | null; onFermer: () => void }) {
-  const { t } = useTranslation()
-  const messageErreur = useMessageErreur()
-  useSaisieEnCours()
-  const [nom, setNom] = useState(article?.nom ?? '')
-  const [prix, setPrix] = useState(article ? String(article.prix_xof) : '')
-  const [categorie, setCategorie] = useState(article?.categorie ?? '')
-  const [sku, setSku] = useState(article?.sku ?? '')
-  const [couleur, setCouleur] = useState<CouleurArticle>(article?.couleur ? couleurDepuis(article.couleur) : 'orange')
-  const [actif, setActif] = useState(article?.actif ?? true)
-  const [erreur, setErreur] = useState<string | null>(null)
-  const [champs, setChamps] = useState<{ nom?: string; prix?: string }>({})
-
-  const enregistrement = useMutation({
-    mutationFn: (corps: CorpsArticle) => (article ? modifierArticle(article.ulid, corps) : creerArticle(corps)),
-    onSuccess: () => {
-      notifier({ type: 'succes', titre: t('articles.enregistre'), voix: 'articles.enregistre' })
-      void queryClient.invalidateQueries({ queryKey: CLE_ARTICLES })
-      onFermer()
-    },
-    onError: (e) => {
-      if (e instanceof ErreurApi && e.estValidation) setChamps({ nom: e.champ('nom'), prix: e.champ('prix_xof') })
-      setErreur(messageErreur(e))
-    },
-  })
-
-  const soumettre = (e: FormEvent) => {
-    e.preventDefault()
-    setErreur(null)
-    const c: typeof champs = {}
-    const prixNombre = Number(prix.replace(/\s/g, ''))
-    if (!nom.trim()) c.nom = t('auth.champRequis')
-    if (!Number.isInteger(prixNombre) || prixNombre <= 0) c.prix = t('auth.champRequis')
-    setChamps(c)
-    if (Object.keys(c).length) return
-    enregistrement.mutate({ nom: nom.trim(), prix_xof: prixNombre, categorie: categorie.trim() || null, couleur: versHex(couleur), sku: sku.trim() || null, actif })
-  }
-
-  return (
-    <Dialogue
-      ouvert
-      onOuvertChange={(o) => !o && onFermer()}
-      titre={article ? t('articles.modifier') : t('articles.ajouter')}
-      taille="sm"
-      pied={
-        <>
-          <Bouton variante="secondaire" voix="commun.annuler" onClick={onFermer}>
-            {t('commun.annuler')}
-          </Bouton>
-          <Bouton type="submit" form="formulaire-article" icone={<Check />} voix="commun.enregistrer" chargement={enregistrement.isPending}>
-            {t('commun.enregistrer')}
-          </Bouton>
-        </>
-      }
-    >
-      <form id="formulaire-article" onSubmit={soumettre} noValidate className="flex flex-col gap-3 pb-1">
-        <Champ libelle={t('articles.nom')} value={nom} onChange={(e) => setNom(e.target.value)} erreur={champs.nom} autoFocus autoComplete="off" />
-        <Champ
-          libelle={t('articles.prix')}
-          value={prix}
-          onChange={(e) => setPrix(e.target.value.replace(/[^\d]/g, ''))}
-          erreur={champs.prix}
-          inputMode="numeric"
-          suffixe={<span className="pr-2 text-sm text-texte-3">FCFA</span>}
-          autoComplete="off"
-          className="tabulaire"
-        />
-        <div className="grid grid-cols-2 gap-3">
-          <Champ libelle={t('articles.categorie')} mentionOptionnel={t('commun.optionnel')} value={categorie} onChange={(e) => setCategorie(e.target.value)} autoComplete="off" />
-          <Champ libelle={t('articles.sku')} mentionOptionnel={t('commun.optionnel')} value={sku} onChange={(e) => setSku(e.target.value)} autoComplete="off" />
-        </div>
-        <div className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-texte-2">{t('articles.couleur')}</span>
-          <div role="radiogroup" aria-label={t('articles.couleur')} className="grid grid-cols-8 gap-1.5">
-            {COULEURS_ARTICLES.map((c) => (
-              <button
-                key={c}
-                type="button"
-                role="radio"
-                aria-checked={couleur === c}
-                aria-label={t(`articles.couleurs.${c}`)}
-                onClick={() => setCouleur(c)}
-                className={cn('flex h-9 items-center justify-center rounded-md border-2 transition-transform active:scale-95', classesTuile(c), couleur === c ? 'border-texte' : 'border-transparent')}
-              >
-                {couleur === c && <Check size={16} aria-hidden="true" />}
-              </button>
-            ))}
-          </div>
-        </div>
-        <Interrupteur coche={actif} onChange={setActif} libelle={t('articles.actif')} voix="articles.actif" />
-        <ErreurFormulaire message={erreur} />
-      </form>
-    </Dialogue>
   )
 }

@@ -12,6 +12,7 @@ import { useDonneesEnDirect } from '@/temps-reel/useDonneesEnDirect'
 import { FormulaireBoutique } from './reglages/FormulaireBoutique'
 import { FormulairePaiements } from './reglages/FormulairePaiements'
 import { FormulairePaytech } from './reglages/FormulairePaytech'
+import { useGuideVocal } from '@/voix/guide'
 
 const PanneauPreferences = lazy(() => import('@/coquille/Preferences').then((m) => ({ default: m.PanneauPreferences })))
 // Moyens de paiement du pays (CONTRAT_API § 14.3) : chargés à la demande.
@@ -20,6 +21,7 @@ const FormulaireMoyensPays = lazy(() => import('./reglages/FormulaireMoyensPays'
 /** Réglages : boutique (et pays), moyens de paiement, moyens du pays, PayTech (propriétaire), préférences personnelles. */
 export default function Reglages() {
   const { t, i18n } = useTranslation()
+  useGuideVocal('guide.reglages')
   void i18n.language
   const utilisateur = useAuth((s) => s.utilisateur)
   const proprietaire = peut(utilisateur, ['proprietaire'])

@@ -7,11 +7,14 @@
 // - `<HautParleur cle="…">` ;
 // - `annoncer('…')` ;
 // - entrées de navigation (`cle: '…'`, `cleCourte: '…'` dans `coquille/navigation.ts`) ;
-// - tuiles de langue (`cle={`langue.${…}`}`), développées avec la liste des langues.
+// - tuiles de langue (`cle={`langue.${…}`}`), développées avec la liste des langues ;
+// - guides vocaux des écrans : toute chaîne littérale `'guide.…'` (espace réservé, `useGuideVocal('guide.caisse')`),
+//   toujours essentiels et rattachés à l'écran du fichier.
 
 /** Écrans dans l'ordre d'apparition (parcours d'encaissement d'abord). `essentielle` = parcours d'encaissement + langue. */
 export const ECRANS = [
   { motif: 'ecrans/Langue.tsx', ecran: 'langue', libelle: 'Choix de la langue', essentielle: true },
+  { motif: 'ecrans/langue/', ecran: 'langue', libelle: 'Choix de la langue', essentielle: true },
   { motif: 'ecrans/landing/', ecran: 'landing', libelle: 'Page de présentation', essentielle: true },
   { motif: 'ecrans/Accueil.tsx', ecran: 'accueil', libelle: 'Accueil', essentielle: true },
   { motif: 'ecrans/auth/Connexion.tsx', ecran: 'connexion', libelle: 'Connexion', essentielle: true },
@@ -46,7 +49,146 @@ export const ECRANS = [
 export const CODES_LANGUE = ['wo', 'srr', 'ff', 'dyo', 'fr', 'en']
 
 /** Composants dont chaque utilisation doit porter une clé vocale. */
-export const COMPOSANTS_ACTION = ['Bouton', 'BoutonLien', 'BoutonIcone', 'Onglet']
+export const COMPOSANTS_ACTION = ['Bouton', 'BoutonLien', 'BoutonIcone', 'Onglet', 'Champ', 'Selection', 'Interrupteur', 'ChampMotDePasse', 'ChampIdentifiant', 'Dialogue']
+
+/**
+ * Fichiers d'un AUTRE CHANTIER (agent « articles pour les personnes qui ne savent pas écrire ») : il pose lui-même
+ * ses haut-parleurs ; exclus du garde-fou tant que son travail n'est pas fusionné (leurs clés restent au registre).
+ */
+export const FICHIERS_AUTRE_CHANTIER = ['ecrans/Articles.tsx', 'ecrans/articles/', 'ecrans/caisse/Articles.tsx']
+
+function autreChantier(chemin) {
+  const c = chemin.replace(/\\/g, '/')
+  return FICHIERS_AUTRE_CHANTIER.some((m) => (m.endsWith('/') ? c.startsWith(m) || c.includes(`/${m}`) : c === m || c.endsWith(`/${m}`)))
+}
+
+/** Éléments bruts actionnables contrôlés par `elementsBrutsSansVoix`. */
+export const ELEMENTS_BRUTS = ['button', 'a', 'summary', 'Link', 'NavLink']
+
+/**
+ * Exceptions au garde-fou des éléments bruts : fichier (ou dossier terminé par `/`) + motif cherché dans l'élément
+ * (balise ouvrante et contenu) + raison. La plus courte possible : toute nouvelle exception doit être justifiée ici.
+ */
+export const EXCEPTIONS_ELEMENTS_BRUTS = [
+  { fichier: 'composants/', motif: /./, raison: 'Primitives (Bouton, BoutonIcone, Segment, Menu, Pagination…) : elles reçoivent la clé `voix` en prop et posent elles-mêmes le haut-parleur ; leurs utilisations sont contrôlées.' },
+  { fichier: 'ecrans/caisse/Pave.tsx', motif: /./, raison: 'Touches chiffrées du pavé : le chiffre se reconnaît sans lire ; un haut-parleur sur chaque touche gênerait la saisie rapide.' },
+  { fichier: 'coquille/', motif: /<Marque\b/, raison: "Logo SatsPoint (et nom de la boutique) qui ramène à l'accueil : reconnaissable sans lire, comme dans toutes les applications." },
+  { fichier: 'ecrans/landing/Landing.tsx', motif: /className="marque"/, raison: 'Logo SatsPoint qui ramène en haut de la même page (aucune action).' },
+  { fichier: 'ecrans/landing/Landing.tsx', motif: /^<a href="#(comment|fonctions|securite|faq)">/, raison: "Menu d'ancres de la page de présentation (bureau) : il ne fait que défiler dans la page, que le guide vocal de l'écran explique." },
+  { fichier: 'voix/BoutonGuide.tsx', motif: /./, raison: "Bouton « Réécouter l'aide » : c'est lui-même l'aide vocale (il parle quand on le touche)." },
+  { fichier: 'ecrans/admin/console/MoyensAdmin.tsx', motif: /role="radio"[\s\S]*classesCouleur/, raison: 'Pastilles de couleur du moyen de paiement (console super-admin) : la couleur se voit, son nom est en infobulle.' },
+  { fichier: 'ecrans/auth/ChampIdentifiant.tsx', motif: /tabIndex=\{-1\}/, raison: "Croix « oublier » d'une suggestion, non focalisable, à l'intérieur d'une ligne de suggestion (donnée saisie par la personne)." },
+  { fichier: 'ecrans/ventes/LigneVente.tsx', motif: /./, raison: "Ligne de la liste des ventes : c'est une donnée (numéro, montant, statut en couleur et icône) ; le guide vocal de l'écran explique qu'on la touche pour le détail." },
+  { fichier: 'ecrans/admin/studio/Matrice.tsx', motif: /./, raison: 'Cases de la matrice du studio (une par clé et par langue) : données de travail de la super-admin, pas des actions de l\'application.' },
+]
+
+/** Fin de la balise ouvrante (indice du `>`), accolades et chaînes respectées ; `auto` = balise auto-fermante. */
+function finBaliseOuvrante(code, i) {
+  let profondeur = 0
+  let guillemet = null
+  while (i < code.length) {
+    const c = code[i]
+    if (guillemet) {
+      if (c === '\\') i++
+      else if (c === guillemet) guillemet = null
+    } else if (c === '"' || c === "'" || (profondeur > 0 && c === '`')) guillemet = c
+    else if (c === '{') profondeur++
+    else if (c === '}') profondeur--
+    else if (c === '>' && profondeur === 0) return { fin: i, auto: code[i - 1] === '/' }
+    i++
+  }
+  return { fin: code.length, auto: true }
+}
+
+/** Indice juste après la balise fermante correspondante `</nom>` (balises de même nom imbriquées comptées). */
+function finElement(code, nom, depuis) {
+  const re = new RegExp(`<(/?)${nom}(?=[\\s/>])`, 'g')
+  re.lastIndex = depuis
+  let profondeur = 1
+  let m
+  while ((m = re.exec(code))) {
+    if (m[1] === '/') {
+      profondeur--
+      if (profondeur === 0) return code.indexOf('>', m.index) + 1
+    } else {
+      const { fin, auto } = finBaliseOuvrante(code, re.lastIndex)
+      if (!auto) profondeur++
+      re.lastIndex = fin
+    }
+  }
+  return code.length
+}
+
+/** Attributs JSX sans le contenu des accolades (`pied={<Bouton voix="x" />}` → `pied={}`). */
+function premierNiveau(attributs) {
+  let sortie = ''
+  let profondeur = 0
+  for (const c of attributs) {
+    if (c === '{') {
+      if (profondeur === 0) sortie += c
+      profondeur++
+    } else if (c === '}') {
+      profondeur--
+      if (profondeur === 0) sortie += c
+    } else if (profondeur === 0) sortie += c
+  }
+  return sortie
+}
+
+/** Indice de la parenthèse fermante qui correspond à celle ouverte en `i`. */
+function parentheseFermante(code, i) {
+  let profondeur = 0
+  for (let j = i; j < code.length; j++) {
+    if (code[j] === '(') profondeur++
+    else if (code[j] === ')' && --profondeur === 0) return j
+  }
+  return code.length
+}
+
+/**
+ * Un haut-parleur frère suit-il immédiatement l'élément (`<HautParleur`, `<span …><HautParleur`, `{x && <HautParleur`) ?
+ * Les fins de condition ou de liste (`)}`) et la branche « sinon » d'une alternative (`) : (…)`) sont sautées :
+ * `{lien ? <a>…</a> : <button>…</button>}<HautParleur/>` couvre les deux branches.
+ */
+function hautParleurApres(code, i) {
+  let j = i
+  for (let n = 0; n < 4; n++) {
+    j += /^(\s|\{' '\}|\)|\})*/.exec(code.slice(j))[0].length
+    if (code[j] !== ':') break
+    const ouvrante = code.indexOf('(', j)
+    if (ouvrante < 0 || ouvrante - j > 4) break
+    j = parentheseFermante(code, ouvrante) + 1
+  }
+  const suite = code.slice(j, j + 400)
+  return /^<HautParleur\b/.test(suite) || /^<span\b[^<]*>\s*<HautParleur\b/.test(suite) || /^\{[^{}<]*<HautParleur\b/.test(suite)
+}
+
+/**
+ * Éléments bruts actionnables (`<button>`, `<a>`, `<summary>`, `<Link>`, `<NavLink>`) sans aide vocale.
+ * Accepté si : l'élément contient `<HautParleur` ou porte `voix=` ; ou un `<HautParleur>` frère le suit immédiatement ;
+ * ou il figure dans EXCEPTIONS_ELEMENTS_BRUTS. Heuristique textuelle volontairement simple (pas d'analyse du JSX complet).
+ */
+export function elementsBrutsSansVoix(fichiers, exceptions = EXCEPTIONS_ELEMENTS_BRUTS) {
+  const resultats = []
+  for (const f of fichiers) {
+    const chemin = f.chemin.replace(/\\/g, '/')
+    if (autreChantier(chemin) || !/\.tsx$/.test(chemin)) continue
+    const code = sansCommentaires(f.contenu)
+    const re = new RegExp(`<(${ELEMENTS_BRUTS.join('|')})(?=[\\s/>])`, 'g')
+    let m
+    while ((m = re.exec(code))) {
+      const nom = m[1]
+      const { fin, auto } = finBaliseOuvrante(code, re.lastIndex)
+      const ouvrante = code.slice(m.index, fin + 1)
+      const finEl = auto ? fin + 1 : finElement(code, nom, fin + 1)
+      const element = code.slice(m.index, finEl)
+      if (/\bvoix=/.test(ouvrante) || /<HautParleur\b/.test(element) || hautParleurApres(code, finEl)) continue
+      if (exceptions.some((e) => (e.fichier.endsWith('/') ? chemin.startsWith(e.fichier) : chemin === e.fichier) && e.motif.test(element))) continue
+      resultats.push({ fichier: chemin, ligne: ligneDe(code, m.index), element: nom })
+    }
+  }
+  return resultats
+}
 
 const TYPES = {
   Bouton: 'Bouton',
@@ -57,7 +199,13 @@ const TYPES = {
   TitreAuth: "Titre de l'écran",
   Interrupteur: 'Interrupteur',
   HautParleur: 'Texte lu',
+  Champ: 'Champ',
+  Selection: 'Liste de choix',
 }
+
+/** Préfixe réservé aux guides vocaux des écrans (clés i18n du paquet `guide`). */
+export const PREFIXE_GUIDE = 'guide.'
+const TYPE_GUIDE = 'Guide vocal'
 
 const MOTIF_CLE = /^[a-z][a-zA-Z0-9_]*(\.[a-zA-Z0-9_]+)+$/
 
@@ -252,10 +400,15 @@ export function occurrencesFichier(chemin, source) {
     const dernierNotifier = avant.lastIndexOf('notifier(')
     const type = dernierNotifier >= 0 && !/\}\s*\)/.test(avant.slice(dernierNotifier)) ? 'Message' : 'Choix'
     for (const cle of litterauxCles(expression)) ajouter(cle, m.index, type)
+    // Gabarit `prefixe.${…}` (périodes, opérateurs…) : développé avec les clés de traduction du préfixe.
+    for (const g of expression.matchAll(/`([a-z][a-zA-Z0-9_]*(?:\.[a-zA-Z0-9_]+)*)\.\$\{[^`]+\}`/g)) ajouter(`${g[1]}.*`, m.index, type)
   }
 
   // Annonces automatiques.
   for (const m of code.matchAll(/\bannoncer\(\s*["']([^"']+)["']/g)) if (MOTIF_CLE.test(m[1])) ajouter(m[1], m.index, 'Annonce automatique')
+
+  // Guides vocaux des écrans (chaînes littérales `'guide.…'`).
+  for (const m of code.matchAll(/["'](guide\.[a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)*)["']/g)) ajouter(m[1], m.index, TYPE_GUIDE)
 
   // Entrées de navigation.
   if (chemin.replace(/\\/g, '/').endsWith('coquille/navigation.ts')) {
@@ -316,21 +469,28 @@ export function construireRegistre(fichiers, fr, en) {
         contexte: `${o.type} — ${f.infos.libelle}`,
         texte_fr: texte_fr ?? '',
         texte_en: texte_en ?? '',
-        essentielle: f.infos.essentielle,
+        // Les guides (`guide.…`) sont essentiels : c'est lui qui explique l'écran à qui ne lit pas.
+        essentielle: f.infos.essentielle || o.cle.startsWith(PREFIXE_GUIDE),
       })
     }
   }
-  return { registre: [...vues.values()], manquantes }
+  // Les essentielles d'abord (studio : à enregistrer en premier), chaque groupe dans l'ordre d'apparition.
+  const entrees = [...vues.values()]
+  return { registre: [...entrees.filter((e) => e.essentielle), ...entrees.filter((e) => !e.essentielle)], manquantes }
 }
 
-/** Utilisations de Bouton / BoutonLien / BoutonIcone / Onglet sans prop `voix` (les relais `{...reste}` sont tolérés). */
+/** Utilisations des composants d'action (boutons, onglets, champs, listes, interrupteurs) sans prop `voix` (les relais `{...reste}` sont tolérés). */
 export function boutonsSansVoix(fichiers) {
   const resultats = []
   for (const f of fichiers) {
     const code = sansCommentaires(f.contenu)
+    if (autreChantier(f.chemin)) continue
     for (const b of balisesJsx(code)) {
       if (!COMPOSANTS_ACTION.includes(b.nom)) continue
-      if (/\bvoix=/.test(b.attributs) || /\{\s*\.\.\./.test(b.attributs)) continue
+      // `voix=` cherché au premier niveau seulement : un <Bouton voix> passé dans `pied={…}` ne compte pas pour la fenêtre.
+      if (/\bvoix=/.test(premierNiveau(b.attributs)) || /\{\s*\.\.\./.test(b.attributs)) continue
+      // Fenêtre : titre masqué (lu par les lecteurs d'écran seulement) ou titre qui porte déjà son propre haut-parleur.
+      if (b.nom === 'Dialogue' && (/\btitreMasque\b/.test(b.attributs) || /<HautParleur\b/.test(b.attributs))) continue
       resultats.push({ fichier: f.chemin.replace(/\\/g, '/'), ligne: ligneDe(code, b.debut), composant: b.nom })
     }
   }

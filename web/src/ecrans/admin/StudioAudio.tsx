@@ -30,6 +30,8 @@ import { MatriceBureau, MatriceMobile } from './studio/Matrice'
 import { PanneauEnregistrement } from './studio/PanneauEnregistrement'
 import { brouillons, filtrerCles, languesDuFiltre, prochaineManquante, voisine, type FiltresStudio } from './studio/selection'
 import { useEnregistreur } from './studio/useEnregistreur'
+import { useGuideVocal } from '@/voix/guide'
+import { invaliderManifestes } from '@/voix/useManifesteAudio'
 
 const CLE_LANGUE = 'satspoint.studio.langue'
 const CLE_RAFALE = 'satspoint.studio.rafale'
@@ -43,6 +45,7 @@ const CLES_PAR_PAGE = 50
  */
 export default function StudioAudio() {
   const { t, i18n } = useTranslation()
+  useGuideVocal('guide.studio')
   const messageErreur = useMessageErreur()
   const bureau = useEstBureau()
   const requete = useMatriceAudio()
@@ -148,6 +151,7 @@ export default function StudioAudio() {
     onSuccess: ({ publies }) => {
       setConfirmationLot(false)
       invalider()
+      invaliderManifestes()
       notifier({ type: 'succes', titre: t('studio.lotPublie', { count: publies, langue: nomLangue }), voix: 'studio.publie' })
     },
     onError: (e) => notifier({ type: 'erreur', titre: messageErreur(e) }),
@@ -231,7 +235,7 @@ export default function StudioAudio() {
             />
             {catalogue.pays.length > 1 && (
               <Selection
-                libelle={t('studio.pays')}
+                libelle={t('studio.pays')} voix="studio.pays"
                 libelleVisible={false}
                 taille="sm"
                 value={pays}
@@ -299,6 +303,7 @@ export default function StudioAudio() {
         onOuvertChange={setConfirmationLot}
         titre={t('studio.publierToutTitre', { count: idsBrouillons.length, langue: nomLangue })}
         description={t('studio.publierToutTexte')}
+        voix="studio.publierToutTexte"
         taille="sm"
         pied={
           <>

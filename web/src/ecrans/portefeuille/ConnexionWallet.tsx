@@ -22,6 +22,7 @@ import { queryClient } from '@/lib/queryClient'
 import { copier } from '@/lib/retours'
 import { tempsRelatif } from '@/lib/temps'
 import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
+import { HautParleur } from '@/voix/HautParleur'
 
 function invaliderTout() {
   void queryClient.invalidateQueries({ queryKey: CLE_WALLET })
@@ -64,7 +65,7 @@ export function FormulaireConnexionWallet({ onConnecte, className }: { onConnect
   return (
     <form onSubmit={soumettre} noValidate className={cn('flex flex-col gap-3', className)}>
       <Champ
-        libelle={t('portefeuille.uri')}
+        libelle={t('portefeuille.uri')} voix="portefeuille.uri"
         aide={t('portefeuille.uriAide')}
         type="password"
         autoComplete="off"
@@ -74,10 +75,13 @@ export function FormulaireConnexionWallet({ onConnecte, className }: { onConnect
         onChange={(e) => setUri(e.target.value)}
         erreur={erreur}
       />
-      <button type="button" onClick={() => setAideOuverte((v) => !v)} aria-expanded={aideOuverte} className="inline-flex items-center gap-1 self-start text-sm font-medium text-accent-texte hover:underline">
-        {t('portefeuille.quelsPortefeuilles')}
-        {aideOuverte ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
-      </button>
+      <span className="inline-flex items-center gap-0.5 self-start">
+        <button type="button" onClick={() => setAideOuverte((v) => !v)} aria-expanded={aideOuverte} className="inline-flex items-center gap-1 text-sm font-medium text-accent-texte hover:underline">
+          {t('portefeuille.quelsPortefeuilles')}
+          {aideOuverte ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
+        </button>
+        <HautParleur cle="portefeuille.quelsPortefeuilles" />
+      </span>
       {aideOuverte && <p className="rounded-md bg-surface-2 px-3 py-2 text-sm text-texte-2">{t('portefeuille.aidePortefeuilles')}</p>}
       <Bouton type="submit" icone={<Link2 />} voix="portefeuille.connecter" chargement={connexion.isPending} pleineLargeur className="md:self-start md:w-auto">
         {t('portefeuille.connecter')}
@@ -190,7 +194,7 @@ export function ConnexionWallet({ wallet, proprietaire, compact, onConnecte }: P
       <Dialogue
         ouvert={revocationOuverte}
         onOuvertChange={setRevocationOuverte}
-        titre={t('portefeuille.revoquerTitre')}
+        titre={t('portefeuille.revoquerTitre')} voix="portefeuille.revoquerTitre"
         description={t('portefeuille.revoquerTexte')}
         taille="sm"
         pied={

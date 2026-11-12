@@ -13,6 +13,7 @@
 | **Merchant and staff accounts** | Access to sales, settings, team; owner can send sats. | `users`, `membres`, sessions |
 | **Sales data** | Business confidentiality between shops. | All `boutique_id`-scoped tables |
 | **Voice assets** | Published to everyone; a malicious file would reach every device. | `audios`, object storage |
+| **Item photos and spoken names** | Uploaded by shop staff from phones; a crafted file must never reach other screens, and a phone photo can carry GPS position. | `article_fichiers` (bytea, per shop) |
 
 Customers paying at the till are **anonymous**: SatsPoint stores no customer PII by default.
 
@@ -104,6 +105,19 @@ Severity: 🔴 high · 🟠 medium · 🟡 low. Status: ✅ implemented in MVP �
 | T31 | **IDOR**: a shop activates or uses a method of another country / one it never enabled | Elevation | 🟠 | Method resolved by ULID **and** active **and** same country as the shop → otherwise the same 404 (settings) or 409 `MOYEN_INACTIF` (till); configuration rows under `BoutiqueScope`; Pest tests for cross-country and cross-shop access. | ✅ |
 | T32 | Sale marked paid without the money (manual confirmation) | Repudiation | 🟡 | Same guard rails as direct Wave: owner/manager only, explicit confirmation dialog, audit `paiement.confirme_manuellement` (method + method name), flagged as manual in reports. Residual risk accepted: no operator API to verify the transfer. | ✅ / residual |
 
+### 4.5 ter Item photos and spoken names (uploads by shop staff)
+
+New upload surface (11 November): owners and managers attach a **photo** (taken with the phone camera) and a **spoken name** to an item so that merchants who cannot read recognise it; cashiers only view and play them.
+
+| # | Threat | Category | Sev. | Mitigation | Status |
+|---|---|---|---|---|---|
+| T33 | **Malicious file disguised as a photo** (PHP/HTML/SVG polyglot, script with `.jpg` extension) served back to every till | Tampering / XSS | 🟠 | Real type checked by **binary signature** (JPEG, PNG, WebP only — SVG and GIF refused), header dimensions cross-checked with `getimagesize`, then the image is **always re-encoded by GD** into a brand-new WebP: no byte of the upload is ever served. Served as `image/webp` with `nosniff`, `Content-Disposition: inline` and the API's `default-src 'none'` CSP; React renders it in `<img>` only. Server-generated content-addressed URLs, no user-supplied path. | ✅ |
+| T34 | **Decompression bomb / memory exhaustion** (tiny file declaring 20 000 × 20 000 px) on a 512 MB free-tier host | DoS | 🟠 | Upload ≤ 4 MB (PHP and FormRequest), dimensions read from the header **before decoding** (≤ 12 000 px per side, ≤ 25 Mpx), output ≤ 512 px; voice ≤ 1 MB and ≤ 7 s (ffprobe) with ffmpeg fixed parameters and timeout (studio pipeline); 30 uploads/min per user. | ✅ |
+| T35 | **Location leak**: phone photos embed GPS coordinates and device data in EXIF | Information disclosure | 🟠 | Orientation is read (bounded parser, 64 KB, IFD0 tag only) and applied, then the **re-encoded WebP carries no metadata at all** (Pest test asserts an EXIF marker planted in the upload is absent). The browser also downsizes the photo before upload (canvas, 1024 px). | ✅ |
+| T36 | **IDOR / cross-shop access** to item photos or voices (guessing ULIDs) | Elevation / Disclosure | 🟠 | Files are reached only through `/api/v1/articles/{ulid}/photo|voix`: session required, item resolved under `BoutiqueScope` (foreign item → 404, indistinguishable from a missing one), Policy `view`; file rows carry `boutique_id` and are read with `article_id` **and** `boutique_id`. Upload/delete: Policy `update` checked in the FormRequest **before** validation (cashier → 403). The automated IDOR sweep covers the six new routes. | ✅ |
+| T37 | **Shared-cache leak** of a shop's photos (CDN or proxy) | Information disclosure | 🟡 | `Cache-Control: private` (never `public`), long lifetime only on the exact versioned URL, `Vary: Cookie`, ETag = SHA-256; no public route, the public receipt shows only the **pictogram id**, never the photo. | ✅ |
+| T38 | An item left **without any identity** (all media deleted) — unusable till for a non-reader | Integrity | 🟡 | Server rule + DB `CHECK` (name, pictogram, photo or voice); deleting the last one returns `422 ARTICLE_SANS_IDENTITE`; every change audited (`article.photo_ajoutee`, `article.voix_supprimee`…, sizes only, never content). | ✅ |
+
 ### 4.6 Privacy
 
 | # | Threat | Category | Sev. | Mitigation | Status |
@@ -118,6 +132,7 @@ Severity: 🔴 high · 🟠 medium · 🟡 low. Status: ✅ implemented in MVP �
 3. **PayTech test mode** during the hackathon: real mobile-money settlement requires account activation by PayTech.
 4. **Free-tier hosting** (Render) may sleep; mitigated by uptime pings during judging. Not a security issue, noted for transparency.
 5. **Country payment methods outside Senegal** are confirmed by hand (no operator API): the merchant must check the money really arrived before confirming (T32).
+6. **Item photos are stored in PostgreSQL** (Neon free tier, 0.5 GB): ~20–40 KB per re-encoded WebP and ~10–30 KB per voice, i.e. a few MB per shop; bounded by the upload limits, to be moved to object storage beyond the pilot.
 
 ## 6. Verification
 

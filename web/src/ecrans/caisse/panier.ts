@@ -18,3 +18,4 @@ export function ajouterAuPanier(panier: LignePanier[], article: Article): LigneP
 export function changerQuantite(panier: LignePanier[], ulid: string, delta: number): LignePanier[] {
   return panier.map((l) => (l.article.ulid === ulid ? { ...l, quantite: l.quantite + delta } : l)).filter((l) => l.quantite > 0)
 }
+

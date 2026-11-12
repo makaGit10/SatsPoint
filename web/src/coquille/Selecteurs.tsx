@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { localeCourante, LOCALES } from '@/i18n'
 import { cn } from '@/lib/cn'
 import { themeEffectif, useTheme } from '@/lib/theme'
+import { HautParleur } from '@/voix/HautParleur'
 import { usePreferences } from './usePreferences'
 
 /**
@@ -24,7 +25,7 @@ export function SelecteurTheme({ className }: { className?: string }) {
       title={libelle}
       data-theme-actuel={sombre ? 'sombre' : 'clair'}
       className={cn(
-        'zone-tactile relative inline-flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full text-texte-2 transition-colors duration-200 hover:bg-surface-2 hover:text-texte',
+        'zone-tactile relative inline-flex size-10 shrink-0 items-center justify-center rounded-full text-texte-2 transition-colors duration-200 hover:bg-surface-2 hover:text-texte',
         className,
       )}
     >
@@ -36,6 +37,8 @@ export function SelecteurTheme({ className }: { className?: string }) {
         aria-hidden="true"
         className={cn('absolute size-[18px] transition-all duration-300 ease-out', sombre ? 'scale-100 rotate-0 opacity-100' : 'scale-50 rotate-90 opacity-0')}
       />
+      {/* Dit le thème proposé (celui qu'un toucher appliquera). */}
+      <HautParleur cle={sombre ? 'theme.clair' : 'theme.sombre'} dansBouton coin="-top-1 -right-1" />
     </button>
   )
 }
@@ -66,11 +69,12 @@ export function SelecteurLangue({ className }: { className?: string }) {
               if (!actif) changerLocale(v)
             }}
             className={cn(
-              'inline-flex h-8 min-w-9 items-center justify-center rounded-full px-2.5 text-xs font-bold tracking-wide uppercase transition-all duration-200',
+              'relative inline-flex h-8 min-w-9 items-center justify-center rounded-full px-2.5 text-xs font-bold tracking-wide uppercase transition-all duration-200',
               actif ? 'bg-texte text-fond shadow-sm' : 'text-texte-2 hover:text-texte',
             )}
           >
             {v}
+            <HautParleur cle={v === 'en' ? 'langue.en' : 'langue.fr'} dansBouton coin="-top-1.5 -right-1" />
           </button>
         )
       })}

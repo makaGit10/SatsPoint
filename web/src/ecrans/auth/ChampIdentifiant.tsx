@@ -20,6 +20,7 @@ function libelleSuggestion(valeur: string): string {
  */
 export function ChampIdentifiant({
   libelle,
+  voix,
   saisie,
   onChange,
   erreur,
@@ -29,6 +30,8 @@ export function ChampIdentifiant({
   onOublier,
 }: {
   libelle: string
+  /** Clé vocale du libellé. */
+  voix?: string
   saisie: SaisieIdentifiant
   onChange: (saisie: SaisieIdentifiant) => void
   erreur?: ReactNode
@@ -134,6 +137,7 @@ export function ChampIdentifiant({
         }
       }}
       libelle={libelle}
+      voix={voix}
       name="identifiant"
       autoComplete="username"
       inputMode="email"

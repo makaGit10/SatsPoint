@@ -88,6 +88,16 @@ const PAQUETS = {
     fr: () => import('./landing.fr.json').then((m) => m.default as Record<string, unknown>),
     en: () => import('./landing.en.json').then((m) => m.default as Record<string, unknown>),
   },
+  // Encaissement (demande de paiement, écran vert) : aussi lu par le détail d'une vente et le portefeuille (recevoir).
+  paiement: {
+    fr: () => import('./paiement.fr.json').then((m) => m.default as Record<string, unknown>),
+    en: () => import('./paiement.en.json').then((m) => m.default as Record<string, unknown>),
+  },
+  // Articles : écran, formulaire sans écrire, noms des pictogrammes, guide vocal (aussi chargé par la grille de la caisse).
+  articles: {
+    fr: () => import('./articles.fr.json').then((m) => m.default as Record<string, unknown>),
+    en: () => import('./articles.en.json').then((m) => m.default as Record<string, unknown>),
+  },
   // Guides vocaux des écrans (textes lus par la voix du navigateur tant qu'aucun enregistrement n'est publié)
   // et feuille « Aide vocale » (voix/guide.ts, voix/FeuilleVoix.tsx).
   guide: {

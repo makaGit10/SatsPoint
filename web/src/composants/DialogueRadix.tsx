@@ -3,11 +3,13 @@ import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/cn'
+import { HautParleur } from '@/voix/HautParleur'
 import { BoutonIcone } from './BoutonIcone'
 
 export interface PropsDialogueRadix {
   onFermer: () => void
   titre: ReactNode
+  voix?: string
   description?: ReactNode
   children?: ReactNode
   pied?: ReactNode
@@ -19,7 +21,7 @@ export interface PropsDialogueRadix {
 const TAILLES = { sm: 'md:max-w-sm', md: 'md:max-w-md', lg: 'md:max-w-2xl' } as const
 
 /** Implémentation Radix de la fenêtre modale, chargée à la première ouverture. */
-export default function DialogueRadix({ onFermer, titre, description, children, pied, taille = 'md', titreMasque, className }: PropsDialogueRadix) {
+export default function DialogueRadix({ onFermer, titre, voix, description, children, pied, taille = 'md', titreMasque, className }: PropsDialogueRadix) {
   const { t } = useTranslation()
   return (
     <Dialog.Root open onOpenChange={(ouvert) => !ouvert && onFermer()}>
@@ -38,7 +40,10 @@ export default function DialogueRadix({ onFermer, titre, description, children, 
         >
           <div className="flex items-start gap-3 px-5 pt-5 pb-3 md:px-6 md:pt-6">
             <div className="min-w-0 flex-1">
-              <Dialog.Title className={cn('text-xl titre-serre text-texte', titreMasque && 'sr-only')}>{titre}</Dialog.Title>
+              <div className={cn('flex items-center gap-1', titreMasque && 'sr-only')}>
+                <Dialog.Title className="min-w-0 text-xl titre-serre text-texte">{titre}</Dialog.Title>
+                {voix && <HautParleur cle={voix} taille={16} className="-my-1 shrink-0" />}
+              </div>
               {description ? (
                 <Dialog.Description className="mt-1 text-sm text-texte-3">{description}</Dialog.Description>
               ) : (

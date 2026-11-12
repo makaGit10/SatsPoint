@@ -18,10 +18,12 @@ import { ConnexionWallet } from './portefeuille/ConnexionWallet'
 import { Envoyer } from './portefeuille/Envoyer'
 import { Historique } from './portefeuille/Historique'
 import { Recevoir } from './portefeuille/Recevoir'
+import { useGuideVocal } from '@/voix/guide'
 
 /** Portefeuille Lightning du commerçant : solde, recevoir, envoyer (propriétaire), historique, connexion NWC. */
 export default function Portefeuille() {
   const { t, i18n } = useTranslation()
+  useGuideVocal('guide.portefeuille')
   void i18n.language
   const utilisateur = useAuth((s) => s.utilisateur)
   const proprietaire = peut(utilisateur, ['proprietaire'])
@@ -72,12 +74,13 @@ export default function Portefeuille() {
             {verifie && connecte && <p className="mt-0.5 text-xs text-texte-3">{t('portefeuille.verifieLe', { quand: t(verifie.cle, { count: verifie.count }) })}</p>}
           </div>
         )}
-        <div className="flex gap-2">
-          <Bouton taille="lg" icone={<ArrowDownLeft />} voix="portefeuille.recevoir" disabled={!connecte} onClick={() => setRecevoirOuvert(true)} className="flex-1">
+        {/* Colonnes égales qui peuvent rétrécir : les deux boutons tiennent côte à côte à 390 px sans déborder. */}
+        <div className="grid auto-cols-fr grid-flow-col gap-2 [&>*]:min-w-0">
+          <Bouton taille="lg" icone={<ArrowDownLeft />} voix="portefeuille.recevoir" disabled={!connecte} onClick={() => setRecevoirOuvert(true)} pleineLargeur className="px-3! md:px-6!">
             {t('portefeuille.recevoir')}
           </Bouton>
           {proprietaire && (
-            <Bouton taille="lg" variante="secondaire" icone={<ArrowUpRight />} voix="portefeuille.envoyer" disabled={!connecte} onClick={() => setEnvoyerOuvert(true)} className="flex-1">
+            <Bouton taille="lg" variante="secondaire" icone={<ArrowUpRight />} voix="portefeuille.envoyer" disabled={!connecte} onClick={() => setEnvoyerOuvert(true)} pleineLargeur className="px-3! md:px-6!">
               {t('portefeuille.envoyer')}
             </Bouton>
           )}

@@ -7,6 +7,7 @@ import { useDeconnexion } from '@/auth/useMoi'
 import { Bouton, BoutonLien } from '@/composants/Bouton'
 import { Dialogue } from '@/composants/Dialogue'
 import { cn } from '@/lib/cn'
+import { HautParleur } from '@/voix/HautParleur'
 import { initiales } from '@/lib/format'
 import { SqueletteTexte } from '@/composants/Squelette'
 
@@ -55,12 +56,14 @@ export function MenuUtilisateur() {
         className="zone-tactile inline-flex size-9 items-center justify-center rounded-full outline-none hover:ring-2 hover:ring-bordure-forte"
       >
         <Avatar nom={utilisateur.nom} />
+        <HautParleur cle="entete.menuUtilisateur" dansBouton coin="-top-1.5 -right-0.5" />
       </button>
 
       <Dialogue
         ouvert={ouvert}
         onOuvertChange={setOuvert}
         taille="sm"
+        voix="entete.menuUtilisateur"
         titre={
           <span className="flex items-center gap-2.5">
             <Avatar nom={utilisateur.nom} />

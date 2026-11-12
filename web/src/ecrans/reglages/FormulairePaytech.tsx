@@ -88,8 +88,8 @@ export function FormulairePaytech({ boutique, proprietaire }: { boutique: Boutiq
       <CarteEnTete titre={t('reglages.paytechTitre')} sousTitre={t('reglages.paytechTexte')} actions={etat} className="mb-2" />
       {proprietaire ? (
         <form onSubmit={soumettre} noValidate className="flex flex-col gap-3">
-          <ChampMotDePasse libelle={t('reglages.apiKey')} name="paytech_api_key" autoComplete="off" value={apiKey} onChange={(e) => setApiKey(e.target.value)} erreur={erreursChamps.api_key} aide={configure ? t('reglages.secretAide') : undefined} />
-          <ChampMotDePasse libelle={t('reglages.apiSecret')} name="paytech_api_secret" autoComplete="off" value={apiSecret} onChange={(e) => setApiSecret(e.target.value)} erreur={erreursChamps.api_secret} aide={configure ? t('reglages.secretAide') : undefined} />
+          <ChampMotDePasse libelle={t('reglages.apiKey')} voix="reglages.apiKey" name="paytech_api_key" autoComplete="off" value={apiKey} onChange={(e) => setApiKey(e.target.value)} erreur={erreursChamps.api_key} aide={configure ? t('reglages.secretAide') : undefined} />
+          <ChampMotDePasse libelle={t('reglages.apiSecret')} voix="reglages.apiSecret" name="paytech_api_secret" autoComplete="off" value={apiSecret} onChange={(e) => setApiSecret(e.target.value)} erreur={erreursChamps.api_secret} aide={configure ? t('reglages.secretAide') : undefined} />
           <div className="flex flex-col gap-1">
             <p className="text-sm font-medium text-texte-2">{t('reglages.environnement')}</p>
             <Segment<Environnement>
@@ -97,8 +97,8 @@ export function FormulairePaytech({ boutique, proprietaire }: { boutique: Boutiq
               valeur={environnement}
               onChange={setEnvironnement}
               options={[
-                { valeur: 'test', libelle: t('reglages.test') },
-                { valeur: 'prod', libelle: t('reglages.prod') },
+                { valeur: 'test', libelle: t('reglages.test'), voix: 'reglages.test' },
+                { valeur: 'prod', libelle: t('reglages.prod'), voix: 'reglages.prod' },
               ]}
             />
           </div>
@@ -125,7 +125,7 @@ export function FormulairePaytech({ boutique, proprietaire }: { boutique: Boutiq
       <Dialogue
         ouvert={suppressionOuverte}
         onOuvertChange={setSuppressionOuverte}
-        titre={t('reglages.supprimerTitre')}
+        titre={t('reglages.supprimerTitre')} voix="reglages.supprimerTitre"
         description={t('reglages.supprimerTexte')}
         taille="sm"
         pied={

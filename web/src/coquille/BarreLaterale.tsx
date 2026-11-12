@@ -58,7 +58,7 @@ export function BarreLaterale() {
             >
               <Icone size={19} strokeWidth={actif ? 2.2 : 1.9} className={cn('shrink-0', actif && 'text-accent')} aria-hidden="true" />
               {!repliee && <span className="flex-1 truncate">{t(e.cle)}</span>}
-              {!repliee && <HautParleur cle={e.cle} className="opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100" />}
+              {!repliee && <HautParleur cle={e.cle} className="transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0" />}
             </NavLink>
           )
           return repliee ? (

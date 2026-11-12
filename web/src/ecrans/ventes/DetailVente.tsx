@@ -13,9 +13,12 @@ import { IconeMethode, PastilleAlerte, PastilleStatutPaiement, PastilleStatutVen
 import { libelleMethode } from '@/lib/methodes'
 import { notifier } from '@/composants/toastStore'
 import { useMessageErreur } from '@/ecrans/auth/useMessageErreur'
+import { VignetteArticle } from '@/ecrans/articles/VignetteArticle'
 import { localeCourante } from '@/i18n'
 import { formaterDateHeure, formaterFCFA, formaterSats } from '@/lib/format'
 import { queryClient } from '@/lib/queryClient'
+import { useGuideVocal } from '@/voix/guide'
+import { HautParleur } from '@/voix/HautParleur'
 
 export interface PropsDetailVente {
   ulid: string | null
@@ -139,9 +142,11 @@ function Corps({ vente, gestion, onFermer }: { vente: Vente; gestion: boolean; o
       {vente.lignes.length > 0 && (
         <section className="border-t border-bordure pt-2">
           <h3 className="mb-1 text-xs font-semibold tracking-wide text-texte-3 uppercase">{t('ventes.lignes')}</h3>
-          <ul className="flex flex-col gap-0.5 text-sm">
+          <ul className="flex flex-col gap-1 text-sm">
             {vente.lignes.map((l, i) => (
               <li key={i} className="flex items-center gap-2">
+                {/* Photo ou pictogramme de l'article : la ligne se reconnaît sans lire. */}
+                {l.pictogramme || l.photo_url ? <VignetteArticle article={l} taille="sm" /> : <span className="size-8 shrink-0" aria-hidden="true" />}
                 <span className="min-w-0 flex-1 truncate text-texte">{l.libelle}</span>
                 <span className="text-xs text-texte-3 tabulaire">× {l.quantite}</span>
                 <span className="w-24 text-right font-medium text-texte tabulaire">{formaterFCFA(l.quantite * l.prix_unitaire_xof)}</span>
@@ -168,10 +173,11 @@ function Corps({ vente, gestion, onFermer }: { vente: Vente; gestion: boolean; o
             href={vente.recu_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-11 items-center gap-2 rounded-md border border-bordure bg-surface px-3.5 text-base font-medium text-texte shadow-xs hover:bg-surface-2 md:h-9"
+            className="relative inline-flex h-11 items-center gap-2 rounded-md border border-bordure bg-surface px-3.5 text-base font-medium text-texte shadow-xs hover:bg-surface-2 md:h-9"
           >
             <Receipt size={17} aria-hidden="true" />
             {t('ventes.voirRecu')}
+            <HautParleur cle="ventes.voirRecu" dansBouton />
           </a>
         )}
         {enAttente && (
@@ -201,7 +207,7 @@ function Corps({ vente, gestion, onFermer }: { vente: Vente; gestion: boolean; o
       <Dialogue
         ouvert={annulationOuverte}
         onOuvertChange={setAnnulationOuverte}
-        titre={t('paiement.annulerTitre')}
+        titre={t('paiement.annulerTitre')} voix="paiement.annulerTitre"
         description={t('paiement.annulerTexte')}
         taille="sm"
         pied={
@@ -218,7 +224,7 @@ function Corps({ vente, gestion, onFermer }: { vente: Vente; gestion: boolean; o
       <Dialogue
         ouvert={confirmationOuverte}
         onOuvertChange={setConfirmationOuverte}
-        titre={t('paiement.confirmerTitre', { montant: formaterFCFA(vente.montant_xof) })}
+        titre={t('paiement.confirmerTitre', { montant: formaterFCFA(vente.montant_xof) })} voix="paiement.confirmerTitre"
         description={waveAConfirmer?.moyen ? t('paiement.confirmerTexteMoyen', { moyen: waveAConfirmer.moyen.nom }) : t('paiement.confirmerTexte')}
         taille="sm"
         pied={
@@ -239,9 +245,10 @@ function Corps({ vente, gestion, onFermer }: { vente: Vente; gestion: boolean; o
 /** Fenêtre de détail d'une vente : lignes, tentatives, cours, horodatages, reçu, actions. */
 export function DetailVente({ ulid, onFermer, gestion }: PropsDetailVente) {
   const { t } = useTranslation()
+  useGuideVocal('guide.venteDetail', { actif: ulid !== null })
   const { data: vente, isPending, isError } = useVente(ulid)
   return (
-    <Dialogue ouvert={ulid !== null} onOuvertChange={(o) => !o && onFermer()} titre={vente ? `${t('ventes.detail')} · ${vente.numero}` : t('ventes.detail')} taille="md">
+    <Dialogue ouvert={ulid !== null} onOuvertChange={(o) => !o && onFermer()} titre={vente ? `${t('ventes.detail')} · ${vente.numero}` : t('ventes.detail')} voix="ventes.detail" taille="md">
       {isPending && (
         <div className="flex flex-col gap-3 pb-2" aria-busy="true" data-chargement="detail-vente">
           <Squelette className="h-8 w-40" />

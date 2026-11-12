@@ -116,6 +116,7 @@ function LigneMoyen({ moyen }: { moyen: MoyenBoutique }) {
           <Champ
             ref={champ}
             libelle={numero ? t('reglages.moyensPays.numero') : t('reglages.moyensPays.lien')}
+            voix={numero ? 'reglages.moyensPays.numero' : 'reglages.moyensPays.lien'}
             icone={numero ? <Phone /> : <Link2 />}
             type={numero ? 'tel' : 'url'}
             inputMode={numero ? 'tel' : 'url'}

@@ -10,9 +10,12 @@ import { MiseEnPageInvite } from '@/coquille/MiseEnPageInvite'
 import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
 import { ErreurFormulaire, TitreAuth } from './communs'
 import { useMessageErreur } from './useMessageErreur'
+import { useGuideVocal } from '@/voix/guide'
+import { HautParleur } from '@/voix/HautParleur'
 
 export default function MotDePasseOublie() {
   const { t } = useTranslation()
+  useGuideVocal('guide.motDePasseOublie')
   const demande = useDemandeReinitialisation()
   const messageErreur = useMessageErreur()
   useSaisieEnCours(!demande.isSuccess)
@@ -55,7 +58,7 @@ export default function MotDePasseOublie() {
       <TitreAuth titre={t('auth.oubli.titre')} sousTitre={t('auth.oubli.sousTitre')} voix="auth.oubli.titre" />
       <form onSubmit={soumettre} noValidate className="flex flex-col gap-3">
         <Champ
-          libelle={t('auth.oubli.identifiant')}
+          libelle={t('auth.oubli.identifiant')} voix="auth.oubli.identifiant"
           name="identifiant"
           autoComplete="username"
           inputMode="email"
@@ -71,9 +74,12 @@ export default function MotDePasseOublie() {
           {t('auth.oubli.valider')}
         </Bouton>
       </form>
-      <Link to="/connexion" className="mt-6 self-center text-sm font-medium text-accent-texte hover:underline">
-        {t('auth.oubli.retourConnexion')}
-      </Link>
+      <div className="mt-6 flex items-center gap-0.5 self-center">
+        <Link to="/connexion" className="text-sm font-medium text-accent-texte hover:underline">
+          {t('auth.oubli.retourConnexion')}
+        </Link>
+        <HautParleur cle="auth.oubli.retourConnexion" />
+      </div>
     </MiseEnPageInvite>
   )
 }

@@ -12,6 +12,7 @@ import { BoutiquesAdmin } from './console/Boutiques'
 import { JournalAdmin } from './console/Journal'
 import { SanteAdmin } from './console/Sante'
 import { VueEnsemble } from './console/VueEnsemble'
+import { useGuideVocal } from '@/voix/guide'
 
 // Catalogues (CONTRAT_API § 14.2) : chargés à la première ouverture de leur onglet.
 const LanguesAdmin = lazy(() => import('./console/LanguesAdmin').then((m) => ({ default: m.LanguesAdmin })))
@@ -25,6 +26,7 @@ const CLASSE_ONGLET = 'flex-none px-2.5 max-sm:[&>span:first-child]:hidden sm:px
 /** Console plateforme (super-admin, cahier § 6.16) : aucune donnée d'argent des boutiques n'y apparaît. */
 export default function Console() {
   const { t } = useTranslation()
+  useGuideVocal('guide.console')
   const [params, setParams] = useSearchParams()
   const brut = params.get('onglet')
   const onglet: NomOnglet = (ONGLETS as readonly string[]).includes(brut ?? '') ? (brut as NomOnglet) : 'ensemble'

@@ -11,11 +11,14 @@ import { MiseEnPageInvite } from '@/coquille/MiseEnPageInvite'
 import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
 import { ChampMotDePasse, ErreurFormulaire, TitreAuth } from './communs'
 import { useMessageErreur } from './useMessageErreur'
+import { useGuideVocal } from '@/voix/guide'
+import { HautParleur } from '@/voix/HautParleur'
 
 const LONGUEUR_MIN = 12
 
 export default function Reinitialisation() {
   const { t } = useTranslation()
+  useGuideVocal('guide.reinitialisation')
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const reinit = useReinitialisation()
@@ -71,11 +74,12 @@ export default function Reinitialisation() {
           <Link to="/mot-de-passe/oubli" className="font-medium underline">
             {t('auth.oubli.titre')}
           </Link>
+          <HautParleur cle="auth.oubli.titre" className="-my-2 align-middle" />
         </div>
       )}
       <form onSubmit={soumettre} noValidate className="flex flex-col gap-3">
         <Champ
-          libelle={t('auth.reinit.identifiant')}
+          libelle={t('auth.reinit.identifiant')} voix="auth.reinit.identifiant"
           name="identifiant"
           autoComplete="username"
           inputMode="email"
@@ -87,7 +91,7 @@ export default function Reinitialisation() {
           spellCheck={false}
         />
         <ChampMotDePasse
-          libelle={t('auth.reinit.motDePasse')}
+          libelle={t('auth.reinit.motDePasse')} voix="auth.reinit.motDePasse"
           name="password"
           autoComplete="new-password"
           aide={t('auth.inscription.motDePasseAide')}
@@ -96,7 +100,7 @@ export default function Reinitialisation() {
           erreur={erreursChamps.password}
         />
         <ChampMotDePasse
-          libelle={t('auth.reinit.confirmation')}
+          libelle={t('auth.reinit.confirmation')} voix="auth.reinit.confirmation"
           name="password_confirmation"
           autoComplete="new-password"
           value={confirmation}

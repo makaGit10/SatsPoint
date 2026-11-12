@@ -100,7 +100,7 @@ export function Recevoir({ ouvert, onFermer, boutique }: { ouvert: boolean; onFe
   }
 
   return (
-    <Dialogue ouvert={ouvert} onOuvertChange={(o) => !o && fermer()} titre={t('portefeuille.recevoirTitre')} taille="sm">
+    <Dialogue ouvert={ouvert} onOuvertChange={(o) => !o && fermer()} titre={t('portefeuille.recevoirTitre')} voix="portefeuille.recevoirTitre" taille="sm">
       {demande ? (
         <Demande demande={demande} boutique={boutique} />
       ) : (
@@ -110,12 +110,13 @@ export function Recevoir({ ouvert, onFermer, boutique }: { ouvert: boolean; onFe
             valeur={unite}
             onChange={setUnite}
             options={[
-              { valeur: 'xof', libelle: 'FCFA' },
-              { valeur: 'sats', libelle: 'sats' },
+              { valeur: 'xof', libelle: 'FCFA', voix: 'portefeuille.montantFcfa' },
+              { valeur: 'sats', libelle: 'sats', voix: 'portefeuille.montantSats' },
             ]}
           />
           <Champ
             libelle={unite === 'xof' ? t('portefeuille.montantFcfa') : t('portefeuille.montantSats')}
+            voix={unite === 'xof' ? 'portefeuille.montantFcfa' : 'portefeuille.montantSats'}
             inputMode="numeric"
             pattern="[0-9]*"
             autoComplete="off"
@@ -123,7 +124,7 @@ export function Recevoir({ ouvert, onFermer, boutique }: { ouvert: boolean; onFe
             onChange={(e) => setMontant(e.target.value.replace(/[^\d]/g, ''))}
             autoFocus
           />
-          <Champ libelle={t('portefeuille.description')} mentionOptionnel={t('commun.optionnel')} maxLength={120} value={description} onChange={(e) => setDescription(e.target.value)} />
+          <Champ libelle={t('portefeuille.description')} voix="portefeuille.description" mentionOptionnel={t('commun.optionnel')} maxLength={120} value={description} onChange={(e) => setDescription(e.target.value)} />
           <ErreurFormulaire message={erreur} />
           <Bouton type="submit" icone={<IconeQr />} voix="portefeuille.generer" chargement={creation.isPending} pleineLargeur>
             {t('portefeuille.generer')}

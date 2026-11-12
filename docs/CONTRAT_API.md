@@ -151,7 +151,7 @@ Précisions back (PayTech) : `PUT /boutique/paytech` — propriétaire seulement
 `GET /articles` → `{ articles: Article[] }` ; `POST /articles` ; `PATCH /articles/{ulid}` ; `DELETE /articles/{ulid}` ; `POST /articles/ordre` `{ ulids: string[] }`.
 `Article = { ulid, nom, prix_xof, categorie, couleur, sku, actif, position }`. Caissier : lecture seule.
 
-Précisions back : `POST` → `201 { article }` (position = dernière + 1 si absente) ; `PATCH` champs partiels → `{ article }` ; `DELETE` → `204` (les lignes de vente gardent leur libellé) ; `POST /articles/ordre` → `{ articles }` réordonnés (ulids inconnus ignorés, 1 à 500 ulids distincts). Validation : `nom` 1–120, `prix_xof` 0–50 000 000, `categorie` ≤ 60, `couleur` `#RRGGBB`, `sku` ≤ 40 `[A-Za-z0-9._-]` unique par boutique. `GET /articles` renvoie actifs et inactifs, triés par `position` puis `nom`.
+Précisions back : `POST` → `201 { article }` (position = dernière + 1 si absente) ; `PATCH` champs partiels → `{ article }` ; `DELETE` → `204` (les lignes de vente gardent leur libellé) ; `POST /articles/ordre` → `{ articles }` réordonnés (ulids inconnus ignorés, 1 à 500 ulids distincts). Validation : `nom` 1–120, `prix_xof` 0–50 000 000, `categorie` ≤ 60, `couleur` `#RRGGBB`, `sku` ≤ 40 `[A-Za-z0-9._-]` unique par boutique. `GET /articles` renvoie actifs et inactifs, triés par `position` puis `nom`. **Depuis le 11 novembre (§ 15)** : `nom` facultatif (au moins une identité : nom, pictogramme, photo ou nom dit), `pictogramme`, `photo_url`, `voix_url`.
 
 ## 10. Équipe
 
@@ -299,6 +299,43 @@ Graines (migration, modifiables ensuite) — langues : `wo` Wolof (SN), `srr` Se
 - **Mock** : `web/src/api/mockCatalogue.ts` (mêmes graines + bambara ML, dioula CI/BF, mooré BF, éwé TG désactivé) ; levier `sessionStorage['satspoint.mock.pays']='CI'` : boutique démo en Côte d'Ivoire, Wave (lien) et Orange Money (numéro) activés, vente `moyen_pays` en attente `01PDEMOMOYENPAYS0000000001`.
 
 
+## 15. Articles sans écrire : pictogramme, photo, nom dit à voix haute (11 novembre)
+
+Demande de la propriétaire : une commerçante qui ne sait ni lire ni écrire crée et reconnaît ses articles **sans texte**. Le nom écrit devient **facultatif** ; un article garde **au moins une identité** parmi : nom écrit, pictogramme, photo, nom dit à voix haute (validation serveur `422` sur `nom`, et contrainte `CHECK` en base).
+
+```ts
+type Article = {
+  ulid, nom: string | null, prix_xof, categorie, couleur, sku, actif, position,
+  pictogramme: string | null,   // liste FERMÉE (43 ids, api/app/Support/Pictogrammes.php = web/src/ecrans/articles/pictogrammes.tsx)
+  photo_url: string | null,     // « /api/v1/articles/{ulid}/photo?v={empreinte12} » (membres de la boutique)
+  voix_url: string | null,      // « /api/v1/articles/{ulid}/voix?v={empreinte12} »
+}
+```
+Pictogrammes : `pain riz sucre huile farine lait oeufs viande poulet poisson legumes fruits plat sandwich gateau bonbons glace epicerie` · `eau the cafe jus boisson` · `tissu vetement chaussure sac bijou coiffure beaute` · `savon menage bebe gaz electricite` · `credit telephone medicament cigarette fournitures reparation service divers`. Un id ne se renomme jamais (il est en base).
+
+| Route | Corps | Réponse | Droits / limites |
+|---|---|---|---|
+| `POST /articles` | JSON (comme § 9, `nom` facultatif, `pictogramme?`) **ou multipart** : mêmes champs + `photo?` (fichier ≤ 4 Mo) + `voix?` (fichier ≤ 1 Mo) | `201 { article }` — **tout ou rien** : un fichier refusé ne crée rien | propriétaire / gérant ; 30 / min |
+| `PATCH /articles/{ulid}` | JSON, `nom: null` et `pictogramme: null` acceptés tant qu'une identité reste | `{ article }` | propriétaire / gérant |
+| `POST /articles/{ulid}/photo` | multipart `fichier` (JPEG, PNG ou WebP ≤ 4 Mo) | `{ article }` (photo remplacée le cas échéant) | propriétaire / gérant (caissier `403` **avant** toute validation) ; 30 / min |
+| `DELETE /articles/{ulid}/photo` | — | `{ article }` (idempotent) ; `422 ARTICLE_SANS_IDENTITE` si c'était la seule identité | propriétaire / gérant |
+| `POST /articles/{ulid}/voix` | multipart `fichier` (mp3, wav, m4a, ogg, webm ≤ 1 Mo, ≤ 7 s) | `{ article }` | propriétaire / gérant ; 30 / min |
+| `DELETE /articles/{ulid}/voix` | — | `{ article }` (idempotent) ; `422 ARTICLE_SANS_IDENTITE` | propriétaire / gérant |
+| `GET /articles/{ulid}/photo` | — | `image/webp` | **tout membre** de la boutique (caissier compris) ; 600 / min, hors limite générale |
+| `GET /articles/{ulid}/voix` | — | `audio/mpeg`, plages d'octets (`206`) | tout membre ; 600 / min |
+
+- **Type réel** : signature binaire (jamais l'extension ni le `Content-Type` annoncé) — photo : JPEG `FF D8 FF`, PNG, WebP `RIFF…WEBP` ; dimensions lues **avant** décodage (≥ 16 px, ≤ 12 000 px de côté, ≤ 25 Mpx) ; voix : `InspecteurAudio` du studio (signature + ffprobe, piste audio seule, ≤ 7 s). Erreurs `{ message, code }` en `422` : `PHOTO_TYPE_INVALIDE`, `PHOTO_ILLISIBLE`, `PHOTO_TROP_GRANDE`, `AUDIO_TYPE_INVALIDE`, `AUDIO_ILLISIBLE`, `AUDIO_TROP_LONG`, `ARTICLE_SANS_IDENTITE` ; taille dépassée ou fichier absent → `422` `errors.fichier` (ou `errors.photo` / `errors.voix` à la création).
+- **Ré-encodage serveur systématique** : photo → GD, orientation EXIF appliquée (lue sans l'extension `exif`), plus grand côté ramené à **512 px**, **WebP** qualité 80, fichier entièrement neuf (aucune métadonnée d'origine : EXIF, GPS, profil, commentaire). Voix → traitement ffmpeg du studio (`TraitementAudio` : blancs coupés, volume normalisé, MP3 mono 48 kb/s). Le front réduit déjà la photo (1024 px, JPEG) et coupe les silences (WAV 16 kHz) avant l'envoi : confort seulement.
+- **Stockage EN BASE** (`article_fichiers`, bytea, une ligne par article et par type, `boutique_id` + `BoutiqueScope`) : le disque de Render est éphémère. L'article porte `photo_empreinte` / `voix_empreinte` (SHA-256) et `voix_duree_ms` : les listes ne lisent jamais le contenu. Suppression de l'article → fichiers supprimés (cascade).
+- **Service des fichiers** : article résolu par ULID **sous BoutiqueScope** (autre boutique → `404`, indiscernable d'un article inexistant), Policy `view`. En-têtes : `ETag` = empreinte complète (`304` sur `If-None-Match`), `Cache-Control: private, max-age=31536000, immutable` **seulement** si `v` = empreinte courante (sinon `private, no-cache`), `Vary: Cookie`, `X-Content-Type-Options: nosniff`, `Content-Disposition: inline`, CSP `default-src 'none'` de l'API. Jamais `public` : un proxy partagé ne garde rien.
+- **Lignes de vente** (`Vente.lignes[]`, détail et `GET /paiements/{ulid}?detail=1`) : ajout de `pictogramme`, `couleur`, `photo_url` (état **actuel** de l'article, `null` s'il a été supprimé) ; une seule requête groupée (`lignes.article:id,ulid,pictogramme,couleur,photo_empreinte`).
+- **Reçu public** (`GET /r/{jeton}`) : ajout de `lignes: [{ libelle, quantite, prix_unitaire_xof, pictogramme, couleur }]` — **jamais la photo** (réservée aux membres) ni l'ulid de l'article.
+- **Libellé des lignes** d'un article sans nom écrit : le front envoie le nom du pictogramme dans la langue de l'interface (« Thé, ataya »), sinon « Article ».
+- **Recherche globale** : un article sans nom est trouvé par le libellé de son pictogramme (« pain ») ; `titre` = nom, sinon libellé du pictogramme. **Export** articles : colonne `Pictogramme` (id) en dernière position. **Import** inchangé (`nom` obligatoire à l'import).
+- **Journal d'audit** : `article.cree` (détails `nom`, `prix_xof`, `pictogramme`, `photo`, `voix`), `article.photo_ajoutee` (`octets`, `largeur`, `hauteur`, `remplace`), `article.photo_supprimee`, `article.voix_ajoutee` (`duree_ms`, `remplace`), `article.voix_supprimee`.
+- **Temps réel** : écritures sur `articles` et `article_fichiers` → rubrique `articles` (`private-boutique.{ulid}`) ; une lecture de fichier n'émet rien.
+- **Front** : caisse — tuile = photo ou pictogramme en grand, prix en gros chiffres, haut-parleur qui joue le nom **dit par le commerçant** (sinon le nom écrit par la voix du téléphone, sinon l'audio studio du pictogramme `pictos.{id}`, sinon rien), quantité prise affichée ; formulaire — appareil photo (`capture="environment"`) ou galerie, galerie de pictogrammes avec haut-parleur sur chaque tuile, enregistreur (3-2-1, 5 s, réécoute, garder / recommencer), prix sur le pavé de la caisse, nom écrit facultatif, guide vocal `guide.formulaireArticle.*`. Mock : articles démo avec pictogrammes, une photo (Bissap), un article sans nom avec nom dit (pain).
+
 # Vague 3 — aide vocale, studio audio, 2FA, console plateforme, recherche, import/export
 
 Mêmes conventions que ci-dessus. Le back fait foi ; toute précision est ajoutée ici.
@@ -401,4 +438,4 @@ Exemple mesuré (test) : prise de 4,9 s (1,5 s de blanc, mot, 1,2 s de blanc, mo
 - Une erreur sur un audio (contenu absent, ffmpeg) n'arrête pas les autres et ne touche jamais la version publiée. `--langue` doit être un code du catalogue (sinon code de sortie ≠ 0, rien n'est fait). `--simulation` n'écrit rien et affiche ce qui serait raccourci.
 - Fin (si au moins un audio a changé) : cache des manifestes vidé, **un** signal `audios` sur `plateforme` (toutes les applications relisent leur manifeste) et `audio` sur `private-admin` (studio). Journal `audio.retraite` par audio : `audio_id`, `nouvel_audio_id`, `cle`, `langue`, `statut`, `duree_avant_ms`, `duree_apres_ms` (jamais de contenu). Résumé : examinés, raccourcis, inchangés, erreurs. Fichiers temporaires générés par le serveur dans `audio-sources/`, toujours supprimés.
 
-Côté navigateur : voir ci-dessous.
+**Côté navigateur** (studio, `web/src/voix/decoupe.ts` + `decoupeAudio.ts`, partagé avec les noms d'articles dits à voix haute) : AVANT l'aperçu et l'envoi, pour la prise au micro (l'enregistrement démarre après le 3-2-1) **et** pour un fichier déposé, l'audio est décodé (Web Audio), mixé en mono, puis découpé : énergie RMS par fenêtres de 10 ms, bruit de fond = 10e centile, seuil = min(bruit + 12 dB, mi-chemin bruit ↔ crête) borné entre -55 et -28 dBFS, bouffées de moins de 30 ms ignorées ; 100 ms gardées avant la voix et 120 ms après ; silences internes de plus de 0,5 s ramenés à 0,25 s (fondus de 8 ms) ; normalisation légère (crête -1 dBFS, gain ≤ +12 dB, sans écrêtage). L'aperçu montre la forme d'onde avant / après et les durées (« 5,0 s → 1,7 s ») et joue la version coupée ; « Valider » envoie un **WAV PCM 16 bits mono** (44,1 ou 48 kHz) nommé `{cle}.wav`. La limite de 15 s porte sur la durée après découpe ; aucune voix détectée → message et « Refaire », rien n'est envoyé. Format que ce navigateur ne sait pas décoder → l'original est envoyé tel quel (le serveur coupe les blancs). Le serveur reste juge : type réel, taille, durée et ré-encodage MP3 inchangés.

@@ -16,6 +16,7 @@ import { emettreSignal } from '@/temps-reel/signaux'
 import { clesVocalesLangues, langueActive, languesStudio, publierAudioLangue, repondreCatalogueAdmin } from './mockCatalogue'
 import { lirePagination, paginer } from './mockPagination'
 import registre from '@/voix/cles-vocales.json'
+import articlesFr from '@/i18n/articles.fr.json'
 import type {
   Article,
   BoutiqueAdmin,
@@ -35,6 +36,9 @@ import type {
   Utilisateur,
   Vente,
 } from './types'
+
+/** Noms des pictogrammes (articles sans nom écrit : recherche, titres). */
+const NOMS_PICTOS_FR: Record<string, string> = articlesFr.pictos
 
 export interface ContexteMock {
   url: URL
@@ -290,10 +294,10 @@ function rechercherMock(q: string, ctx: ContexteMock): GroupeRecherche[] {
 
     const articles = garder(
       ctx.articles().map((a) => ({
-        titre: a.nom,
+        titre: a.nom ?? NOMS_PICTOS_FR[a.pictogramme ?? ''] ?? 'Article',
         sous_titre: [`${a.prix_xof.toLocaleString('fr-FR')} FCFA`, a.categorie].filter(Boolean).join(' · '),
         url: `/articles?article=${a.ulid}`,
-        score: Math.max(pertinence(a.nom, q), a.categorie ? pertinence(a.categorie, q) * 0.7 : 0, a.sku ? pertinence(a.sku, q) : 0),
+        score: Math.max(pertinence(a.nom ?? NOMS_PICTOS_FR[a.pictogramme ?? ''] ?? '', q), a.categorie ? pertinence(a.categorie, q) * 0.7 : 0, a.sku ? pertinence(a.sku, q) : 0),
       })),
     )
     if (articles.length) groupes.push({ rubrique: 'articles', resultats: articles })
@@ -366,7 +370,7 @@ function avancerImport(ulid: string, ctx: ContexteMock, mode: ModeImport, corres
     const prix = /^\d+$/.test(prixBrut) ? Number(prixBrut) : NaN
     if (!nom) return imp.erreurs.push({ ligne: numero, message: 'Le nom est vide.' })
     if (!Number.isInteger(prix)) return imp.erreurs.push({ ligne: numero, message: `Prix illisible : « ${ligne[iPrix] ?? ''} ».` })
-    const existant = ctx.articles().find((a) => a.nom.toLowerCase() === nom.toLowerCase())
+    const existant = ctx.articles().find((a) => a.nom?.toLowerCase() === nom.toLowerCase())
     if (existant) {
       if (mode === 'creer_et_mettre_a_jour') {
         existant.prix_xof = prix

@@ -1,6 +1,9 @@
 import fs from 'node:fs';
-import { ajouterMembreTest, capturer, ecranPret, expect, PREFIXE_TEST, test, tolerer } from './fixtures';
+import { ajouterMembreTest, capturer, creerBoutiqueTest, ecranPret, expect, PREFIXE_TEST, test, tolerer } from './fixtures';
 import { attendreApi, toast } from './outils/ui';
+
+/** Petite photo JPEG valide (24 × 24 px) : le serveur la ré-encode en WebP. */
+const JPEG_TEST = '/9j/4AAQSkZJRgABAQEAYABgAAD//gA7Q1JFQVRPUjogZ2QtanBlZyB2MS4wICh1c2luZyBJSkcgSlBFRyB2ODApLCBxdWFsaXR5ID0gODAK/9sAQwAGBAUGBQQGBgUGBwcGCAoQCgoJCQoUDg8MEBcUGBgXFBYWGh0lHxobIxwWFiAsICMmJykqKRkfLTAtKDAlKCko/9sAQwEHBwcKCAoTCgoTKBoWGigoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgo/8AAEQgAGAAYAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8A4yu2tfhrr9xpq3eLaJ2QuLeVysvsCMYBPoSMZ5xzR8IrezuPFw+2rE7xwtJbhz/y0BXBA7kDcfbGe2a91r5rGYyVKShBH6BmOYzw81Tpo+V5o3hleKZGjlRirIwwVI4II7GivSPjdb2cWpadNCsS3syP5+0/MyjaELD/AL6APfGO3BXbRqe1gp23PSw1f29KNS1rnm8MjwypLC7RyowZXU4Kkcgg9jXpFr8WLyLTVin06Ke9VCv2jzdqs3ZigX6ZAIzzjHYooq0YVbc6uFfDUq9vaRvY881C9uNRvZru9maa4lbc7t1J/oOwHQCiiitEraI2SSVkf//Z';
 
 /**
  * Parcours 12 — Articles : état vide, création (validation, couleur), modification, ordre, suppression
@@ -18,9 +21,10 @@ test.describe('12 · Articles, import et export', () => {
     await page.getByRole('button', { name: /^Ajouter un article/ }).click();
     const dialogue = page.getByRole('dialog', { name: 'Ajouter un article' });
     await dialogue.getByRole('button', { name: /^Enregistrer/ }).click();
-    await expect(dialogue.getByText('Ce champ est obligatoire.')).toHaveCount(2);
-    await dialogue.getByLabel('Nom', { exact: true }).fill(`${PREFIXE_TEST} Thé`);
-    await dialogue.getByLabel('Prix').fill('1200');
+    // Sans photo, image, nom dit ni nom écrit : refusé avant tout appel (message sous le nom ET en bas du formulaire).
+    await expect(dialogue.getByText('Ajoutez une photo, une image, un nom dit ou un nom écrit.').first()).toBeVisible();
+    await dialogue.getByLabel('Nom écrit').fill(`${PREFIXE_TEST} Thé`);
+    await dialogue.getByLabel('Prix', { exact: true }).fill('1200');
     await dialogue.getByRole('radio', { name: 'Vert' }).click();
     const creation = await attendreApi(page, 'POST', /\/api\/v1\/articles$/, () => dialogue.getByRole('button', { name: /^Enregistrer/ }).click());
     expect(creation.status()).toBe(201);
@@ -34,14 +38,14 @@ test.describe('12 · Articles, import et export', () => {
     await ecranPret(page, 'articles');
     const liste = page.getByRole('list', { name: 'Articles' });
     await expect(liste.getByRole('listitem')).toHaveCount(3);
-    await expect(liste.getByRole('listitem').first().getByRole('img', { name: 'Vert' })).toBeVisible();
+    await expect(liste.getByRole('listitem').first()).toContainText(`${PREFIXE_TEST} Thé`);
     await capturer(page, '12-articles-liste');
 
     // Modification : la couleur choisie est conservée.
     await liste.getByRole('listitem').first().getByRole('button', { name: "Modifier l'article" }).click();
     const modif = page.getByRole('dialog', { name: "Modifier l'article" });
     await expect(modif.getByRole('radio', { name: 'Vert' })).toBeChecked();
-    await modif.getByLabel('Prix').fill('1300');
+    await modif.getByLabel('Prix', { exact: true }).fill('1300');
     const patch = await attendreApi(page, 'PATCH', /\/api\/v1\/articles\/[0-9A-Z]{26}$/, () => modif.getByRole('button', { name: /^Enregistrer/ }).click());
     expect(patch.status()).toBe(200);
     await expect(liste.getByRole('listitem').first()).toContainText(/1\s?300\sFCFA/);
@@ -157,5 +161,60 @@ test.describe('12 · Articles, import et export', () => {
     await expect(pageCaissier.getByRole('button', { name: 'Importer' })).toHaveCount(0);
     expect((await caissier.api.get('/exports/articles?format=csv')).status).toBe(403);
     void tolerer;
+  });
+  /**
+   * Article SANS ÉCRIRE (CONTRAT_API § 15) : une commerçante qui ne lit pas choisit une image dans la galerie,
+   * prend une photo, tape le prix sur le pavé ; la caisse montre la photo et le prix ; le caissier voit la photo
+   * mais ne peut ni l'envoyer ni la retirer ; une autre boutique ne la voit pas.
+   */
+  test('article sans nom écrit : pictogramme, photo, prix au pavé ; caisse et droits', async ({ pageProprietaire: page, boutique, ouvrir }) => {
+    await page.goto('/articles');
+    await ecranPret(page, 'articles');
+    await page.getByRole('button', { name: /^Ajouter un article/ }).click();
+    const dialogue = page.getByRole('dialog', { name: 'Ajouter un article' });
+
+    // Image choisie dans la galerie (tuiles avec nom écrit en petit + haut-parleur), puis photo depuis la galerie du téléphone.
+    await dialogue.getByRole('button', { name: 'Choisir une image' }).click();
+    await dialogue.getByRole('radio', { name: 'Thé, ataya' }).click();
+    await dialogue.locator('input[data-entree-photo="galerie"]').setInputFiles({ name: 'photo.jpg', mimeType: 'image/jpeg', buffer: Buffer.from(JPEG_TEST, 'base64') });
+    await expect(dialogue.locator('img')).toHaveCount(1);
+
+    // Prix sur le grand pavé (aucun clavier).
+    const pave = dialogue.getByRole('group', { name: 'Pavé numérique' });
+    for (const c of ['2', '5', '0']) await pave.getByRole('button', { name: `Touche ${c}`, exact: true }).click();
+    await expect(dialogue.getByLabel('Prix', { exact: true })).toHaveValue('250');
+
+    const creation = await attendreApi(page, 'POST', /\/api\/v1\/articles$/, () => dialogue.getByRole('button', { name: /^Enregistrer/ }).click());
+    expect(creation.status()).toBe(201);
+    const article = (await creation.json()).article;
+    expect(article.nom).toBeNull();
+    expect(article.pictogramme).toBe('the');
+    expect(article.photo_url).toMatch(/^\/api\/v1\/articles\/[0-9A-Z]{26}\/photo\?v=[0-9a-f]{12}$/);
+    await expect(toast(page, 'Article enregistré')).toBeVisible();
+    await capturer(page, '12-articles-sans-nom');
+
+    // La photo est servie ré-encodée (WebP), en cache privé.
+    const photo = await boutique.api.get(article.photo_url);
+    expect(photo.status).toBe(200);
+    expect(photo.entetes['content-type']).toBe('image/webp');
+    expect(photo.entetes['cache-control']).toContain('private');
+
+    // Caisse : la tuile se nomme par son image et montre le prix ; un toucher l'ajoute au panier.
+    await page.goto('/caisse');
+    await ecranPret(page, 'caisse');
+    const boutonArticles = page.getByRole('button', { name: 'Articles', exact: true });
+    if (await boutonArticles.count()) await boutonArticles.click();
+    await page.getByRole('button', { name: /^Thé, ataya, 250\sFCFA/ }).click();
+    await expect(page.getByRole('button', { name: /Quantité 1/ })).toBeVisible();
+
+    // Caissier : voit la photo, ne peut ni l'envoyer ni la retirer.
+    const caissier = await ajouterMembreTest(boutique, 'caissier');
+    expect((await caissier.api.get(article.photo_url)).status).toBe(200);
+    expect((await caissier.api.delete(`/articles/${article.ulid}/photo`)).status).toBe(403);
+
+    // Une autre boutique : introuvable (anti-IDOR).
+    const autre = await creerBoutiqueTest('P12b');
+    expect((await autre.api.get(article.photo_url)).status).toBe(404);
+    void ouvrir;
   });
 });

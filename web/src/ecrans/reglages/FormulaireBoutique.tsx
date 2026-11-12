@@ -70,12 +70,12 @@ export function FormulaireBoutique({ boutique, proprietaire }: { boutique: Bouti
     <Carte rembourrage="sm">
       <CarteEnTete titre={t('reglages.boutique')} className="mb-2" />
       <form onSubmit={soumettre} noValidate className="flex flex-col gap-3">
-        <Champ libelle={t('reglages.nom')} value={nom} onChange={(e) => setNom(e.target.value)} erreur={erreursChamps.nom} autoComplete="organization" maxLength={60} />
-        <Champ libelle={t('reglages.telephone')} type="tel" inputMode="tel" value={telephone} onChange={(e) => setTelephone(e.target.value)} erreur={erreursChamps.telephone} mentionOptionnel={t('commun.optionnel')} autoComplete="tel" />
-        <Champ libelle={t('reglages.ville')} value={ville} onChange={(e) => setVille(e.target.value)} erreur={erreursChamps.ville} autoComplete="address-level2" maxLength={60} />
+        <Champ libelle={t('reglages.nom')} voix="reglages.nom" value={nom} onChange={(e) => setNom(e.target.value)} erreur={erreursChamps.nom} autoComplete="organization" maxLength={60} />
+        <Champ libelle={t('reglages.telephone')} voix="reglages.telephone" type="tel" inputMode="tel" value={telephone} onChange={(e) => setTelephone(e.target.value)} erreur={erreursChamps.telephone} mentionOptionnel={t('commun.optionnel')} autoComplete="tel" />
+        <Champ libelle={t('reglages.ville')} voix="reglages.ville" value={ville} onChange={(e) => setVille(e.target.value)} erreur={erreursChamps.ville} autoComplete="address-level2" maxLength={60} />
         {optionsPays.length > 1 && (
           <Selection
-            libelle={t('reglages.pays')}
+            libelle={t('reglages.pays')} voix="reglages.pays"
             value={pays}
             onChange={(e) => setPays(e.target.value as CodePays)}
             disabled={!proprietaire}

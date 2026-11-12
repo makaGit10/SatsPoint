@@ -9,6 +9,7 @@ import { classesCouleur } from '@/lib/couleursMoyens'
 import { formaterFCFA, formaterSats } from '@/lib/format'
 import { OPERATEURS } from '@/lib/methodes'
 import { HautParleur } from '@/voix/HautParleur'
+import { useGuideVocal } from '@/voix/guide'
 
 export interface MoyensDisponibles {
   lightning: boolean
@@ -62,8 +63,9 @@ function Option({ icone, titre, detail, onClick, desactive, ton, voix, raison }:
 /** Feuille « Comment le client paie-t-il ? » : un geste = une demande de paiement. */
 export function ChoixMethode({ ouvert, onFermer, montant, sats, moyens, enCours, erreur, onChoisir }: PropsChoixMethode) {
   const { t } = useTranslation()
+  useGuideVocal('guide.choixMoyen', { actif: ouvert })
   return (
-    <Dialogue ouvert={ouvert} onOuvertChange={(o) => !o && onFermer()} titre={t('caisse.choisirMethode')} description={formaterFCFA(montant)} taille="sm">
+    <Dialogue ouvert={ouvert} onOuvertChange={(o) => !o && onFermer()} titre={t('caisse.choisirMethode')} voix="caisse.choisirMethode" description={formaterFCFA(montant)} taille="sm">
       <div className={cn('flex flex-col gap-3 pb-1', enCours && 'pointer-events-none opacity-60')} aria-busy={enCours || undefined}>
         <ul className="flex flex-col gap-1.5" aria-label={t('caisse.choisirMethode')}>
           <Option

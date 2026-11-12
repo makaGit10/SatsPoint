@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { boutonsSansVoix, construireRegistre, occurrencesFichier, serialiser } from '../../scripts/cles-vocales-lib.mjs'
+import { boutonsSansVoix, construireRegistre, elementsBrutsSansVoix, EXCEPTIONS_ELEMENTS_BRUTS, occurrencesFichier, serialiser } from '../../scripts/cles-vocales-lib.mjs'
 import en from '@/i18n/en.json'
 import fr from '@/i18n/fr.json'
 import registreGenere from './cles-vocales.json'
@@ -94,6 +94,63 @@ describe('extraction des clés vocales', () => {
   })
 })
 
+describe('garde-fou : un haut-parleur sur chaque élément actionnable', () => {
+  const verifier = (contenu: string, chemin = 'ecrans/X.tsx') => elementsBrutsSansVoix([{ chemin, contenu }]).map((e) => e.element)
+
+  it('accepte un haut-parleur dans l’élément, juste après lui (même avec une alternative), ou une prop voix', () => {
+    expect(verifier('<button onClick={f}>Ok<HautParleur cle="a.b" dansBouton /></button>')).toEqual([])
+    expect(verifier('<Link to="/x">Lien</Link>{\' \'}\n  <HautParleur cle="a.b" />')).toEqual([])
+    expect(verifier('<li><button>Ok</button><span className="absolute"><HautParleur cle="a.b" /></span></li>')).toEqual([])
+    expect(verifier('{lien ? (<a href={lien}>A</a>) : (<button>B</button>)}<span><HautParleur cle="a.b" /></span>')).toEqual([])
+    expect(verifier('<NavLink to="/" voix="nav.caisse">Caisse</NavLink>')).toEqual([])
+  })
+
+  it('signale un bouton, un lien, un résumé ou une ancre bruts sans haut-parleur', () => {
+    expect(verifier('<button onClick={f}>Ok</button><a href="#x">Ancre</a><summary>Question</summary><Link to="/x" />')).toEqual(['button', 'a', 'summary', 'Link'])
+    // Un haut-parleur plus loin (pas un frère immédiat) ne compte pas.
+    expect(verifier('<button>Ok</button><p>texte</p><HautParleur cle="a.b" />')).toEqual(['button'])
+    // `<aside>` n'est pas un lien.
+    expect(verifier('<aside>Encart</aside>')).toEqual([])
+  })
+
+  it('respecte les exceptions justifiées et l’autre chantier (articles), seulement pour leurs fichiers', () => {
+    expect(verifier('<button>1</button>', 'ecrans/caisse/Pave.tsx')).toEqual([])
+    expect(verifier('<button>1</button>', 'ecrans/articles/Nouveau.tsx')).toEqual([])
+    expect(verifier('<button>1</button>', 'ecrans/caisse/Autre.tsx')).toEqual(['button'])
+    expect(verifier('<Link to="/"><Marque /></Link>', 'coquille/EnTete.tsx')).toEqual([])
+    expect(verifier('<Link to="/">Accueil</Link>', 'coquille/EnTete.tsx')).toEqual(['Link'])
+    for (const e of EXCEPTIONS_ELEMENTS_BRUTS) expect(e.raison.length, e.fichier).toBeGreaterThan(30)
+    expect(EXCEPTIONS_ELEMENTS_BRUTS.length).toBeLessThanOrEqual(10)
+  })
+
+  it('exige la clé vocale sur les champs, listes, interrupteurs et fenêtres (au premier niveau des attributs)', () => {
+    const composants = (contenu: string) => boutonsSansVoix([{ chemin: 'ecrans/X.tsx', contenu }]).map((b) => b.composant)
+    expect(composants('<Champ libelle="Nom" /><Selection libelle="Pays" options={o} /><Interrupteur coche libelle="Voix" />')).toEqual(['Champ', 'Selection', 'Interrupteur'])
+    expect(composants('<Champ libelle="Nom" voix="a.b" /><ChampMotDePasse {...props} />')).toEqual([])
+    // Le <Bouton voix> du pied ne vaut pas pour la fenêtre ; un titre masqué ou qui porte son haut-parleur est accepté.
+    expect(composants('<Dialogue titre="T" pied={<Bouton voix="a.b">Ok</Bouton>} />')).toEqual(['Dialogue'])
+    expect(composants('<Dialogue titre="T" titreMasque /><Dialogue titre={<span>T<HautParleur cle="a.b" /></span>} />')).toEqual([])
+  })
+})
+
+describe('guides vocaux des écrans', () => {
+  it('reconnaît les chaînes « guide.… », toujours essentielles et rattachées à l’écran du fichier', () => {
+    const { registre } = construireRegistre(
+      [
+        { chemin: 'ecrans/Ventes.tsx', contenu: `useGuideVocal('guide.ventes')\n<Bouton voix="ventes.exporter" />` },
+        { chemin: 'ecrans/Demarrage.tsx', contenu: "const G = { boutique: 'guide.demarrage.boutique' }" },
+      ],
+      FR,
+      EN,
+    )
+    expect(registre.map((e) => [e.cle, e.ecran, e.essentielle])).toEqual([
+      ['guide.ventes', 'ventes', true],
+      ['guide.demarrage.boutique', 'demarrage', true],
+      ['ventes.exporter', 'ventes', false],
+    ])
+  })
+})
+
 describe('registre réel de l’application', () => {
   const { registre, manquantes } = construireRegistre(fichiers, FR, EN)
 
@@ -101,8 +158,30 @@ describe('registre réel de l’application', () => {
     expect(manquantes).toEqual([])
   })
 
-  it('chaque bouton, lien-bouton, bouton icône et onglet porte une clé vocale', () => {
+  it('chaque bouton, lien-bouton, bouton icône, onglet, champ, liste, interrupteur et fenêtre porte une clé vocale', () => {
     expect(boutonsSansVoix(fichiers)).toEqual([])
+  })
+
+  it('aucun élément actionnable brut (button, a, summary, Link, NavLink) sans haut-parleur', () => {
+    expect(elementsBrutsSansVoix(fichiers)).toEqual([])
+  })
+
+  it('chaque écran a son guide vocal (essentiel, écran correct, texte FR et EN)', () => {
+    const attendus: Record<string, string> = {
+      'guide.landing': 'landing', 'guide.langue': 'langue', 'guide.accueil': 'accueil', 'guide.inscription': 'compte',
+      'guide.connexion': 'connexion', 'guide.verification2fa': 'securite', 'guide.deuxFacteurs': 'securite',
+      'guide.demarrage.boutique': 'demarrage', 'guide.demarrage.portefeuille': 'demarrage', 'guide.demarrage.mobileMoney': 'demarrage',
+      'guide.demarrage.test': 'demarrage', 'guide.caisse': 'caisse', 'guide.choixMoyen': 'caisse', 'guide.paiement.bitcoin': 'paiement',
+      'guide.paiement.mobileMoney': 'paiement', 'guide.paiement.moyenPays': 'paiement', 'guide.paiement.waveDirect': 'paiement',
+      'guide.succes': 'succes', 'guide.ventes': 'ventes', 'guide.venteDetail': 'ventes', 'guide.tableau': 'tableau',
+      'guide.portefeuille': 'portefeuille', 'guide.equipe': 'equipe', 'guide.reglages': 'reglages', 'guide.recu': 'recu',
+      'guide.invitation': 'invitation', 'guide.console': 'admin', 'guide.studio': 'admin', 'guide.aideProche': 'compte',
+    }
+    for (const [cle, ecran] of Object.entries(attendus)) {
+      const entree = registre.find((e) => e.cle === cle)
+      expect(entree, cle).toMatchObject({ ecran, essentielle: true })
+      expect(entree?.texte_fr.length, cle).toBeGreaterThan(20)
+    }
   })
 
   it('src/voix/cles-vocales.json est à jour (npm run cles-vocales)', () => {
@@ -110,7 +189,9 @@ describe('registre réel de l’application', () => {
   })
 
   it('le parcours d’encaissement et le choix de la langue viennent en tête, marqués essentiels', () => {
-    expect(registre[0]?.cle).toBe('langue.titre')
+    // Le choix de la langue d'abord : son guide, puis son titre et le nom de chaque langue.
+    expect(registre[0]?.ecran).toBe('langue')
+    expect(registre.slice(0, 4).map((e) => e.cle)).toContain('langue.titre')
     const premiereNonEssentielle = registre.findIndex((e) => !e.essentielle)
     expect(registre.slice(premiereNonEssentielle).every((e) => !e.essentielle)).toBe(true)
     for (const cle of ['caisse.encaisser', 'paiement.recu', 'paiement.expire', 'succes.nouvelleVente', 'langue.wo']) {

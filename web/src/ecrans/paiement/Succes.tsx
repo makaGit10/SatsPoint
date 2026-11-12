@@ -10,6 +10,7 @@ import { cn } from '@/lib/cn'
 import { formaterFCFA, formaterSats } from '@/lib/format'
 import { copier, lienSms, lienWhatsApp, partager, peutPartager } from '@/lib/retours'
 import { HautParleur } from '@/voix/HautParleur'
+import { useGuideVocal } from '@/voix/guide'
 
 export interface PropsSucces {
   montant: number
@@ -59,6 +60,7 @@ function ChoixPartage({ icone, libelle, href, onClick, voix }: { icone: ReactNod
 /** Écran de succès plein écran : fond lumineux à halos, grand rond vert lumineux, montant énorme, reçu à envoyer, nouvelle vente. */
 export function Succes({ montant, sats, methode, operateur, moyen, numero, boutique, recuUrl, alerte, test, onNouvelleVente }: PropsSucces) {
   const { t } = useTranslation()
+  useGuideVocal('guide.succes')
   const [partageOuvert, setPartageOuvert] = useState(false)
   const lien = recuUrl ? `${window.location.origin}${recuUrl}` : null
   const texte = lien ? t('succes.messageRecu', { boutique, montant: formaterFCFA(montant), lien }) : ''
@@ -104,7 +106,7 @@ export function Succes({ montant, sats, methode, operateur, moyen, numero, bouti
         )}
       </div>
 
-      <div className="relative mx-auto flex w-full max-w-md flex-col gap-3 px-6 pb-[calc(env(safe-area-inset-bottom,0px)+24px)]">
+      <div className="relative mx-auto flex w-full max-w-md flex-col gap-3 px-6 pb-[calc(env(safe-area-inset-bottom,0px)+24px+var(--reserve-guide))]">
         <Bouton
           taille="xl"
           variante="secondaire"
@@ -122,7 +124,7 @@ export function Succes({ montant, sats, methode, operateur, moyen, numero, bouti
         </Bouton>
       </div>
 
-      <Dialogue ouvert={partageOuvert} onOuvertChange={setPartageOuvert} titre={t('succes.envoyerRecu')} description={lien ?? undefined} taille="sm">
+      <Dialogue ouvert={partageOuvert} onOuvertChange={setPartageOuvert} titre={t('succes.envoyerRecu')} voix="succes.envoyerRecu" description={lien ?? undefined} taille="sm">
         <ul className="flex flex-col gap-2 pb-1">
           <ChoixPartage icone={<MessageCircle />} libelle={t('succes.whatsapp')} href={lienWhatsApp(texte)} voix="succes.whatsapp" />
           <ChoixPartage icone={<MessageSquare />} libelle={t('succes.sms')} href={lienSms(texte)} voix="succes.sms" />

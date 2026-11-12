@@ -15,9 +15,12 @@
  * - `satspoint.mock.moyens` = `aucun` : ni portefeuille, ni PayTech, ni lien Wave (aucun moyen de paiement branché) ;
  * - `satspoint.mock.vide` = `1` : boutique sans aucune vente ;
  * - `satspoint.mock.pays` = `CI` (ou autre code) : boutique dans ce pays, moyens du pays activés (voir mockCatalogue).
+ * - `satspoint.mock.audios` = `tout` : chaque clé vocale du registre a un audio (vérifier visuellement tous les haut-parleurs).
  */
 import { emettreSignal } from '@/temps-reel/signaux'
+import registreVocal from '@/voix/cles-vocales.json'
 import { catalogueConfig, changerPaysBoutique, langueExiste, moyensActifsBoutique, paysActif, paysInitialBoutique, photoMoyen, repondreMoyensBoutique } from './mockCatalogue'
+import { aUneIdentite, lireCorpsArticle, photoDemoBissap, pictogrammeValide, refusFichier, urlFichier, voixDemo } from './mockMedias'
 import { lirePagination, paginer } from './mockPagination'
 import { audiosPublies, etatDeuxFa, reinitialiserDeuxFa, repondreV3, repondreV3Public, type ContexteMock } from './mockV3'
 import type {
@@ -233,6 +236,8 @@ function manifeste(langue: LangueAudio): ManifesteAudio {
   // Le français couvre tout (repli) ; les langues locales couvrent un sous-ensemble pour montrer le repli.
   const cles = langue === 'fr' ? CLES_AUDIO : CLES_AUDIO.filter((c) => !c.startsWith('auth.') && c !== 'langue.en')
   for (const cle of cles) audios[cle] = url
+  // Levier de vérification visuelle : tout le registre a un audio, dans toutes les langues.
+  if (sessionStorage.getItem('satspoint.mock.audios') === 'tout') for (const { cle } of registreVocal) audios[cle] = url
   // Le nom de chaque langue est dit dans sa propre langue.
   if (langue !== 'fr') audios[`langue.${langue}`] = url
   // Audios publiés depuis le studio (vague 3).
@@ -310,32 +315,35 @@ const CAISSIERS = [
 ]
 
 const ARTICLES_DEMO: Array<Omit<Article, 'ulid' | 'position'>> = [
-  { nom: 'Café Touba', prix_xof: 300, categorie: 'Boissons', couleur: 'brun', sku: null, actif: true },
-  { nom: 'Thiéboudienne', prix_xof: 2500, categorie: 'Plats', couleur: 'orange', sku: 'PL-01', actif: true },
-  { nom: 'Yassa poulet', prix_xof: 3000, categorie: 'Plats', couleur: 'jaune', sku: 'PL-02', actif: true },
-  { nom: 'Bissap 50 cl', prix_xof: 500, categorie: 'Boissons', couleur: 'rouge', sku: null, actif: true },
-  { nom: 'Eau 1,5 L', prix_xof: 400, categorie: 'Boissons', couleur: 'bleu', sku: null, actif: true },
-  { nom: 'Pastels (×4)', prix_xof: 1000, categorie: 'Snacks', couleur: 'vert', sku: null, actif: true },
-  { nom: 'Bazin (le mètre)', prix_xof: 7500, categorie: 'Tissus', couleur: 'violet', sku: 'TX-07', actif: true },
-  { nom: 'Recharge 1 000', prix_xof: 1000, categorie: 'Services', couleur: 'gris', sku: null, actif: false },
-  { nom: 'Mafé bœuf', prix_xof: 2500, categorie: 'Plats', couleur: 'orange', sku: 'PL-03', actif: true },
-  { nom: 'Ceebu yapp', prix_xof: 3000, categorie: 'Plats', couleur: 'rouge', sku: 'PL-04', actif: true },
-  { nom: 'Domoda', prix_xof: 2000, categorie: 'Plats', couleur: 'brun', sku: 'PL-05', actif: true },
-  { nom: 'Fataya (×3)', prix_xof: 750, categorie: 'Snacks', couleur: 'jaune', sku: null, actif: true },
-  { nom: 'Beignets (×5)', prix_xof: 500, categorie: 'Snacks', couleur: 'jaune', sku: null, actif: true },
-  { nom: 'Thiakry', prix_xof: 600, categorie: 'Desserts', couleur: 'violet', sku: null, actif: true },
-  { nom: 'Jus de gingembre', prix_xof: 500, categorie: 'Boissons', couleur: 'vert', sku: null, actif: true },
-  { nom: 'Jus de bouye', prix_xof: 600, categorie: 'Boissons', couleur: 'brun', sku: null, actif: true },
-  { nom: 'Kinkéliba', prix_xof: 300, categorie: 'Boissons', couleur: 'vert', sku: null, actif: true },
-  { nom: 'Thé ataya', prix_xof: 200, categorie: 'Boissons', couleur: 'rouge', sku: null, actif: true },
-  { nom: 'Pain tapalapa', prix_xof: 150, categorie: 'Boulangerie', couleur: 'jaune', sku: 'BL-01', actif: true },
-  { nom: 'Sandwich niébé', prix_xof: 400, categorie: 'Snacks', couleur: 'orange', sku: null, actif: true },
-  { nom: 'Wax (6 yards)', prix_xof: 12000, categorie: 'Tissus', couleur: 'violet', sku: 'TX-08', actif: true },
-  { nom: 'Savon de Marseille', prix_xof: 500, categorie: 'Épicerie', couleur: 'bleu', sku: null, actif: true },
-  { nom: 'Sucre (1 kg)', prix_xof: 750, categorie: 'Épicerie', couleur: 'gris', sku: 'EP-01', actif: true },
-  { nom: 'Riz brisé (1 kg)', prix_xof: 450, categorie: 'Épicerie', couleur: 'gris', sku: 'EP-02', actif: true },
-  { nom: 'Huile (1 L)', prix_xof: 1300, categorie: 'Épicerie', couleur: 'jaune', sku: 'EP-03', actif: true },
-  { nom: 'Crédit Wave 5 000', prix_xof: 5000, categorie: 'Services', couleur: 'bleu', sku: null, actif: false },
+  { nom: 'Café Touba', prix_xof: 300, categorie: 'Boissons', couleur: 'brun', pictogramme: 'cafe', sku: null, actif: true },
+  // Articles SANS nom écrit (§ 15) : reconnus à l'image et au nom dit (commerçante qui ne lit pas).
+  { nom: null, prix_xof: 100, categorie: null, couleur: 'brun', pictogramme: 'pain', sku: null, actif: true },
+  { nom: null, prix_xof: 600, categorie: null, couleur: 'jaune', pictogramme: 'oeufs', sku: null, actif: true },
+  { nom: 'Thiéboudienne', prix_xof: 2500, categorie: 'Plats', couleur: 'orange', pictogramme: 'plat', sku: 'PL-01', actif: true },
+  { nom: 'Yassa poulet', prix_xof: 3000, categorie: 'Plats', couleur: 'jaune', pictogramme: 'poulet', sku: 'PL-02', actif: true },
+  { nom: 'Bissap 50 cl', prix_xof: 500, categorie: 'Boissons', couleur: 'rouge', pictogramme: 'jus', sku: null, actif: true },
+  { nom: 'Eau 1,5 L', prix_xof: 400, categorie: 'Boissons', couleur: 'bleu', pictogramme: 'eau', sku: null, actif: true },
+  { nom: 'Pastels (×4)', prix_xof: 1000, categorie: 'Snacks', couleur: 'vert', pictogramme: 'sandwich', sku: null, actif: true },
+  { nom: 'Bazin (le mètre)', prix_xof: 7500, categorie: 'Tissus', couleur: 'violet', pictogramme: 'tissu', sku: 'TX-07', actif: true },
+  { nom: 'Recharge 1 000', prix_xof: 1000, categorie: 'Services', couleur: 'gris', pictogramme: 'credit', sku: null, actif: false },
+  { nom: 'Mafé bœuf', prix_xof: 2500, categorie: 'Plats', couleur: 'orange', pictogramme: 'viande', sku: 'PL-03', actif: true },
+  { nom: 'Ceebu yapp', prix_xof: 3000, categorie: 'Plats', couleur: 'rouge', pictogramme: 'viande', sku: 'PL-04', actif: true },
+  { nom: 'Domoda', prix_xof: 2000, categorie: 'Plats', couleur: 'brun', pictogramme: 'plat', sku: 'PL-05', actif: true },
+  { nom: 'Fataya (×3)', prix_xof: 750, categorie: 'Snacks', couleur: 'jaune', pictogramme: 'sandwich', sku: null, actif: true },
+  { nom: 'Beignets (×5)', prix_xof: 500, categorie: 'Snacks', couleur: 'jaune', pictogramme: 'gateau', sku: null, actif: true },
+  { nom: 'Thiakry', prix_xof: 600, categorie: 'Desserts', couleur: 'violet', pictogramme: 'lait', sku: null, actif: true },
+  { nom: 'Jus de gingembre', prix_xof: 500, categorie: 'Boissons', couleur: 'vert', pictogramme: 'jus', sku: null, actif: true },
+  { nom: 'Jus de bouye', prix_xof: 600, categorie: 'Boissons', couleur: 'brun', pictogramme: 'jus', sku: null, actif: true },
+  { nom: 'Kinkéliba', prix_xof: 300, categorie: 'Boissons', couleur: 'vert', pictogramme: 'the', sku: null, actif: true },
+  { nom: 'Thé ataya', prix_xof: 200, categorie: 'Boissons', couleur: 'rouge', pictogramme: 'the', sku: null, actif: true },
+  { nom: 'Pain tapalapa', prix_xof: 150, categorie: 'Boulangerie', couleur: 'jaune', pictogramme: 'pain', sku: 'BL-01', actif: true },
+  { nom: 'Sandwich niébé', prix_xof: 400, categorie: 'Snacks', couleur: 'orange', pictogramme: 'sandwich', sku: null, actif: true },
+  { nom: 'Wax (6 yards)', prix_xof: 12000, categorie: 'Tissus', couleur: 'violet', pictogramme: 'tissu', sku: 'TX-08', actif: true },
+  { nom: 'Savon de Marseille', prix_xof: 500, categorie: 'Épicerie', couleur: 'bleu', pictogramme: 'savon', sku: null, actif: true },
+  { nom: 'Sucre (1 kg)', prix_xof: 750, categorie: 'Épicerie', couleur: 'gris', pictogramme: 'sucre', sku: 'EP-01', actif: true },
+  { nom: 'Riz brisé (1 kg)', prix_xof: 450, categorie: 'Épicerie', couleur: 'gris', pictogramme: 'riz', sku: 'EP-02', actif: true },
+  { nom: 'Huile (1 L)', prix_xof: 1300, categorie: 'Épicerie', couleur: 'jaune', pictogramme: 'huile', sku: 'EP-03', actif: true },
+  { nom: 'Crédit Wave 5 000', prix_xof: 5000, categorie: 'Services', couleur: 'bleu', pictogramme: 'credit', sku: null, actif: false },
 ]
 
 const NOTES = ['Table 4', null, null, '2 m de bazin', null, 'Livraison Plateau', null, null, 'Client fidèle', null]
@@ -434,8 +442,8 @@ function creerEtatInitial(): Etat {
   // Une vente avec panier (lignes) et un trop-perçu, pour le détail.
   nouvelleVente({ montant: 3500, methode: 'lightning', statut: 'payee', cree: maintenant - 70 * MINUTE, caissier: 2, note: null }, (v) => {
     v.lignes = [
-      { libelle: 'Thiéboudienne', quantite: 1, prix_unitaire_xof: 2500, article_ulid: null },
-      { libelle: 'Bissap 50 cl', quantite: 2, prix_unitaire_xof: 500, article_ulid: null },
+      { libelle: 'Thiéboudienne', quantite: 1, prix_unitaire_xof: 2500, article_ulid: null, pictogramme: 'plat', couleur: 'orange', photo_url: null },
+      { libelle: 'Bissap 50 cl', quantite: 2, prix_unitaire_xof: 500, article_ulid: null, pictogramme: 'jus', couleur: 'rouge', photo_url: photoDemoBissap() },
     ]
   })
   nouvelleVente({ montant: 5000, methode: 'paytech', operateur: 'orange_money', statut: 'payee', cree: maintenant - 55 * MINUTE, caissier: 1, alerte: 'trop_percu', note: null }, (v) => {
@@ -501,7 +509,14 @@ function creerEtatInitial(): Etat {
     transactions,
     ventes,
     sequence,
-    articles: ARTICLES_DEMO.map((a, i) => ({ ...a, ulid: ulid('01A'), position: i })),
+    // Démo § 15 : une vraie photo (Bissap) et un nom dit (pain sans nom écrit).
+    articles: ARTICLES_DEMO.map((a, i) => ({
+      ...a,
+      ulid: ulid('01A'),
+      position: i,
+      photo_url: a.nom === 'Bissap 50 cl' ? photoDemoBissap() : null,
+      voix_url: a.nom === null && a.pictogramme === 'pain' ? voixDemo() : null,
+    })),
     invitations: [{ ulid: ulid('01I'), contact: '+221 77 555 12 34', role: 'caissier', expire_le: ISO(maintenant + 60 * 60 * MINUTE) }],
     membres: [
       { ulid: CAISSIERS[0]!.ulid, role: 'proprietaire', actif: true, derniere_connexion_le: ISO(maintenant - 5 * MINUTE) },
@@ -918,6 +933,8 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
       boutique: { nom: etat.boutique.nom, ville: etat.boutique.ville },
       message: etat.boutique.reglages.message_recu,
       moyen: vente.moyen_reussi ?? null,
+      // Lignes + pictogramme (jamais la photo, réservée à la boutique).
+      lignes: vente.lignes.map((l) => ({ libelle: l.libelle, quantite: l.quantite, prix_unitaire_xof: l.prix_unitaire_xof, pictogramme: l.pictogramme ?? null, couleur: l.couleur ?? null })),
     }
     return json(200, recu)
   }
@@ -1247,7 +1264,11 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
       alerte: null,
       cree_le: ISO(Date.now()),
       payee_le: null,
-      lignes: lignes.map((l) => ({ libelle: l.libelle, quantite: l.quantite, prix_unitaire_xof: l.prix_unitaire_xof, article_ulid: l.article_ulid ?? null })),
+      lignes: lignes.map((l) => {
+        // Visuel de l'article (§ 15) : vignette à côté du libellé dans le détail de la vente.
+        const a = l.article_ulid ? etat.articles.find((x) => x.ulid === l.article_ulid) : undefined
+        return { libelle: l.libelle, quantite: l.quantite, prix_unitaire_xof: l.prix_unitaire_xof, article_ulid: l.article_ulid ?? null, pictogramme: a?.pictogramme ?? null, couleur: a?.couleur ?? null, photo_url: a?.photo_url ?? null }
+      }),
       paiements: [],
       paiement_reussi: null,
       recu_url: null,
@@ -1313,7 +1334,7 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
     if (!(ventes ? ['csv', 'xlsx', 'pdf'] : ['csv', 'xlsx']).includes(format)) return json(422, { message: 'Format inconnu.', errors: { format: ['Format inconnu.'] } })
     const csv = ventes
       ? csvVentes(filtrerVentes(url.searchParams, session))
-      : `\uFEFFNom;Prix (FCFA);Catégorie;Référence;Actif\n${etat.articles.map((a) => [a.nom, a.prix_xof, a.categorie ?? '', a.sku ?? '', a.actif ? 'oui' : 'non'].join(';')).join('\n')}\n`
+      : `\uFEFFNom;Prix (FCFA);Catégorie;Référence;Actif;Pictogramme\n${etat.articles.map((a) => [a.nom ?? '', a.prix_xof, a.categorie ?? '', a.sku ?? '', a.actif ? 'oui' : 'non', a.pictogramme ?? ''].join(';')).join('\n')}\n`
     const types: Record<string, string> = { csv: 'text/csv; charset=utf-8', xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', pdf: 'application/pdf' }
     // Excel / PDF simulés : le contenu reste le CSV (le vrai fichier est produit par le back).
     return new Response(format === 'pdf' ? `%PDF-1.4\n% SatsPoint (mock)\n${csv}` : csv, { status: 200, headers: { 'Content-Type': types[format]!, 'Content-Disposition': `attachment; filename="${ventes ? 'ventes' : 'articles'}.${format}"` } })
@@ -1358,17 +1379,29 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
   if (route.startsWith('/articles')) {
     if (!estGestion(session)) return interdit()
     if (route === '/articles' && methode === 'POST') {
-      const corps = await lireJson(init)
-      if (!corps.nom || !(Number(corps.prix_xof) > 0)) return json(422, { message: 'Les données sont invalides.', errors: { nom: corps.nom ? [] : ['Le nom est obligatoire.'], prix_xof: Number(corps.prix_xof) > 0 ? [] : ['Indiquez un prix.'] } })
+      // JSON ou multipart (photo / nom dit joints) — tout ou rien, comme le serveur (§ 15).
+      const { champs: corps, photo, voix } = await lireCorpsArticle(init)
+      const nom = typeof corps.nom === 'string' && corps.nom.trim() ? corps.nom.trim() : null
+      const pictogramme = typeof corps.pictogramme === 'string' ? corps.pictogramme : null
+      const erreurs: Record<string, string[]> = {}
+      if (!nom && !pictogramme && !photo && !voix) erreurs.nom = ['Donnez un nom, une image, une photo ou un nom dit à voix haute.']
+      if (!(Number(corps.prix_xof) >= 0) || corps.prix_xof === undefined || corps.prix_xof === null) erreurs.prix_xof = ['Indiquez un prix.']
+      if (!pictogrammeValide(corps.pictogramme)) erreurs.pictogramme = ["Cette image n'existe pas."]
+      if (Object.keys(erreurs).length) return json(422, { message: 'Les données sont invalides.', errors: erreurs })
+      const refus = (photo && refusFichier('photo', photo)) || (voix && refusFichier('voix', voix))
+      if (refus) return json(422, refus)
       const article: Article = {
         ulid: ulid('01A'),
-        nom: String(corps.nom),
+        nom,
         prix_xof: Number(corps.prix_xof),
         categorie: corps.categorie ? String(corps.categorie) : null,
         couleur: String(corps.couleur ?? 'orange'),
+        pictogramme,
         sku: corps.sku ? String(corps.sku) : null,
         actif: corps.actif !== false,
         position: etat.articles.length,
+        photo_url: photo ? urlFichier(photo) : null,
+        voix_url: voix ? urlFichier(voix) : null,
       }
       etat.articles.push(article)
       signaler(['articles'], moi)
@@ -1385,13 +1418,40 @@ async function repondre(url: URL, init: RequestInit | undefined): Promise<Respon
       signaler(['articles'], moi)
       return json(204)
     }
+    // Photo et nom dit (§ 15) : POST multipart `fichier`, DELETE (refusé si c'était la dernière identité).
+    m = /^\/articles\/([^/]+)\/(photo|voix)$/.exec(route)
+    if (m) {
+      const article = etat.articles.find((a) => a.ulid === m![1])
+      if (!article) return json(404, { message: 'Article introuvable.' })
+      const type = m[2] as 'photo' | 'voix'
+      const champ = type === 'photo' ? 'photo_url' : 'voix_url'
+      if (methode === 'POST') {
+        const fichier = init?.body instanceof FormData ? init.body.get('fichier') : null
+        const refus = refusFichier(type, fichier instanceof File ? fichier : null)
+        if (refus) return json(422, refus)
+        await attendre(type === 'voix' ? 500 : 350) // ré-encodage serveur
+        article[champ] = urlFichier(fichier as File)
+        signaler(['articles'], moi)
+        return json(200, { article })
+      }
+      if (methode === 'DELETE') {
+        if (!article[champ]) return json(200, { article })
+        if (!aUneIdentite({ ...article, [champ]: null })) return json(422, { message: 'Un article garde au moins un nom, une image, une photo ou un nom dit à voix haute.', code: 'ARTICLE_SANS_IDENTITE' })
+        article[champ] = null
+        signaler(['articles'], moi)
+        return json(200, { article })
+      }
+    }
     m = /^\/articles\/([^/]+)$/.exec(route)
     if (m) {
       const article = etat.articles.find((a) => a.ulid === m![1])
       if (!article) return json(404, { message: 'Article introuvable.' })
       if (methode === 'PATCH') {
         const corps = await lireJson(init)
-        Object.assign(article, corps)
+        if (!pictogrammeValide(corps.pictogramme)) return json(422, { message: 'Les données sont invalides.', errors: { pictogramme: ["Cette image n'existe pas."] } })
+        const apres = { ...article, ...corps, nom: 'nom' in corps ? (typeof corps.nom === 'string' && corps.nom.trim() ? corps.nom.trim() : null) : article.nom }
+        if (!aUneIdentite(apres as Article)) return json(422, { message: 'Les données sont invalides.', errors: { nom: ['Donnez un nom, une image, une photo ou un nom dit à voix haute.'] } })
+        Object.assign(article, apres)
         signaler(['articles'], moi)
         return json(200, { article })
       }

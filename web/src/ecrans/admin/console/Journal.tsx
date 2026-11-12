@@ -69,7 +69,7 @@ export function JournalAdmin({ actif }: { actif: boolean }) {
     <div className="flex flex-col gap-2" data-vue="journal">
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_auto_auto]">
         <Selection
-          libelle={t('admin.journal.action')}
+          libelle={t('admin.journal.action')} voix="admin.journal.action"
           libelleVisible={false}
           taille="sm"
           value={filtres.action ?? ''}
@@ -77,8 +77,8 @@ export function JournalAdmin({ actif }: { actif: boolean }) {
           options={[{ valeur: '', libelle: t('admin.journal.toutes') }, ...FAMILLES.map((f) => ({ valeur: `${f}.`, libelle: t(`admin.journal.familles.${f}`) }))]}
           classeConteneur="col-span-2 sm:col-span-1"
         />
-        <Champ libelle={t('admin.journal.du')} type="date" value={filtres.du ?? ''} max={filtres.au} onChange={(e) => changer('du', e.target.value)} className="h-9 text-sm md:h-8" classeConteneur="[&>label]:sr-only" />
-        <Champ libelle={t('admin.journal.au')} type="date" value={filtres.au ?? ''} min={filtres.du} onChange={(e) => changer('au', e.target.value)} className="h-9 text-sm md:h-8" classeConteneur="[&>label]:sr-only" />
+        <Champ libelle={t('admin.journal.du')} voix="admin.journal.du" type="date" value={filtres.du ?? ''} max={filtres.au} onChange={(e) => changer('du', e.target.value)} className="h-9 text-sm md:h-8" classeConteneur="[&>label]:sr-only" />
+        <Champ libelle={t('admin.journal.au')} voix="admin.journal.au" type="date" value={filtres.au ?? ''} min={filtres.du} onChange={(e) => changer('au', e.target.value)} className="h-9 text-sm md:h-8" classeConteneur="[&>label]:sr-only" />
       </div>
 
       {requete.isPending ? (

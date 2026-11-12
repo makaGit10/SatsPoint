@@ -75,7 +75,7 @@ export function Scanner({ ouvert, onFermer, onCode }: PropsScanner) {
   }, [ouvert, indisponible, onCode])
 
   return (
-    <Dialogue ouvert={ouvert} onOuvertChange={(o) => !o && onFermer()} titre={t('portefeuille.scanner')} taille="sm">
+    <Dialogue ouvert={ouvert} onOuvertChange={(o) => !o && onFermer()} titre={t('portefeuille.scanner')} voix="portefeuille.scanner" taille="sm">
       <div className="pb-2">
         {indisponible ? (
           <EtatVide ton="neutre" icone={<Camera />} titre={t('portefeuille.cameraIndisponible')} className="py-6" />

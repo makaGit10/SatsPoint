@@ -110,11 +110,12 @@ export function Envoyer({ ouvert, onFermer }: { ouvert: boolean; onFermer: () =>
 
   return (
     <>
-      <Dialogue ouvert={ouvert} onOuvertChange={(o) => !o && fermer()} titre={t('portefeuille.envoyerTitre')} taille="sm">
+      <Dialogue ouvert={ouvert} onOuvertChange={(o) => !o && fermer()} titre={t('portefeuille.envoyerTitre')} voix="portefeuille.envoyerTitre" taille="sm">
         {etape === 'destination' && (
           <form onSubmit={soumettreDestination} noValidate className="flex flex-col gap-3 pb-1">
             <Champ
               libelle={t('portefeuille.destination')}
+              voix="portefeuille.destination"
               aide={t('portefeuille.destinationAide')}
               autoComplete="off"
               autoCapitalize="none"
@@ -135,7 +136,7 @@ export function Envoyer({ ouvert, onFermer }: { ouvert: boolean; onFermer: () =>
             />
             {besoinMontant && (
               <Champ
-                libelle={t('portefeuille.montantSats')}
+                libelle={t('portefeuille.montantSats')} voix="portefeuille.montantSats"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 autoComplete="off"
@@ -192,7 +193,7 @@ export function Envoyer({ ouvert, onFermer }: { ouvert: boolean; onFermer: () =>
             className="flex flex-col gap-3 pb-1"
           >
             <p className="text-center text-2xl font-semibold text-texte tabulaire">{formaterSats(sats)}</p>
-            <ChampMotDePasse libelle={t('portefeuille.motDePasse')} name="password" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} autoFocus />
+            <ChampMotDePasse libelle={t('portefeuille.motDePasse')} voix="portefeuille.motDePasse" name="password" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} autoFocus />
             <div className="flex gap-2">
               <Bouton variante="secondaire" voix="commun.retour" onClick={() => setEtape('apercu')} className="flex-1">
                 {t('commun.retour')}

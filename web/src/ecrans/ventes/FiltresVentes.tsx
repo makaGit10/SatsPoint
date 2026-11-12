@@ -40,7 +40,7 @@ export function FiltresVentes({ filtres, onChange, caissiers, restreint, classNa
             taille="sm"
             valeur={periode}
             onChange={(p) => poser({ periode: p, du: undefined, au: undefined })}
-            options={PERIODES.map((p) => ({ valeur: p, libelle: t(CLE_PERIODE[p]) }))}
+            options={PERIODES.map((p) => ({ valeur: p, libelle: t(CLE_PERIODE[p]), voix: `periodes.${CLE_PERIODE[p].slice('periodes.'.length)}` }))}
             className="md:w-auto md:flex-1"
           />
           {periode === 'perso' && (
@@ -59,7 +59,7 @@ export function FiltresVentes({ filtres, onChange, caissiers, restreint, classNa
       )}
       <div className={cn('grid gap-2', restreint ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-[1fr_1fr_1fr_auto]')}>
         <Selection
-          libelle={t('ventes.statut')}
+          libelle={t('ventes.statut')} voix="ventes.statut"
           libelleVisible={false}
           taille="sm"
           value={filtres.statut ?? ''}
@@ -67,7 +67,7 @@ export function FiltresVentes({ filtres, onChange, caissiers, restreint, classNa
           options={[{ valeur: '', libelle: `${t('ventes.statut')} · ${t('ventes.tous')}` }, ...STATUTS.map((s) => ({ valeur: s, libelle: t(`statuts.${s}`) }))]}
         />
         <Selection
-          libelle={t('ventes.methode')}
+          libelle={t('ventes.methode')} voix="ventes.methode"
           libelleVisible={false}
           taille="sm"
           value={filtres.methode ?? ''}
@@ -76,7 +76,7 @@ export function FiltresVentes({ filtres, onChange, caissiers, restreint, classNa
         />
         {!restreint && (
           <Selection
-            libelle={t('ventes.caissier')}
+            libelle={t('ventes.caissier')} voix="ventes.caissier"
             libelleVisible={false}
             taille="sm"
             value={filtres.caissier ?? ''}

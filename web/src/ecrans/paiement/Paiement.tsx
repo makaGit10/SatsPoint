@@ -18,6 +18,7 @@ import { Segment } from '@/composants/Segment'
 import { Squelette } from '@/composants/Squelette'
 import { notifier } from '@/composants/toastStore'
 import { BandeauDemo } from '@/coquille/BandeauDemo'
+import { BoutonVoix } from '@/coquille/BoutonVoix'
 import { Marque } from '@/coquille/Marque'
 import { useMessageErreur } from '@/ecrans/auth/useMessageErreur'
 import { cn } from '@/lib/cn'
@@ -32,6 +33,7 @@ import { annoncer } from '@/voix/annoncer'
 import { HautParleur } from '@/voix/HautParleur'
 import { Succes } from './Succes'
 import { useSuiviPaiement, type EtatSuivi } from './useSuiviPaiement'
+import { useGuideVocal } from '@/voix/guide'
 
 type Onglet = 'lightning' | 'mobile'
 /** Opérateur PayTech, Wave direct, ou moyen du pays (`moyen:{ulid}`, CONTRAT_API § 14.4). */
@@ -56,6 +58,16 @@ export default function Paiement() {
   const nomBoutique = utilisateur?.boutique?.nom ?? t('app.nom')
 
   const { etat, paiement, vente, verifier, verificationEnCours, recharger } = useSuiviPaiement(ulid)
+  // Guide vocal du moyen affiché (bitcoin, mobile money PayTech, moyen du pays, Wave direct), tant que l'on attend le client.
+  const guide =
+    paiement?.methode === 'wave_manuel'
+      ? 'guide.paiement.waveDirect'
+      : paiement?.methode === 'moyen_pays'
+        ? 'guide.paiement.moyenPays'
+        : paiement?.methode === 'paytech'
+          ? 'guide.paiement.mobileMoney'
+          : 'guide.paiement.bitcoin'
+  useGuideVocal(guide, { actif: Boolean(paiement) && etat === 'en_attente' })
   const { data: boutique } = useBoutique()
   const { data: venteComplete } = useVente(etat === 'reussi' ? vente?.ulid : null)
 
@@ -132,10 +144,10 @@ export default function Paiement() {
   const moyensPays = useMemo(() => boutique?.moyens_pays ?? [], [boutique])
   const mobileOk = paytechOk || waveOk || moyensPays.length > 0
 
-  const choixMobile: { valeur: ChoixMobile; libelle: string }[] = useMemo(
+  const choixMobile: { valeur: ChoixMobile; libelle: string; voix?: string }[] = useMemo(
     () => [
-      ...(paytechOk ? OPERATEURS.map((op) => ({ valeur: op as ChoixMobile, libelle: t(`operateurs.${op}`) })) : []),
-      ...(waveOk ? [{ valeur: 'wave_manuel' as ChoixMobile, libelle: t('methodes.wave_manuel') }] : []),
+      ...(paytechOk ? OPERATEURS.map((op) => ({ valeur: op as ChoixMobile, libelle: t(`operateurs.${op}`), voix: `operateurs.${op}` })) : []),
+      ...(waveOk ? [{ valeur: 'wave_manuel' as ChoixMobile, libelle: t('methodes.wave_manuel'), voix: 'methodes.wave_manuel' }] : []),
       ...moyensPays.map((m) => ({ valeur: `${PREFIXE_MOYEN}${m.ulid}` as ChoixMobile, libelle: m.nom })),
     ],
     [paytechOk, waveOk, moyensPays, t],
@@ -208,12 +220,13 @@ export default function Paiement() {
           </h1>
           {vente && <p className="truncate text-xs text-texte-3 tabulaire">{t('paiement.vente', { numero: vente.numero })}</p>}
         </div>
+        <BoutonVoix />
         {etat === 'en_attente' && (
           <BoutonIcone libelle={t('paiement.annuler')} icone={<X />} voix="paiement.annuler" variante="danger" onClick={() => setAnnulationOuverte(true)} />
         )}
       </header>
 
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pt-6 pb-[calc(env(safe-area-inset-bottom,0px)+20px)] md:max-w-lg md:pt-10">
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pt-6 pb-[calc(env(safe-area-inset-bottom,0px)+20px+var(--reserve-guide))] md:max-w-lg md:pt-10">
         {etat === 'introuvable' || etat === 'erreur' ? (
           <EtatVide
             ton="neutre"
@@ -311,7 +324,7 @@ export default function Paiement() {
       <Dialogue
         ouvert={annulationOuverte}
         onOuvertChange={setAnnulationOuverte}
-        titre={t('paiement.annulerTitre')}
+        titre={t('paiement.annulerTitre')} voix="paiement.annulerTitre"
         description={t('paiement.annulerTexte')}
         taille="sm"
         pied={
@@ -328,7 +341,7 @@ export default function Paiement() {
       <Dialogue
         ouvert={confirmationOuverte}
         onOuvertChange={setConfirmationOuverte}
-        titre={t('paiement.confirmerTitre', { montant: paiement ? formaterFCFA(paiement.montant_xof) : '' })}
+        titre={t('paiement.confirmerTitre', { montant: paiement ? formaterFCFA(paiement.montant_xof) : '' })} voix="paiement.confirmerTitre"
         description={moyenCourant ? t('paiement.confirmerTexteMoyen', { moyen: moyenCourant.nom }) : t('paiement.confirmerTexte')}
         taille="sm"
         pied={
@@ -482,10 +495,11 @@ function PanneauTentative(p: PropsPanneau) {
           href={lienExterne}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-4 inline-flex h-13 w-full max-w-xs items-center justify-center gap-2 rounded-full bg-mm px-5 text-base font-bold text-[#04263a] ombre-mm hover:brightness-105"
+          className="relative mt-4 inline-flex h-13 w-full max-w-xs items-center justify-center gap-2 rounded-full bg-mm px-5 text-base font-bold text-[#04263a] ombre-mm hover:brightness-105"
         >
           <ExternalLink size={16} aria-hidden="true" />
           {paiement.methode === 'wave_manuel' ? t('paiement.ouvrirWave') : t('paiement.ouvrir')}
+          <HautParleur cle={paiement.methode === 'wave_manuel' ? 'paiement.ouvrirWave' : 'paiement.ouvrir'} dansBouton />
         </a>
       )}
 

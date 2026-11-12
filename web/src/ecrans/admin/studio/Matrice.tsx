@@ -3,6 +3,7 @@ import { Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CleAudio, LangueAudio, LangueMatrice } from '@/api/types'
 import { cn } from '@/lib/cn'
+import { HautParleur } from '@/voix/HautParleur'
 import { IconeStatut } from './IconeStatut'
 import { statutDe } from './selection'
 
@@ -63,15 +64,19 @@ export function MatriceBureau({ cles, langues, langue, selection, onChoisir }: P
               {g.cles.map((c) => (
                 <tr key={c.cle} className={cn('border-b border-bordure last:border-b-0', selection === c.cle && 'bg-surface-2')} data-cle={c.cle}>
                   <td className="px-3 py-1.5">
-                    <button type="button" onClick={() => onChoisir(c.cle, langue)} className="block w-full min-w-0 text-left">
-                      <span className="flex items-center gap-1">
-                        <span className="truncate font-medium text-texte">{c.texte_fr}</span>
-                        {c.essentielle && <Star size={11} className="shrink-0 fill-current text-accent-trait" aria-label={t('studio.essentielle')} />}
-                      </span>
-                      <span className="block truncate font-mono text-2xs text-texte-3" data-technique>
-                        {c.cle}
-                      </span>
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button type="button" onClick={() => onChoisir(c.cle, langue)} className="block min-w-0 flex-1 text-left">
+                        <span className="flex items-center gap-1">
+                          <span className="truncate font-medium text-texte">{c.texte_fr}</span>
+                          {c.essentielle && <Star size={11} className="shrink-0 fill-current text-accent-trait" aria-label={t('studio.essentielle')} />}
+                        </span>
+                        <span className="block truncate font-mono text-2xs text-texte-3" data-technique>
+                          {c.cle}
+                        </span>
+                      </button>
+                      {/* Écouter la phrase déjà enregistrée dans la langue de travail (repli : le français). */}
+                      <HautParleur cle={c.cle} langue={langue} />
+                    </div>
                   </td>
                   {langues.map((l) => {
                     const statut = statutDe(c, l.code)
@@ -117,13 +122,13 @@ export function MatriceMobile({ cles, langues, langue, selection, onChoisir }: P
             {g.cles.map((c) => {
               const statut = statutDe(c, langue)
               return (
-                <li key={c.cle}>
+                <li key={c.cle} className="flex items-center pr-1">
                   <button
                     type="button"
                     onClick={() => onChoisir(c.cle, langue)}
                     aria-label={t('studio.caseAria', { langue: nomLangue, texte: c.texte_fr, statut: t(`studio.statuts.${statut}`) })}
                     data-statut={statut}
-                    className={cn('flex min-h-12 w-full items-center gap-3 px-3 py-2 text-left', selection === c.cle && 'bg-surface-2')}
+                    className={cn('flex min-h-12 min-w-0 flex-1 items-center gap-3 px-3 py-2 text-left', selection === c.cle && 'bg-surface-2')}
                   >
                     <IconeStatut statut={statut} />
                     <span className="min-w-0 flex-1">
@@ -135,6 +140,7 @@ export function MatriceMobile({ cles, langues, langue, selection, onChoisir }: P
                     </span>
                     <ChevronRight size={16} className="shrink-0 text-texte-3" aria-hidden="true" />
                   </button>
+                  <HautParleur cle={c.cle} langue={langue} />
                 </li>
               )
             })}

@@ -17,6 +17,8 @@ export interface OptionsRequete {
   /** Route publique : un 401 n'entraîne pas de redirection. */
   publique?: boolean
   enTetes?: Record<string, string>
+  /** Mode du cache HTTP du navigateur (ex. `no-cache` : toujours revalider, l'ETag rend la réponse légère). */
+  cache?: RequestCache
 }
 
 export class ErreurApi extends Error {
@@ -143,6 +145,7 @@ export async function api<T>(chemin: string, options: OptionsRequete = {}): Prom
     }
     const init: RequestInit = { method: methode, credentials: 'include', headers: enTetes }
     if (options.signal) init.signal = options.signal
+    if (options.cache) init.cache = options.cache
     if (options.corps !== undefined) init.body = multipart ? (options.corps as FormData) : JSON.stringify(options.corps)
     return fetch(url, init)
   }

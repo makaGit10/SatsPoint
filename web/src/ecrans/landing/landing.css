@@ -255,6 +255,7 @@
   text-overflow: ellipsis;
 }
 .landing .choix-voix-couper {
+  position: relative;
   width: 40px;
   height: 40px;
   border-radius: 999px;
@@ -348,12 +349,14 @@
 }
 .landing .liens {
   display: flex;
-  gap: 32px;
+  gap: 24px;
+  white-space: nowrap;
   font-weight: 600;
   font-size: 15px;
 }
 .landing .liens a,
 .landing .lien-connexion {
+  position: relative;
   color: var(--l-texte-2);
   text-decoration: none;
   transition: color 150ms ease;
@@ -1030,6 +1033,18 @@
 .landing .pied-liens a {
   text-decoration: none;
 }
+/* Lien du pied suivi de son haut-parleur. */
+.landing .lien-hp {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+.landing .faq-question {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
 .landing .pied-liens a:hover {
   color: var(--l-texte);
 }
@@ -1048,7 +1063,8 @@
 }
 
 /* ---------- Tablette et téléphone ---------- */
-@media (max-width: 1024px) {
+/* Avec le bouton d'aide vocale et ses haut-parleurs, l'en-tête n'a la place du menu d'ancres qu'au-delà de 1280 px. */
+@media (max-width: 1280px) {
   .landing .liens {
     display: none;
   }
@@ -1102,7 +1118,7 @@
   }
 }
 @media (max-width: 560px) {
-  .landing .lien-connexion,
+  .landing .lien-connexion-hp,
   .landing .btn-petit {
     display: none;
   }

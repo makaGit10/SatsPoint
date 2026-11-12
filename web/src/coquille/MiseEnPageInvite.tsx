@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { cn } from '@/lib/cn'
 import { BandeauDemo } from './BandeauDemo'
+import { BoutonVoix } from './BoutonVoix'
 import { Marque } from './Marque'
 import { SelecteurLangue, SelecteurTheme } from './Selecteurs'
 
@@ -33,11 +34,12 @@ export function MiseEnPageInvite({
           </Link>
         )}
         <div className="flex items-center gap-0.5">
+          <BoutonVoix className="mr-1" />
           <SelecteurTheme />
           <SelecteurLangue />
         </div>
       </header>
-      <main className={cn('mx-auto flex w-full flex-1 flex-col px-5 pt-4 pb-8 md:justify-center md:pt-0 md:pb-16', large ? 'max-w-xl' : 'max-w-md')}>
+      <main className={cn('mx-auto flex w-full flex-1 flex-col px-5 pt-4 pb-[calc(32px+var(--reserve-guide))] md:justify-center md:pt-0 md:pb-[calc(64px+var(--reserve-guide))]', large ? 'max-w-xl' : 'max-w-md')}>
         {children}
       </main>
     </div>

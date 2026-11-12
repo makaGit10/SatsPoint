@@ -10,13 +10,17 @@ import { Squelette } from '@/composants/Squelette'
 import { IconeMethode } from '@/composants/Statuts'
 import { libelleMethode } from '@/lib/methodes'
 import { Marque } from '@/coquille/Marque'
+import { BoutonVoix } from '@/coquille/BoutonVoix'
 import { SelecteurLangue, SelecteurTheme } from '@/coquille/Selecteurs'
+import { VignetteArticle } from '@/ecrans/articles/VignetteArticle'
 import { localeCourante } from '@/i18n'
 import { formaterDateHeure, formaterFCFA, formaterSats } from '@/lib/format'
+import { useGuideVocal } from '@/voix/guide'
 
 /** Reçu public : lisible sans compte, partagé par lien non devinable, imprimable. Aucune donnée personnelle. */
 export default function Recu() {
   const { t, i18n } = useTranslation()
+  useGuideVocal('guide.recu')
   void i18n.language
   const { jeton } = useParams()
   const { data, isPending, isError } = useRecu(jeton)
@@ -27,6 +31,7 @@ export default function Recu() {
         <Marque taille="sm" />
         <div className="flex items-center gap-0.5">
           {data && <BoutonIcone libelle={t('recu.imprimer')} icone={<Printer />} voix="recu.imprimer" onClick={() => window.print()} />}
+          <BoutonVoix className="mx-0.5" />
           <SelecteurTheme />
           <SelecteurLangue />
         </div>
@@ -62,6 +67,19 @@ function DetailRecu({ recu }: { recu: TypeRecu }) {
           {t('statuts.payee')}
         </Pastille>
       </div>
+      {recu.lignes && recu.lignes.length > 0 && (
+        <ul className="flex flex-col gap-1.5 border-t border-bordure pt-3 text-sm">
+          {recu.lignes.map((l, i) => (
+            <li key={i} className="flex items-center gap-2">
+              {/* Pictogramme seulement : la photo d'un article reste réservée à la boutique. */}
+              {l.pictogramme ? <VignetteArticle article={l} taille="sm" /> : <span className="size-8 shrink-0" aria-hidden="true" />}
+              <span className="min-w-0 flex-1 truncate text-texte">{l.libelle}</span>
+              <span className="text-xs text-texte-3 tabulaire">× {l.quantite}</span>
+              <span className="w-24 text-right font-medium text-texte tabulaire">{formaterFCFA(l.quantite * l.prix_unitaire_xof)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 border-t border-bordure pt-3 text-sm">
         <dt className="text-texte-3">{t('recu.numero')}</dt>
         <dd className="text-right font-medium text-texte tabulaire">{recu.numero}</dd>

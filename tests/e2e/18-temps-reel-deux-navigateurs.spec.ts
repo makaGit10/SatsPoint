@@ -82,8 +82,8 @@ test.describe('18 · Temps réel à deux navigateurs (A.2)', () => {
     const gets = compteur(a, /^\/api\/v1\/articles$/);
     await a.getByRole('button', { name: /^Ajouter un article/ }).click();
     const d = a.getByRole('dialog', { name: 'Ajouter un article' });
-    await d.getByLabel('Nom', { exact: true }).fill(`${PREFIXE_TEST} Moi-même`);
-    await d.getByLabel('Prix').fill('100');
+    await d.getByLabel('Nom écrit').fill(`${PREFIXE_TEST} Moi-même`);
+    await d.getByLabel('Prix', { exact: true }).fill('100');
     const creation = await attendreApi(a, 'POST', /\/api\/v1\/articles$/, () => d.getByRole('button', { name: /^Enregistrer/ }).click());
     expect(creation.status()).toBe(201);
     await expect(a.getByText(`${PREFIXE_TEST} Moi-même`)).toBeVisible();

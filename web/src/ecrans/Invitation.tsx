@@ -17,10 +17,12 @@ import { ErreurFormulaire, TitreAuth } from '@/ecrans/auth/communs'
 import { useMessageErreur } from '@/ecrans/auth/useMessageErreur'
 import { formaterDateHeure } from '@/lib/format'
 import { HautParleur } from '@/voix/HautParleur'
+import { useGuideVocal } from '@/voix/guide'
 
 /** Invitation à rejoindre une boutique (lien reçu par SMS / WhatsApp) : boutique, rôle, contact masqué, puis acceptation. */
 export default function Invitation() {
   const { t, i18n } = useTranslation()
+  useGuideVocal('guide.invitation')
   const { jeton = '' } = useParams()
   const navigate = useNavigate()
   const messageErreur = useMessageErreur()

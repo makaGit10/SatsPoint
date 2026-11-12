@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/auth/store'
+import { BoutonVoix } from './BoutonVoix'
 import { cheminAccueil } from './navigation'
 import { Marque } from './Marque'
 import { MenuUtilisateur } from './MenuUtilisateur'
@@ -26,6 +27,8 @@ export function EnTete() {
           <SelecteurTheme />
           <SelecteurLangue />
         </div>
+        {/* Aide vocale : toujours visible, même sur mobile (personnes qui ne lisent pas). */}
+        <BoutonVoix className="mx-1" />
         <MenuUtilisateur />
       </div>
     </header>

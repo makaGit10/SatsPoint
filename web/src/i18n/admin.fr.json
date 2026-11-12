@@ -386,7 +386,16 @@
       "divers": "Divers"
     },
     "pays": "Pays",
-    "tousPays": "Tous les pays"
+    "tousPays": "Tous les pays",
+    "decoupe": {
+      "traitement": "Coupe des blancs…",
+      "avant": "Avant",
+      "apres": "Coupé",
+      "duree": "Durée : {{avant}} avant, {{apres}} après la coupe des blancs",
+      "aucuneVoix": "Aucune voix entendue. Parlez plus près du micro, puis refaites.",
+      "nonDecoupe": "Ce navigateur ne sait pas lire ce format : le serveur coupera les blancs à l'envoi.",
+      "fichier": "Fichier déposé"
+    }
   },
   "deuxFa": {
     "titre": "Double authentification",

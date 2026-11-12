@@ -213,6 +213,10 @@ export interface LigneVente {
   quantite: number
   prix_unitaire_xof: number
   article_ulid: string | null
+  /** Visuel de l'article (§ 15), état actuel ; absent ou null si l'article a été supprimé. */
+  pictogramme?: string | null
+  couleur?: string | null
+  photo_url?: string | null
 }
 
 export interface Vente extends VenteCourte {
@@ -273,6 +277,8 @@ export interface RecuPublic {
   message: string | null
   /** Nom du moyen du pays (§ 14.4). */
   moyen?: string | null
+  /** Ce qui a été acheté (§ 15) : pictogramme seulement, jamais la photo (réservée aux membres). */
+  lignes?: Array<{ libelle: string; quantite: number; prix_unitaire_xof: number; pictogramme: string | null; couleur: string | null }>
 }
 
 export interface TableauDeBord {
@@ -359,13 +365,20 @@ export interface BoutiqueDetail {
 
 export interface Article {
   ulid: string
-  nom: string
+  /** Facultatif (§ 15) : un article garde au moins un nom, un pictogramme, une photo ou un nom dit à voix haute. */
+  nom: string | null
   prix_xof: number
   categorie: string | null
   couleur: string
   sku: string | null
   actif: boolean
   position: number
+  /** Pictogramme de la liste fermée (`pain`, `riz`, `the`…), ou null. */
+  pictogramme?: string | null
+  /** URL versionnée de la photo (servie par l'API aux membres de la boutique), ou null. */
+  photo_url?: string | null
+  /** URL versionnée du nom dit à voix haute par le commerçant, ou null. */
+  voix_url?: string | null
 }
 
 export interface Membre {

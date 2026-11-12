@@ -19,23 +19,29 @@ import {
   Wallet,
   Zap,
 } from 'lucide-react'
-import { useEffect, useRef, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { useCatalogue, usePaysCourant } from '@/api/catalogue'
 import type { CodePays, LangueAudio } from '@/api/types'
+import { BoutonVoix } from '@/coquille/BoutonVoix'
 import { SelecteurLangue, SelecteurTheme } from '@/coquille/Selecteurs'
-import { localeCourante } from '@/i18n'
+import { chargerPaquet, localeCourante } from '@/i18n'
 import { languesProposees, nomPays } from '@/lib/catalogue'
 import { cn } from '@/lib/cn'
+import { langueChoisie } from '@/lib/stockage'
 import { annoncer } from '@/voix/annoncer'
 import { HautParleur } from '@/voix/HautParleur'
 import { useVoix } from '@/voix/store'
 /** Logo unique de l'appli (public/logo.svg). */
 const logo = '/logo.svg'
 import './landing.css'
+import { useGuideVocal } from '@/voix/guide'
 
 const DEPOT = 'https://github.com/makaGit10/SatsPoint'
+
+// Première visite : le choix de la langue (et ses textes) n'est chargé que si aucune langue n'est encore choisie.
+const PanneauPremiereVisite = lazy(() => Promise.all([import('./PanneauPremiereVisite'), chargerPaquet('guide')]).then(([m]) => m))
 
 /** Fait apparaître les blocs `.reveler` quand ils entrent à l'écran (désactivé si l'utilisateur réduit les animations). */
 function useApparition() {
@@ -144,6 +150,7 @@ function ChoixVoix() {
         {activee && (
           <button type="button" className="choix-voix-couper" onClick={() => useVoix.getState().definirActivee(false)} aria-label={t('landing.voix.couper')} title={t('landing.voix.couper')}>
             <VolumeX aria-hidden="true" />
+            <HautParleur cle="landing.voix.couper" dansBouton />
           </button>
         )}
       </div>
@@ -209,7 +216,9 @@ function Maquette() {
 
 export default function Landing() {
   const { t } = useTranslation()
+  useGuideVocal('guide.landing')
   const racine = useApparition()
+  const [premiereVisite, setPremiereVisite] = useState(() => !langueChoisie())
 
   useEffect(() => {
     const avant = document.title
@@ -219,7 +228,23 @@ export default function Landing() {
     }
   }, [t])
 
-  const questions = [1, 2, 3, 4, 5, 6] as const
+  // Questions fréquentes : chaque question et chaque réponse a son haut-parleur (le registre lit les propriétés `voix:`).
+  const questions = [
+    { n: 1, voix: 'landing.faq.q1' },
+    { n: 2, voix: 'landing.faq.q2' },
+    { n: 3, voix: 'landing.faq.q3' },
+    { n: 4, voix: 'landing.faq.q4' },
+    { n: 5, voix: 'landing.faq.q5' },
+    { n: 6, voix: 'landing.faq.q6' },
+  ] as const
+  const reponses = [
+    { voix: 'landing.faq.r1' },
+    { voix: 'landing.faq.r2' },
+    { voix: 'landing.faq.r3' },
+    { voix: 'landing.faq.r4' },
+    { voix: 'landing.faq.r5' },
+    { voix: 'landing.faq.r6' },
+  ] as const
 
   return (
     <div className="landing" ref={racine} data-ecran="landing">
@@ -238,13 +263,18 @@ export default function Landing() {
             <a href="#faq">{t('landing.nav.faq')}</a>
           </nav>
           <div className="barre-droite">
+            <BoutonVoix />
             <SelecteurTheme className="selecteur" />
             <SelecteurLangue className="selecteur" />
-            <Link className="lien-connexion" to="/connexion">
-              {t('landing.nav.connexion')}
-            </Link>
+            <span className="lien-hp lien-connexion-hp">
+              <Link className="lien-connexion" to="/connexion">
+                {t('landing.nav.connexion')}
+              </Link>
+              <HautParleur cle="landing.nav.connexion" />
+            </span>
             <Link className="btn btn-or btn-petit" to="/inscription">
               {t('landing.nav.creer')}
+              <HautParleur cle="landing.nav.creer" dansBouton />
             </Link>
           </div>
         </div>
@@ -388,13 +418,18 @@ export default function Landing() {
         <section className="conteneur section" id="faq" aria-labelledby="titre-faq">
           <Titre id="titre-faq" surTitre={t('landing.faq.surTitre')} titre={t('landing.faq.titre')} titreOr={t('landing.faq.titreOr')} />
           <div className="faq">
-            {questions.map((n) => (
+            {questions.map(({ n, voix }, i) => (
               <details key={n} className="verre reveler">
                 <summary>
-                  {t(`landing.faq.q${n}`)}
+                  <span className="faq-question">
+                    {t(voix)}
+                    <HautParleur cle={voix} className="hp-texte" />
+                  </span>
                   <ChevronDown aria-hidden="true" />
                 </summary>
-                <p>{t(`landing.faq.r${n}`)}</p>
+                <p>
+                  {t(reponses[i]!.voix)} <HautParleur cle={reponses[i]!.voix} className="hp-texte" />
+                </p>
               </details>
             ))}
           </div>
@@ -414,6 +449,7 @@ export default function Landing() {
               </Link>
               <Link className="btn btn-sombre" to="/connexion">
                 {t('landing.cta.connexion')}
+                <HautParleur cle="landing.cta.connexion" dansBouton />
               </Link>
             </div>
           </div>
@@ -427,12 +463,23 @@ export default function Landing() {
         </a>
         <p>{t('landing.pied.fait')}</p>
         <div className="pied-liens">
-          <a href={DEPOT} target="_blank" rel="noopener noreferrer">
-            {t('landing.pied.code')}
-          </a>
-          <Link to="/connexion">{t('landing.pied.connexion')}</Link>
+          <span className="lien-hp">
+            <a href={DEPOT} target="_blank" rel="noopener noreferrer">
+              {t('landing.pied.code')}
+            </a>
+            <HautParleur cle="landing.pied.code" />
+          </span>
+          <span className="lien-hp">
+            <Link to="/connexion">{t('landing.pied.connexion')}</Link>
+            <HautParleur cle="landing.pied.connexion" />
+          </span>
         </div>
       </footer>
+      {premiereVisite && (
+        <Suspense fallback={null}>
+          <PanneauPremiereVisite onFermer={() => setPremiereVisite(false)} />
+        </Suspense>
+      )}
     </div>
   )
 }

@@ -27,6 +27,7 @@ import { tempsRelatif } from '@/lib/temps'
 import { usePaginationLocale } from '@/lib/usePagination'
 import { useDonneesEnDirect } from '@/temps-reel/useDonneesEnDirect'
 import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
+import { useGuideVocal } from '@/voix/guide'
 
 const TON_ROLE: Record<RoleBoutique, TonPastille> = { proprietaire: 'accent', gerant: 'mm', caissier: 'neutre' }
 const ROLES: RoleBoutique[] = ['proprietaire', 'gerant', 'caissier']
@@ -38,6 +39,7 @@ const PAR_PAGE = 20
 /** Équipe : membres, rôles, activation, invitations (72 h), paginés par 20. */
 export default function Equipe() {
   const { t, i18n } = useTranslation()
+  useGuideVocal('guide.equipe')
   void i18n.language
   const utilisateur = useAuth((s) => s.utilisateur)
   const monRole = roleBoutique(utilisateur)
@@ -160,7 +162,7 @@ export default function Equipe() {
       <Dialogue
         ouvert={Boolean(desactiverCible)}
         onOuvertChange={(o) => !o && setDesactiverCible(null)}
-        titre={t('equipe.desactiverTitre', { nom: desactiverCible?.nom ?? '' })}
+        titre={t('equipe.desactiverTitre', { nom: desactiverCible?.nom ?? '' })} voix="equipe.desactiverTitre"
         description={t('equipe.desactiverTexte')}
         taille="sm"
         pied={
@@ -178,7 +180,7 @@ export default function Equipe() {
       <Dialogue
         ouvert={Boolean(retirerCible)}
         onOuvertChange={(o) => !o && setRetirerCible(null)}
-        titre={t('equipe.retirerTitre', { nom: retirerCible?.nom ?? '' })}
+        titre={t('equipe.retirerTitre', { nom: retirerCible?.nom ?? '' })} voix="equipe.retirerTitre"
         description={t('equipe.retirerTexte')}
         taille="sm"
         pied={
@@ -314,7 +316,7 @@ function DialogueInviter({ ouvert, onFermer, proprietaire }: { ouvert: boolean; 
       <Dialogue
         ouvert={ouvert}
         onOuvertChange={(o) => !o && fermer()}
-        titre={t('equipe.lienTitre')}
+        titre={t('equipe.lienTitre')} voix="equipe.lienTitre"
         description={t('equipe.lienTexte')}
         taille="sm"
         pied={
@@ -324,7 +326,7 @@ function DialogueInviter({ ouvert, onFermer, proprietaire }: { ouvert: boolean; 
         }
       >
         <div className="flex flex-col gap-3 pb-1">
-          <Champ libelle={t('equipe.lienInvitation')} value={lien} readOnly onFocus={(e) => e.currentTarget.select()} data-lien-invitation="" />
+          <Champ libelle={t('equipe.lienInvitation')} voix="equipe.lienInvitation" value={lien} readOnly onFocus={(e) => e.currentTarget.select()} data-lien-invitation="" />
           <div className="flex flex-wrap gap-2">
             <Bouton
               variante="secondaire"
@@ -349,7 +351,7 @@ function DialogueInviter({ ouvert, onFermer, proprietaire }: { ouvert: boolean; 
     <Dialogue
       ouvert={ouvert}
       onOuvertChange={(o) => !o && onFermer()}
-      titre={t('equipe.inviterTitre')}
+      titre={t('equipe.inviterTitre')} voix="equipe.inviterTitre"
       description={t('equipe.inviterTexte')}
       taille="sm"
       pied={
@@ -364,8 +366,8 @@ function DialogueInviter({ ouvert, onFermer, proprietaire }: { ouvert: boolean; 
       }
     >
       <form id="formulaire-inviter" onSubmit={soumettre} noValidate className="flex flex-col gap-3 pb-1">
-        <Champ libelle={t('equipe.contact')} value={contact} onChange={(e) => setContact(e.target.value)} erreur={erreurContact} inputMode="email" autoComplete="off" autoCapitalize="none" icone={<Mail />} autoFocus />
-        <Selection libelle={t('equipe.role')} value={role} onChange={(e) => setRole(e.target.value as RoleBoutique)} options={roles.map((r) => ({ valeur: r, libelle: t(`roles.${r}`) }))} />
+        <Champ libelle={t('equipe.contact')} voix="equipe.contact" value={contact} onChange={(e) => setContact(e.target.value)} erreur={erreurContact} inputMode="email" autoComplete="off" autoCapitalize="none" icone={<Mail />} autoFocus />
+        <Selection libelle={t('equipe.role')} voix="equipe.role" value={role} onChange={(e) => setRole(e.target.value as RoleBoutique)} options={roles.map((r) => ({ valeur: r, libelle: t(`roles.${r}`) }))} />
         <DescriptionsRoles roles={roles} />
         <ErreurFormulaire message={erreur} />
       </form>
@@ -393,7 +395,7 @@ function DialogueRole({ membre, proprietaire, onFermer }: { membre: Membre; prop
     <Dialogue
       ouvert
       onOuvertChange={(o) => !o && onFermer()}
-      titre={t('equipe.changerRole')}
+      titre={t('equipe.changerRole')} voix="equipe.changerRole"
       description={membre.nom}
       taille="sm"
       pied={
@@ -408,7 +410,7 @@ function DialogueRole({ membre, proprietaire, onFermer }: { membre: Membre; prop
       }
     >
       <div className="flex flex-col gap-3 pb-1">
-        <Selection libelle={t('equipe.role')} value={role} onChange={(e) => setRole(e.target.value as RoleBoutique)} options={roles.map((r) => ({ valeur: r, libelle: t(`roles.${r}`) }))} />
+        <Selection libelle={t('equipe.role')} voix="equipe.role" value={role} onChange={(e) => setRole(e.target.value as RoleBoutique)} options={roles.map((r) => ({ valeur: r, libelle: t(`roles.${r}`) }))} />
         <DescriptionsRoles roles={roles} />
         <ErreurFormulaire message={erreur} />
       </div>

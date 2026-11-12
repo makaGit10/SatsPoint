@@ -14,6 +14,10 @@ export interface PropsHautParleur {
   langue?: LangueAudio
   /** Rendu en coin de bouton : non focalisable au clavier (le bouton parent l'est déjà). */
   dansBouton?: boolean
+  /** Avec `dansBouton` : position du coin (classes Tailwind), par défaut en haut à droite, légèrement en débord. */
+  coin?: string
+  /** Avec `dansBouton` : petit haut-parleur dans le fil du libellé (segments étroits) plutôt qu'en coin. */
+  enLigne?: boolean
   /** Taille de l'icône en px (14–16). */
   taille?: 14 | 16
   className?: string
@@ -23,7 +27,7 @@ export interface PropsHautParleur {
  * Petit haut-parleur : lit l'audio de la clé sans déclencher l'élément parent.
  * Masqué s'il n'existe aucun audio (langue choisie, puis repli français) ou si l'aide vocale est coupée.
  */
-export function HautParleur({ cle, langue, dansBouton = false, taille = 14, className }: PropsHautParleur) {
+export function HautParleur({ cle, langue, dansBouton = false, coin = '-top-1.5 -right-1.5', enLigne = false, taille = 14, className }: PropsHautParleur) {
   const { t } = useTranslation()
   const activee = useVoix((s) => s.activee)
   const enLecture = useVoix((s) => s.cleEnLecture === cle)
@@ -56,14 +60,17 @@ export function HautParleur({ cle, langue, dansBouton = false, taille = 14, clas
       onMouseDown={bloquer}
       onKeyDown={dansBouton ? undefined : auClavier}
       className={cn(
-        'relative inline-flex shrink-0 items-center justify-center rounded-full select-none',
-        'text-texte-2 transition-colors duration-150 hover:text-accent-texte',
+        'inline-flex shrink-0 items-center justify-center rounded-full select-none',
+        // Dans le fil d'un segment, l'icône prend la couleur du libellé (option active ou non).
+        dansBouton && enLigne ? 'text-current transition-opacity duration-150 hover:opacity-100' : 'text-texte-2 transition-colors duration-150 hover:text-accent-texte',
         enLecture && 'text-accent-texte',
         // Zone tactile ≥ 32 px autour d'un visuel compact.
         "after:absolute after:top-1/2 after:left-1/2 after:h-8 after:w-8 after:min-h-full after:min-w-full after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']",
         dansBouton
-          ? 'absolute -top-1.5 -right-1.5 h-5 w-5 border border-bordure bg-surface text-texte-2 shadow-xs'
-          : 'h-8 w-8',
+          ? enLigne
+            ? 'relative h-4 w-4 opacity-75'
+            : cn('absolute h-5 w-5 border border-bordure bg-surface text-texte-2 shadow-xs', coin)
+          : 'relative h-8 w-8',
         className,
       )}
     >

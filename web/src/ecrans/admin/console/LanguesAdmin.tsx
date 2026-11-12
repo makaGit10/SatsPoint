@@ -62,7 +62,7 @@ export function LanguesAdmin({ actif }: { actif: boolean }) {
       <p className="text-sm text-texte-2">{t('admin.langues.aide')}</p>
       <div className="flex flex-wrap items-center gap-2">
         <Selection
-          libelle={t('admin.langues.filtrePays')}
+          libelle={t('admin.langues.filtrePays')} voix="admin.langues.filtrePays"
           libelleVisible={false}
           taille="sm"
           value={filtre}
@@ -104,6 +104,7 @@ export function LanguesAdmin({ actif }: { actif: boolean }) {
                 onChange={() => bascule.mutate(l)}
                 desactive={l.code === 'fr' || bascule.isPending}
                 libelle={<span className="sr-only">{t('admin.langues.active')}</span>}
+                voix="admin.langues.active"
                 className="shrink-0"
               />
               <BoutonIcone libelle={t('admin.langues.modifier')} icone={<Pencil />} voix="admin.langues.modifier" taille="sm" onClick={() => setEdition(l)} />
@@ -126,7 +127,7 @@ export function LanguesAdmin({ actif }: { actif: boolean }) {
       <Dialogue
         ouvert={Boolean(aSupprimer)}
         onOuvertChange={(o) => !o && setASupprimer(null)}
-        titre={t('admin.langues.supprimerTitre', { nom: aSupprimer?.nom_local ?? '' })}
+        titre={t('admin.langues.supprimerTitre', { nom: aSupprimer?.nom_local ?? '' })} voix="admin.langues.supprimerTitre"
         description={t('admin.langues.supprimerTexte')}
         taille="sm"
         pied={
@@ -190,13 +191,13 @@ function FormulaireLangue({ langue, onFermer }: { langue: LangueAdmin | null; on
     <Dialogue
       ouvert
       onOuvertChange={(o) => !o && onFermer()}
-      titre={langue ? t('admin.langues.modifierTitre', { nom: langue.nom_local }) : t('admin.langues.ajouter')}
+      titre={langue ? t('admin.langues.modifierTitre', { nom: langue.nom_local }) : t('admin.langues.ajouter')} voix={langue ? 'admin.langues.modifierTitre' : 'admin.langues.ajouter'}
       taille="md"
     >
       <form onSubmit={soumettre} noValidate className="flex flex-col gap-3" data-formulaire-langue>
         {!langue && (
           <Champ
-            libelle={t('admin.langues.code')}
+            libelle={t('admin.langues.code')} voix="admin.langues.code"
             value={code}
             onChange={(e) => setCode(e.target.value.toLowerCase().replace(/[^a-z-]/g, ''))}
             maxLength={12}
@@ -208,10 +209,10 @@ function FormulaireLangue({ langue, onFermer }: { langue: LangueAdmin | null; on
             className="font-mono"
           />
         )}
-        <Champ libelle={t('admin.langues.nomLocal')} value={nomLocal} onChange={(e) => setNomLocal(e.target.value)} maxLength={40} aide={t('admin.langues.nomLocalAide')} erreur={erreurs.nom_local} />
+        <Champ libelle={t('admin.langues.nomLocal')} voix="admin.langues.nomLocal" value={nomLocal} onChange={(e) => setNomLocal(e.target.value)} maxLength={40} aide={t('admin.langues.nomLocalAide')} erreur={erreurs.nom_local} />
         <div className="grid gap-3 sm:grid-cols-2">
-          <Champ libelle={t('admin.langues.nomFr')} value={nomFr} onChange={(e) => setNomFr(e.target.value)} maxLength={40} erreur={erreurs.nom_fr} />
-          <Champ libelle={t('admin.langues.nomEn')} value={nomEn} onChange={(e) => setNomEn(e.target.value)} maxLength={40} erreur={erreurs.nom_en} />
+          <Champ libelle={t('admin.langues.nomFr')} voix="admin.langues.nomFr" value={nomFr} onChange={(e) => setNomFr(e.target.value)} maxLength={40} erreur={erreurs.nom_fr} />
+          <Champ libelle={t('admin.langues.nomEn')} voix="admin.langues.nomEn" value={nomEn} onChange={(e) => setNomEn(e.target.value)} maxLength={40} erreur={erreurs.nom_en} />
         </div>
         <ChoixPays valeur={pays} onChange={setPays} libelle={t('admin.langues.pays')} aide={t('admin.langues.paysAide')} erreur={erreurs.pays} />
         <Interrupteur coche={actif} onChange={setActif} desactive={langue?.code === 'fr'} libelle={t('admin.langues.active')} description={t('admin.langues.activeAide')} voix="admin.langues.active" />

@@ -48,7 +48,7 @@ export function Segment<T extends string>({ valeur, options, onChange, libelle, 
           >
             {o.icone && <span className={cn('inline-flex', taille === 'md' ? '[&>svg]:size-[15px]' : '[&>svg]:size-3.5')} aria-hidden="true">{o.icone}</span>}
             {o.libelle}
-            {o.voix && <HautParleur cle={o.voix} dansBouton />}
+            {o.voix && <HautParleur cle={o.voix} dansBouton enLigne />}
           </button>
         )
       })}

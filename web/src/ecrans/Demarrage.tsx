@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { Calculator, Check, ChevronDown, CreditCard, KeyRound, Link2, Play, SkipForward, Store, Wallet, Zap, type LucideIcon } from 'lucide-react'
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { lazy, Suspense, useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 import { CLE_BOUTIQUE, creerBoutique, enregistrerPaytech, modifierBoutique, useBoutique } from '@/api/boutique'
@@ -20,6 +20,7 @@ import { Selection } from '@/composants/Selection'
 import { notifier } from '@/composants/toastStore'
 import { ErreurFormulaire } from '@/ecrans/auth/communs'
 import { useMessageErreur } from '@/ecrans/auth/useMessageErreur'
+import { chargerPaquet } from '@/i18n'
 import { nomPays } from '@/lib/catalogue'
 import { cn } from '@/lib/cn'
 import { NOMBRE_ETAPES_DEMARRAGE } from '@/lib/demarrage'
@@ -27,11 +28,33 @@ import { queryClient } from '@/lib/queryClient'
 import { useDonneesEnDirect } from '@/temps-reel/useDonneesEnDirect'
 import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
 import { FormulaireConnexionWallet } from './portefeuille/ConnexionWallet'
+import { useGuideVocal } from '@/voix/guide'
+import { HautParleur } from '@/voix/HautParleur'
 
 type Cle = 'boutique' | 'portefeuille' | 'mobileMoney' | 'test'
 
 const ICONES: Record<Cle, LucideIcon> = { boutique: Store, portefeuille: Wallet, mobileMoney: CreditCard, test: Zap }
 const ORDRE: Cle[] = ['boutique', 'portefeuille', 'mobileMoney', 'test']
+
+/** Nom dit de chaque étape (en-tête repliable). */
+const VOIX_ETAPES = Object.fromEntries(
+  [
+    { cle: 'boutique', voix: 'demarrage.etapes.boutique' },
+    { cle: 'portefeuille', voix: 'demarrage.etapes.portefeuille' },
+    { cle: 'mobileMoney', voix: 'demarrage.etapes.mobileMoney' },
+    { cle: 'test', voix: 'demarrage.etapes.test' },
+  ].map((e) => [e.cle, e.voix]),
+) as Record<Cle, string>
+
+// « Vous ne savez pas écrire ? » : chargé avec les textes de l'aide vocale (paquet `guide`).
+const AideProche = lazy(() => Promise.all([import('./auth/AideProche'), chargerPaquet('guide')]).then(([m]) => m))
+/** Guide vocal de chaque étape (lu à l'ouverture de l'étape). */
+const GUIDES_ETAPES: Record<Cle, string> = {
+  boutique: 'guide.demarrage.boutique',
+  portefeuille: 'guide.demarrage.portefeuille',
+  mobileMoney: 'guide.demarrage.mobileMoney',
+  test: 'guide.demarrage.test',
+}
 
 /** Démarrage guidé : quatre étapes dépliables, état lu depuis la boutique ; la première non faite est ouverte. */
 export default function Demarrage() {
@@ -60,6 +83,7 @@ export default function Demarrage() {
   const ouverte = ouverteManuelle ?? premiereNonFaite
   const termine = faits.boutique && faits.portefeuille && faits.test
   const pct = Math.round((nombreFaites / NOMBRE_ETAPES_DEMARRAGE) * 100)
+  useGuideVocal(termine && !ouverteManuelle ? 'guide.demarrage.termine' : GUIDES_ETAPES[ouverte ?? 'test'])
 
   return (
     <div className="anim-apparition flex flex-col" data-ecran="demarrage">
@@ -105,9 +129,12 @@ export default function Demarrage() {
             >
               {cle === 'boutique' && !fait && <FormulaireBoutique />}
               {cle === 'boutique' && fait && (
-                <Link to="/reglages" className="text-sm font-medium text-accent-texte hover:underline">
-                  {t('commun.modifier')}
-                </Link>
+                <span className="inline-flex items-center gap-0.5">
+                  <Link to="/reglages" className="text-sm font-medium text-accent-texte hover:underline">
+                    {t('commun.modifier')}
+                  </Link>
+                  <HautParleur cle="commun.modifier" />
+                </span>
               )}
               {cle === 'portefeuille' && (aBoutique ? <FormulaireConnexionWallet /> : <p className="text-sm text-texte-3">{t('demarrage.vide.texte')}</p>)}
               {cle === 'mobileMoney' && (boutique ? <FormulaireMobileMoney boutique={boutique} onPasser={() => setOuverteManuelle('test')} /> : <p className="text-sm text-texte-3">{t('demarrage.vide.texte')}</p>)}
@@ -126,7 +153,7 @@ function Etape({ numero, cle, fait, ouverte, facultatif, resume, onBasculer, chi
   const id = `etape-${cle}`
   return (
     <li className={cn('rounded-lg border bg-surface transition-colors', ouverte ? 'border-accent shadow-xs' : 'border-bordure')} aria-current={ouverte ? 'step' : undefined}>
-      <button type="button" onClick={onBasculer} aria-expanded={ouverte} aria-controls={id} className="flex w-full items-center gap-3 px-3 py-2.5 text-left">
+      <button type="button" onClick={onBasculer} aria-expanded={ouverte} aria-controls={id} className="relative flex w-full items-center gap-3 px-3 py-2.5 text-left">
         <span
           className={cn(
             'inline-flex size-9 shrink-0 items-center justify-center rounded-full',
@@ -145,6 +172,7 @@ function Etape({ numero, cle, fait, ouverte, facultatif, resume, onBasculer, chi
           <span className="block truncate text-sm text-texte-3">{resume ?? t(`demarrage.etapes.${cle}Texte`)}</span>
         </span>
         <ChevronDown size={16} className={cn('shrink-0 text-texte-3 transition-transform', ouverte && 'rotate-180')} aria-hidden="true" />
+        <HautParleur cle={VOIX_ETAPES[cle]} dansBouton coin="top-1.5 right-9" />
       </button>
       {ouverte && (
         <div id={id} className="border-t border-bordure px-3 py-3 md:px-4">
@@ -203,14 +231,17 @@ function FormulaireBoutique() {
 
   return (
     <form onSubmit={soumettre} noValidate className="flex flex-col gap-3">
-      <Champ libelle={t('reglages.nom')} value={nom} onChange={(e) => setNom(e.target.value)} erreur={champs.nom} autoComplete="organization" icone={<Store />} />
+      <Suspense fallback={null}>
+        <AideProche />
+      </Suspense>
+      <Champ libelle={t('reglages.nom')} voix="reglages.nom" value={nom} onChange={(e) => setNom(e.target.value)} erreur={champs.nom} autoComplete="organization" icone={<Store />} />
       <div className="grid gap-3 md:grid-cols-2">
-        <Champ libelle={t('reglages.telephone')} mentionOptionnel={t('commun.optionnel')} value={telephone} onChange={(e) => setTelephone(e.target.value)} inputMode="tel" autoComplete="tel" />
-        <Champ libelle={t('reglages.ville')} value={ville} onChange={(e) => setVille(e.target.value)} erreur={champs.ville} autoComplete="address-level2" />
+        <Champ libelle={t('reglages.telephone')} voix="reglages.telephone" mentionOptionnel={t('commun.optionnel')} value={telephone} onChange={(e) => setTelephone(e.target.value)} inputMode="tel" autoComplete="tel" />
+        <Champ libelle={t('reglages.ville')} voix="reglages.ville" value={ville} onChange={(e) => setVille(e.target.value)} erreur={champs.ville} autoComplete="address-level2" />
       </div>
       {catalogue.pays.length > 1 && (
         <Selection
-          libelle={t('reglages.pays')}
+          libelle={t('reglages.pays')} voix="reglages.pays"
           value={pays}
           onChange={(e) => changerPays(e.target.value as CodePays)}
           options={catalogue.pays.map((p) => ({ valeur: p.code, libelle: nomPays(p, i18n.language) }))}
@@ -298,16 +329,16 @@ function FormulaireMobileMoney({ boutique, onPasser }: { boutique: BoutiqueDetai
         valeur={choix}
         onChange={setChoix}
         options={[
-          { valeur: 'paytech', libelle: t('reglages.paytech'), icone: <CreditCard /> },
-          { valeur: 'wave', libelle: t('reglages.waveManuel'), icone: <Link2 /> },
+          { valeur: 'paytech', libelle: t('reglages.paytech'), icone: <CreditCard />, voix: 'reglages.paytech' },
+          { valeur: 'wave', libelle: t('reglages.waveManuel'), icone: <Link2 />, voix: 'reglages.waveManuel' },
         ]}
       />
       {choix === 'paytech' ? (
         <>
           <p className="text-sm text-texte-2">{t('reglages.paytechTexte')}</p>
           <div className="grid gap-3 md:grid-cols-2">
-            <Champ libelle={t('reglages.apiKey')} type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} erreur={champs.api_key} aide={boutique.paytech.configure ? t('reglages.secretAide') : undefined} autoComplete="off" icone={<KeyRound />} />
-            <Champ libelle={t('reglages.apiSecret')} type="password" value={apiSecret} onChange={(e) => setApiSecret(e.target.value)} erreur={champs.api_secret} aide={boutique.paytech.configure ? t('reglages.secretAide') : undefined} autoComplete="off" icone={<KeyRound />} />
+            <Champ libelle={t('reglages.apiKey')} voix="reglages.apiKey" type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} erreur={champs.api_key} aide={boutique.paytech.configure ? t('reglages.secretAide') : undefined} autoComplete="off" icone={<KeyRound />} />
+            <Champ libelle={t('reglages.apiSecret')} voix="reglages.apiSecret" type="password" value={apiSecret} onChange={(e) => setApiSecret(e.target.value)} erreur={champs.api_secret} aide={boutique.paytech.configure ? t('reglages.secretAide') : undefined} autoComplete="off" icone={<KeyRound />} />
           </div>
           <div className="flex flex-col gap-1">
             <span className="text-sm font-medium text-texte-2">{t('reglages.environnement')}</span>
@@ -317,15 +348,15 @@ function FormulaireMobileMoney({ boutique, onPasser }: { boutique: BoutiqueDetai
               valeur={environnement}
               onChange={setEnvironnement}
               options={[
-                { valeur: 'test', libelle: t('reglages.test') },
-                { valeur: 'prod', libelle: t('reglages.prod') },
+                { valeur: 'test', libelle: t('reglages.test'), voix: 'reglages.test' },
+                { valeur: 'prod', libelle: t('reglages.prod'), voix: 'reglages.prod' },
               ]}
               className="md:w-64"
             />
           </div>
         </>
       ) : (
-        <Champ libelle={t('reglages.waveLien')} aide={t('reglages.waveLienAide')} value={waveLien} onChange={(e) => setWaveLien(e.target.value)} erreur={champs.wave_lien} inputMode="url" autoComplete="off" autoCapitalize="none" spellCheck={false} icone={<Link2 />} />
+        <Champ libelle={t('reglages.waveLien')} voix="reglages.waveLien" aide={t('reglages.waveLienAide')} value={waveLien} onChange={(e) => setWaveLien(e.target.value)} erreur={champs.wave_lien} inputMode="url" autoComplete="off" autoCapitalize="none" spellCheck={false} icone={<Link2 />} />
       )}
       <ErreurFormulaire message={erreur} />
       <div className="flex flex-col gap-2 md:flex-row">

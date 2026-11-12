@@ -97,7 +97,7 @@ export function BoutiquesAdmin({ actif }: { actif: boolean }) {
     <div className="flex flex-col gap-2" data-vue="boutiques">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <Champ
-          libelle={t('admin.boutiques.rechercher')}
+          libelle={t('admin.boutiques.rechercher')} voix="admin.boutiques.rechercher"
           type="search"
           icone={<Search />}
           placeholder={t('admin.boutiques.rechercher')}
@@ -194,7 +194,7 @@ export function BoutiquesAdmin({ actif }: { actif: boolean }) {
       <Dialogue
         ouvert={Boolean(cible)}
         onOuvertChange={(o) => !o && setCible(null)}
-        titre={suspendre ? t('admin.boutiques.suspendreTitre', { nom: cible?.nom ?? '' }) : t('admin.boutiques.reactiverTitre', { nom: cible?.nom ?? '' })}
+        titre={suspendre ? t('admin.boutiques.suspendreTitre', { nom: cible?.nom ?? '' }) : t('admin.boutiques.reactiverTitre', { nom: cible?.nom ?? '' })} voix={suspendre ? 'admin.boutiques.suspendreTitre' : 'admin.boutiques.reactiverTitre'}
         description={suspendre ? t('admin.boutiques.suspendreTexte') : t('admin.boutiques.reactiverTexte')}
         taille="sm"
         pied={

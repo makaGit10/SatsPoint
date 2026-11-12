@@ -20,6 +20,8 @@ import { Courbe } from './tableau/Courbe'
 import { DetailVente } from './ventes/DetailVente'
 import { CLE_PERIODE } from './ventes/filtres'
 import { LigneVente, ListeVentes } from './ventes/LigneVente'
+import { useGuideVocal } from '@/voix/guide'
+import { HautParleur } from '@/voix/HautParleur'
 
 function Indicateur({ libelle, valeur, icone, ton = 'neutre', detail }: { libelle: string; valeur: ReactNode; icone: ReactNode; ton?: 'accent' | 'succes' | 'mm' | 'neutre'; detail?: ReactNode }) {
   const tons = { accent: 'bg-accent-doux text-accent-texte', succes: 'bg-succes-doux text-succes-texte', mm: 'bg-mm-doux text-mm-texte', neutre: 'bg-neutre-doux text-neutre-texte' }
@@ -40,6 +42,7 @@ function Indicateur({ libelle, valeur, icone, ton = 'neutre', detail }: { libell
 /** Tableau de bord : indicateurs compacts, répartition, courbe maison, dernières ventes en direct. */
 export default function TableauDeBord() {
   const { t, i18n } = useTranslation()
+  useGuideVocal('guide.tableau')
   void i18n.language
   const utilisateur = useAuth((s) => s.utilisateur)
   const caissier = roleBoutique(utilisateur) === 'caissier'
@@ -66,7 +69,7 @@ export default function TableauDeBord() {
           taille="sm"
           valeur={periode}
           onChange={setPeriode}
-          options={PERIODES_TABLEAU.map((p) => ({ valeur: p, libelle: t(CLE_PERIODE[p]) }))}
+          options={PERIODES_TABLEAU.map((p) => ({ valeur: p, libelle: t(CLE_PERIODE[p]), voix: `periodes.${CLE_PERIODE[p].slice('periodes.'.length)}` }))}
           className="md:w-auto md:self-start"
         />
       )}
@@ -148,10 +151,13 @@ export default function TableauDeBord() {
                 titre={t('tableau.dernieresVentes')}
                 className="mb-2"
                 actions={
-                  <Link to="/ventes" className="inline-flex items-center gap-1 text-sm font-medium text-accent-texte hover:underline">
-                    {t('tableau.voirVentes')}
-                    <ArrowRight size={14} aria-hidden="true" />
-                  </Link>
+                  <span className="inline-flex items-center gap-0.5">
+                    <Link to="/ventes" className="inline-flex items-center gap-1 text-sm font-medium text-accent-texte hover:underline">
+                      {t('tableau.voirVentes')}
+                      <ArrowRight size={14} aria-hidden="true" />
+                    </Link>
+                    <HautParleur cle="tableau.voirVentes" />
+                  </span>
                 }
               />
               {data.dernieres_ventes.length === 0 ? (

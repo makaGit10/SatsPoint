@@ -27,6 +27,7 @@ function OngletBarre({ element, actif }: { element: ElementNavigation; actif: bo
     >
       <Icone size={22} strokeWidth={actif ? 2.2 : 1.8} aria-hidden="true" />
       <span className="max-w-full truncate">{t(element.cleCourte ?? element.cle)}</span>
+      <HautParleur cle={element.cleCourte ?? element.cle} dansBouton coin="top-0.5 right-1" />
     </NavLink>
   )
 }
@@ -61,16 +62,17 @@ export function BarreBas() {
           aria-haspopup="dialog"
           aria-expanded={plusOuvert}
           className={cn(
-            'flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-1 text-xs font-semibold transition-colors duration-150',
+            'relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-1 text-xs font-semibold transition-colors duration-150',
             plusActif ? 'bg-accent-doux text-accent-texte' : 'text-texte-3 active:text-texte',
           )}
         >
           <Ellipsis size={22} strokeWidth={1.8} aria-hidden="true" />
           <span>{t('nav.plus')}</span>
+          <HautParleur cle="nav.plus" dansBouton coin="top-0.5 right-1" />
         </button>
       </nav>
 
-      <Dialogue ouvert={plusOuvert} onOuvertChange={setPlusOuvert} titre={t('nav.plus')} taille="sm">
+      <Dialogue ouvert={plusOuvert} onOuvertChange={setPlusOuvert} titre={t('nav.plus')} voix="nav.plus" taille="sm">
         {dansPlus.length > 0 && (
           <ul className="mb-5 grid grid-cols-2 gap-2" aria-label={t('nav.menuPlus')}>
             {dansPlus.map((e) => {

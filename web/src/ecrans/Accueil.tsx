@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom'
 import { BoutonLien } from '@/composants/Bouton'
 import { Marque } from '@/coquille/Marque'
 import { MiseEnPageInvite } from '@/coquille/MiseEnPageInvite'
+import { useGuideVocal } from '@/voix/guide'
+import { HautParleur } from '@/voix/HautParleur'
 
 const POINTS = [
   { cle: 'accueil.pointLightning', icone: Zap, classe: 'bg-accent-doux text-accent-texte' },
@@ -13,6 +15,7 @@ const POINTS = [
 
 export default function Accueil() {
   const { t } = useTranslation()
+  useGuideVocal('guide.accueil')
   return (
     <MiseEnPageInvite ecran="accueil" sansMarque large>
       <div className="flex flex-col md:items-center md:text-center">
@@ -44,10 +47,13 @@ export default function Accueil() {
         </BoutonLien>
       </div>
 
-      <Link to="/langue" className="mt-6 inline-flex items-center justify-center gap-1.5 self-center text-sm font-medium text-texte-3 hover:text-texte">
-        <Languages size={15} aria-hidden="true" />
-        {t('langue.changer')}
-      </Link>
+      <div className="mt-6 flex items-center justify-center gap-0.5 self-center">
+        <Link to="/langue" className="inline-flex items-center justify-center gap-1.5 text-sm font-medium text-texte-3 hover:text-texte">
+          <Languages size={15} aria-hidden="true" />
+          {t('langue.changer')}
+        </Link>
+        <HautParleur cle="langue.changer" />
+      </div>
     </MiseEnPageInvite>
   )
 }

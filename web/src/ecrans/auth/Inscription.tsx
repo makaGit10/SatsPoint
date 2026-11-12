@@ -1,5 +1,5 @@
 import { Store, User } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { lazy, Suspense, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ErreurApi } from '@/api/client'
@@ -8,7 +8,7 @@ import { Bouton } from '@/composants/Bouton'
 import { Champ } from '@/composants/Champ'
 import { cheminAccueil } from '@/coquille/navigation'
 import { MiseEnPageInvite } from '@/coquille/MiseEnPageInvite'
-import { localeCourante } from '@/i18n'
+import { chargerPaquet, localeCourante } from '@/i18n'
 import { suiteSure } from '@/routes/navigation'
 import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
 import { HautParleur } from '@/voix/HautParleur'
@@ -17,6 +17,10 @@ import { ChampMotDePasse, ErreurFormulaire, JaugeMotDePasse, TitreAuth } from '.
 import { SAISIE_VIDE, valeurIdentifiant, verifierIdentifiant, type SaisieIdentifiant } from './identifiant'
 import { LONGUEUR_MIN_MOT_DE_PASSE } from './motDePasse'
 import { useMessageErreur } from './useMessageErreur'
+
+// « Vous ne savez pas écrire ? » : chargé avec les textes de l'aide vocale (paquet `guide`).
+const AideProche = lazy(() => Promise.all([import('./AideProche'), chargerPaquet('guide')]).then(([m]) => m))
+import { useGuideVocal } from '@/voix/guide'
 
 type Champs = { nom?: string; identifiant?: string; password?: string }
 
@@ -27,6 +31,7 @@ type Champs = { nom?: string; identifiant?: string; password?: string }
  */
 export default function Inscription() {
   const { t } = useTranslation()
+  useGuideVocal('guide.inscription')
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const suite = suiteSure(params.get('suite'))
@@ -84,9 +89,12 @@ export default function Inscription() {
   return (
     <MiseEnPageInvite ecran="inscription">
       <TitreAuth titre={t('auth.inscription.titre')} sousTitre={t('auth.inscription.sousTitre')} voix="auth.inscription.titre" />
+      <Suspense fallback={null}>
+        <AideProche className="mb-4" />
+      </Suspense>
       <form onSubmit={soumettre} noValidate className="flex flex-col gap-3.5">
         <Champ
-          libelle={t('auth.inscription.nom')}
+          libelle={t('auth.inscription.nom')} voix="auth.inscription.nom"
           name="nom"
           autoComplete="name"
           autoCapitalize="words"
@@ -99,7 +107,7 @@ export default function Inscription() {
           erreur={erreursChamps.nom}
         />
         <ChampIdentifiant
-          libelle={t('auth.inscription.identifiant')}
+          libelle={t('auth.inscription.identifiant')} voix="auth.inscription.identifiant"
           saisie={identifiant}
           onChange={(s) => {
             setIdentifiant(s)
@@ -109,7 +117,7 @@ export default function Inscription() {
           erreur={erreursChamps.identifiant}
         />
         <ChampMotDePasse
-          libelle={t('auth.inscription.motDePasse')}
+          libelle={t('auth.inscription.motDePasse')} voix="auth.inscription.motDePasse"
           name="password"
           autoComplete="new-password"
           aide={<JaugeMotDePasse motDePasse={motDePasse} />}

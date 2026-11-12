@@ -1,8 +1,15 @@
-import { describe, expect, it } from 'vitest'
-import i18n from '@/i18n'
+import { beforeAll, describe, expect, it } from 'vitest'
+import i18n, { chargerPaquet } from '@/i18n'
 import { contenuQrLightning, libelleMethode } from './methodes'
 
 describe('formatage du reçu et de la demande de paiement', () => {
+  // Textes de l'encaissement (`succes.*`) : paquet à la demande, chargé en EN puis en FR.
+  beforeAll(async () => {
+    await i18n.changeLanguage('en')
+    await chargerPaquet('paiement')
+    await i18n.changeLanguage('fr')
+  })
+
   const t = (cle: string) => i18n.t(cle)
 
   it('libellé du moyen de paiement en FR puis EN', async () => {

@@ -1,9 +1,13 @@
 import { QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render as rendre, screen, waitFor } from '@testing-library/react'
 import type { ReactElement } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { chargerPaquet } from '@/i18n'
 import { queryClient } from '@/lib/queryClient'
 import { Succes } from './Succes'
+
+// Textes de l'encaissement : paquet chargé à la demande avec l'écran de paiement.
+beforeAll(() => chargerPaquet('paiement'))
 
 const render = (ui: ReactElement) => rendre(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>)
 
