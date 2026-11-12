@@ -1,4 +1,29 @@
-# SatsPoint — pause du 8 novembre 2026 (≈ 18 h) : ce qui reste
+# SatsPoint — pause du 12 novembre 2026 : où on en est
+
+> Échéance : **vendredi 20 novembre 2026, 20 h 00 (Dakar = UTC)** — soumission visée avant 18 h.
+> **Rien n'est en ligne** depuis le 8/11 : https://satspoint.onrender.com montre encore l'ancienne version (`main`).
+
+## Branches
+- **`wip/pause-2026-11-08`** : travail VÉRIFIÉ depuis le 8/11 (Pest 404 verts, Vitest 185 verts au 11/11) — direction « Lumière », logo cauri, landing, sélecteurs soleil/lune + FR|EN, « Se souvenir de moi », pagination, super-admin avec sa boutique, pays UEMOA + langues dynamiques + moyens de paiement par pays, correctif ventes, 2FA « virtuelle » en local, API des articles sans écrire, découpe des blancs (serveur + fonctions navigateur), hook `useGuideVocal`.
+- **`wip/pause-2026-11-12`** (dépôt local resté dessus) : + tout le travail NON VÉRIFIÉ des deux chantiers interrompus (commit `178b9a1`).
+
+## À finir à la reprise (dans l'ordre)
+1. **Voix (parcours guidé)** : terminer l'audit « un haut-parleur sur chaque élément actionnable » et son garde-fou automatique ; haut-parleurs sur chaque étape de la double authentification (demande de la propriétaire, garder `CodeLocal`) ; régénérer `web/src/voix/cles-vocales.json` puis `docs/AUDIOS_ESSENTIELS.md` ; vérifier à l'écran le panneau de première visite (choix de la langue), le bouton « 🔊 WO » + feuille vocale, le bouton « Réécouter l'aide », l'aide « Vous ne savez pas écrire ? » ; débordement de `/portefeuille` à 390 px.
+2. **Articles sans écrire** (écrans) : vérifier formulaire (photo / pictogramme / nom dit à voix haute, nom écrit facultatif, prix au pavé), galerie de pictogrammes, grille de la caisse, panier, détail de vente, reçu ; brancher `useGuideVocal` ; unifier la découpe des silences (`ecrans/articles/decoupeSilences.ts` → `voix/decoupe*.ts`).
+3. Vérifications complètes : `tsc`, `oxlint`, `vitest`, `build`, `taille` (caisse ≈ 169,8/170 Ko : libérer de la place si besoin), Pest complet, captures 390/1366 clair/sombre FR/EN, puis **Playwright de bout en bout sur la vraie pile** (jamais lancé) et `tests/e2e/RAPPORT.md`.
+4. Montrer les captures à la propriétaire → « valide » → fusion dans `main` → Render.
+5. Propriétaire : enregistrer les audios sur le **front réel** (http://localhost:5190, jamais le mode démo qui ne garde rien) une fois la découpe des blancs vérifiée ; recouper les anciens avec `php artisan audio:retraiter --simulation` puis sans l'option ; exporter vers la production (`audio:exporter` / `audio:importer`).
+6. Propriétaire : Render `SUPERADMIN_PASSWORD` (nouveau mot de passe dans `.env`), `DEMO_NWC_URI` (nouvelle connexion Coinos), `DEMO_PASSWORD`, mot de passe Neon ; rechanger tous les secrets passés dans le chat avant le jury.
+7. Paiement réel (Banxaas samedi 14/11 ?), vidéo (script à mettre à jour avec la nouvelle interface), README (captures, mesures), Devpost (profil Student), soumission avant le 20/11 18 h.
+
+## Environnement local
+- Docker : `docker compose up -d` dans `C:\SatsPoint` (si le moteur répond 500 : fermer de force les processus `C:\Program Files\Docker\*` puis relancer Docker Desktop).
+- Front réel : `cd web && npx vite --port 5190 --strictPort` ; front démo pour les vérifications : `npx vite --mode mock --port 5195 --strictPort`.
+- 2FA en local : le code est affiché à l'écran (« Mode local », `DEUX_FA_CODE_LOCAL=true` dans `.env`, ignoré hors `APP_ENV=local`).
+
+---
+
+# Historique — pause du 8 novembre
 
 > Échéance : **vendredi 20 novembre 2026, 20 h 00 (Dakar = UTC)** — soumission visée avant 18 h.
 > Site en ligne : **https://satspoint.onrender.com** (Render gratuit + Neon). Dépôt : branche `main` = version en ligne.
