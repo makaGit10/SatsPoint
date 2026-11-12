@@ -1,9 +1,12 @@
 import { CircleAlert } from 'lucide-react'
 import { forwardRef, useId, type InputHTMLAttributes, type ReactNode } from 'react'
 import { cn } from '@/lib/cn'
+import { HautParleur } from '@/voix/HautParleur'
 
 export interface PropsChamp extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   libelle: string
+  /** Clé vocale du libellé : petit haut-parleur à côté (l'audio dit à quoi sert la case). */
+  voix?: string
   /** Texte d'aide sous le champ. */
   aide?: ReactNode
   /** Message d'erreur (remplace l'aide, passe le champ en rouge). */
@@ -21,7 +24,7 @@ export interface PropsChamp extends Omit<InputHTMLAttributes<HTMLInputElement>, 
 
 /** Champ de saisie avec libellé, aide et erreur accessibles. */
 export const Champ = forwardRef<HTMLInputElement, PropsChamp>(function Champ(
-  { libelle, aide, erreur, icone, suffixe, prefixe, mentionOptionnel, classeConteneur, className, id, ...reste },
+  { libelle, voix, aide, erreur, icone, suffixe, prefixe, mentionOptionnel, classeConteneur, className, id, ...reste },
   ref,
 ) {
   const idAuto = useId()
@@ -33,7 +36,10 @@ export const Champ = forwardRef<HTMLInputElement, PropsChamp>(function Champ(
   return (
     <div className={cn('flex flex-col gap-1.5', classeConteneur)}>
       <label htmlFor={idChamp} className="flex items-baseline justify-between text-sm font-semibold text-texte-2">
-        <span>{libelle}</span>
+        <span className="inline-flex items-center gap-0.5">
+          {libelle}
+          {voix && <HautParleur cle={voix} className="-my-2" />}
+        </span>
         {mentionOptionnel && <span className="text-xs font-normal text-texte-3">{mentionOptionnel}</span>}
       </label>
       <div className="relative flex items-center">

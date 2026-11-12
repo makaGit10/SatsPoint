@@ -1,9 +1,12 @@
 import { ChevronDown } from 'lucide-react'
 import { useId, type ReactNode, type SelectHTMLAttributes } from 'react'
 import { cn } from '@/lib/cn'
+import { HautParleur } from '@/voix/HautParleur'
 
 export interface PropsSelection extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   libelle: string
+  /** Clé vocale du libellé (haut-parleur à côté, ou dans le coin du champ si le libellé est masqué). */
+  voix?: string
   /** Libellé visible (sinon seulement accessible). */
   libelleVisible?: boolean
   options: readonly { valeur: string; libelle: string }[]
@@ -14,14 +17,17 @@ export interface PropsSelection extends Omit<SelectHTMLAttributes<HTMLSelectElem
 }
 
 /** Liste déroulante native (sélecteur système sur mobile, zéro dépendance), habillée comme un champ. */
-export function Selection({ libelle, libelleVisible = true, options, aide, erreur, taille = 'md', classeConteneur, className, id, ...reste }: PropsSelection) {
+export function Selection({ libelle, voix, libelleVisible = true, options, aide, erreur, taille = 'md', classeConteneur, className, id, ...reste }: PropsSelection) {
   const idAuto = useId()
   const idChamp = id ?? idAuto
   return (
     <div className={cn('flex flex-col gap-1.5', classeConteneur)}>
-      <label htmlFor={idChamp} className={cn('text-sm font-semibold text-texte-2', !libelleVisible && 'sr-only')}>
-        {libelle}
-      </label>
+      <div className={cn('flex items-center gap-0.5', !libelleVisible && 'sr-only')}>
+        <label htmlFor={idChamp} className="text-sm font-semibold text-texte-2">
+          {libelle}
+        </label>
+        {voix && libelleVisible && <HautParleur cle={voix} className="-my-2" />}
+      </div>
       <div className="relative">
         <select
           id={idChamp}
@@ -40,6 +46,7 @@ export function Selection({ libelle, libelleVisible = true, options, aide, erreu
           ))}
         </select>
         <ChevronDown size={14} className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-texte-3" aria-hidden="true" />
+        {voix && !libelleVisible && <HautParleur cle={voix} dansBouton />}
       </div>
       {erreur ? <p role="alert" className="text-sm text-danger-texte">{erreur}</p> : aide && <p className="text-xs text-texte-3">{aide}</p>}
     </div>
