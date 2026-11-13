@@ -84,12 +84,15 @@ describe('HautParleur', () => {
       </button>,
       creerClient({ wo: { 'caisse.encaisser': 'data:audio/wav;base64,WO' } }),
     )
-    const hp = screen.getByRole('button', { name: 'Écouter' })
-    expect(hp).toHaveAttribute('tabindex', '-1')
+    // Dans un bouton : masqué aux technologies d'assistance (pas de bouton dans un bouton), mais touchable.
+    const hp = document.querySelector('[data-haut-parleur="caisse.encaisser"]')!
+    expect(hp).toHaveAttribute('aria-hidden', 'true')
+    expect(hp).not.toHaveAttribute('role')
+    expect(screen.getByRole('button', { name: 'Encaisser' })).toBeInTheDocument()
     fireEvent.click(hp)
     expect(surParent).not.toHaveBeenCalled()
     expect(useVoix.getState().cleEnLecture).toBe('caisse.encaisser')
-    expect(hp).toHaveAttribute('aria-pressed', 'true')
+    expect(hp).toHaveAttribute('data-en-lecture', 'true')
   })
 
   it('un seul son à la fois : lire une autre clé coupe la précédente', () => {

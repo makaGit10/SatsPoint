@@ -31,7 +31,8 @@ export function MenuUtilisateur() {
     <>
       <button
         type="button"
-        aria-label={t('entete.menuUtilisateur')}
+        // Le nom accessible commence par les initiales affichées (WCAG 2.5.3).
+        aria-label={`${initiales(utilisateur.nom) || '•'} — ${t('entete.menuUtilisateur')}`}
         aria-haspopup="dialog"
         aria-expanded={ouvert}
         onClick={() => {

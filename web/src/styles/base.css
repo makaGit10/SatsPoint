@@ -394,3 +394,14 @@
     filter: none;
   }
 }
+
+/* Défilement vers un élément (clavier, lien d'ancre, scrollIntoView) : jamais caché sous l'en-tête collant ni sous la
+   barre du bas fixe du mobile (WCAG 2.4.11, focus non masqué). */
+:root:has([data-coquille]) {
+  scroll-padding-top: calc(var(--hauteur-entete) + 8px);
+}
+@media (max-width: 767.98px) {
+  :root:has([data-coquille]) {
+    scroll-padding-bottom: calc(var(--hauteur-barre-bas) + env(safe-area-inset-bottom, 0px) + 8px);
+  }
+}

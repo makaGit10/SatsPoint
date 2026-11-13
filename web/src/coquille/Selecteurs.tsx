@@ -63,7 +63,8 @@ export function SelecteurLangue({ className }: { className?: string }) {
             type="button"
             lang={v}
             aria-pressed={actif}
-            aria-label={t(`langue.${v}`)}
+            // Le nom accessible commence par le texte visible (« FR — Français », WCAG 2.5.3).
+            aria-label={`${v.toUpperCase()} — ${t(`langue.${v}`)}`}
             title={t(`langue.${v}`)}
             onClick={() => {
               if (!actif) changerLocale(v)

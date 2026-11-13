@@ -35,16 +35,22 @@ function urlDans(manifeste: ManifesteAudio | undefined, cle: string): string | n
 }
 
 /**
- * URL de l'audio d'une clé : langue demandée, puis repli français, sinon `null` (haut-parleur masqué).
+ * URL de l'audio d'une clé : langue demandée, puis repli français, sinon `null`.
+ * `undefined` tant que le manifeste de la langue demandée se charge : le repli français n'est jamais joué à la place
+ * d'un enregistrement qui arrive (la tuile « Wolof » doit dire « Wolof » en wolof).
  * `langueForcee` sert au sélecteur de langue (chaque tuile parle sa propre langue).
  */
-export function useUrlAudio(cle: string, langueForcee?: LangueAudio): string | null {
+export function useUrlAudio(cle: string, langueForcee?: LangueAudio): string | null | undefined {
   const langueStore = useVoix((s) => s.langueAudio)
   const langue = langueForcee ?? langueStore
   const principal = useManifesteAudio(langue)
   const repli = useManifesteAudio(langue && langue !== 'fr' ? 'fr' : null)
   if (!langue) return null
-  return urlDans(principal.data, cle) ?? (langue !== 'fr' ? urlDans(repli.data, cle) : null)
+  const propre = urlDans(principal.data, cle)
+  if (propre) return propre
+  if (principal.isPending) return undefined
+  if (langue === 'fr') return null
+  return urlDans(repli.data, cle) ?? (repli.isPending ? undefined : null)
 }
 
 /** Version hors React (annonces automatiques). */

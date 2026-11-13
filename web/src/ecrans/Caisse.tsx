@@ -220,8 +220,8 @@ export default function Caisse() {
           {/* Montant + conversion : zone qui respire, centrée (carte sur bureau). */}
           <div className={cn('verre flex flex-1 flex-col items-center justify-center rounded-xl px-5 text-center md:flex-none md:py-10', aDesArticles ? 'py-3' : 'py-7')} data-montant>
             <p className={cn('chiffre-geant md:text-7xl', montant === 0 ? 'text-texte-3' : 'text-texte')} aria-live="polite" aria-atomic="true" aria-label={t('caisse.montantAria')}>
-              {formaterNombre(montant)}
-              <span className="ml-1.5 text-xl font-bold tracking-normal text-accent-texte md:text-2xl">FCFA</span>
+              {formaterNombre(montant)}{' '}
+              <span className="ml-0.5 text-xl font-bold tracking-normal text-accent-texte md:text-2xl">FCFA</span>
             </p>
             <p className="mt-3 min-h-6 text-base font-semibold text-texte-2 tabulaire" aria-live="polite">
               {sats !== null ? formaterSats(sats, { approx: true }) : coursDisponible || !cours ? '' : t('caisse.coursIndisponible')}

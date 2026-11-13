@@ -36,8 +36,9 @@ export function HautParleur({ cle, langue, dansBouton = false, coin = '-top-1.5 
   const enLecture = useVoix((s) => s.cleEnLecture === cle)
   const url = useUrlAudio(cle, langue)
 
-  const texte = url ? '' : t(cle, { defaultValue: '' }).replace(/\{\{[^}]+\}\}/g, '')
-  const synthese = !url && texte !== '' && texte !== cle && syntheseDisponible()
+  // Manifeste en cours de chargement : rien (ni repli, ni voix du navigateur) pour ne pas jouer la mauvaise langue.
+  const texte = url || url === undefined ? '' : t(cle, { defaultValue: '' }).replace(/\{\{[^}]+\}\}/g, '')
+  const synthese = url === null && texte !== '' && texte !== cle && syntheseDisponible()
 
   // Le sélecteur de langue parle toujours (langue imposée) ; ailleurs, on respecte la préférence.
   if ((!url && !synthese) || (!langue && !activee)) return null
@@ -57,10 +58,11 @@ export function HautParleur({ cle, langue, dansBouton = false, coin = '-top-1.5 
 
   return (
     <span
-      role="button"
-      tabIndex={dansBouton ? -1 : 0}
-      aria-label={t('voix.ecouter')}
-      aria-pressed={enLecture}
+      // Dans un bouton : repère visuel et tactile seulement (le lecteur d'écran lit déjà le nom du bouton) —
+      // jamais un « bouton dans un bouton » pour les technologies d'assistance.
+      {...(dansBouton
+        ? { 'aria-hidden': true as const, 'data-en-lecture': enLecture || undefined }
+        : { role: 'button', tabIndex: 0, 'aria-label': t('voix.ecouter'), 'aria-pressed': enLecture })}
       data-haut-parleur={cle}
       onClick={declencher}
       onPointerDown={bloquer}

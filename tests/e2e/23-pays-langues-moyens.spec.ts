@@ -122,7 +122,8 @@ test.describe('23 · Pays, langues et moyens de paiement par pays', () => {
     await ecranPret(page, 'langue');
     const pays = page.getByRole('combobox', { name: 'Votre pays' });
     await expect(pays).toHaveValue('SN');
-    const tuiles = page.getByRole('list', { name: 'Choisissez votre langue' }).getByRole('button');
+    // Tuiles de langue seulement (chaque tuile a aussi son haut-parleur, lui-même un bouton).
+    const tuiles = page.getByRole('list', { name: 'Choisissez votre langue' }).locator('button[data-langue]');
     await expect(tuiles).toHaveCount(6);
     // Pays sans langue locale au catalogue de départ : Français + English.
     await pays.selectOption('NE');

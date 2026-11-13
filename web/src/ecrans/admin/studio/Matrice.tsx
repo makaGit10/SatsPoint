@@ -126,7 +126,8 @@ export function MatriceMobile({ cles, langues, langue, selection, onChoisir }: P
                   <button
                     type="button"
                     onClick={() => onChoisir(c.cle, langue)}
-                    aria-label={t('studio.caseAria', { langue: nomLangue, texte: c.texte_fr, statut: t(`studio.statuts.${statut}`) })}
+                    // Nom accessible = texte visible (FR puis EN) suivi de la langue et du statut (WCAG 2.5.3).
+                    aria-label={`${c.texte_fr} ${c.texte_en} — ${nomLangue} : ${t(`studio.statuts.${statut}`)}`}
                     data-statut={statut}
                     className={cn('flex min-h-12 min-w-0 flex-1 items-center gap-3 px-3 py-2 text-left', selection === c.cle && 'bg-surface-2')}
                   >

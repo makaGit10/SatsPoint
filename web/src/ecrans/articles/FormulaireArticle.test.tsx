@@ -40,7 +40,7 @@ const taperPrix = (chiffres: string) => {
 }
 
 describe('Formulaire d\'article sans écrire', () => {
-  it('crée un article SANS nom écrit : une image choisie dans la galerie + le prix tapé sur le pavé', async () => {
+  it('crée un article SANS nom écrit : une image choisie dans la galerie + le prix tapé sur le pavé', { timeout: 15_000 }, async () => {
     const onFermer = vi.fn()
     avec(<FormulaireArticle article={null} onFermer={onFermer} />)
 

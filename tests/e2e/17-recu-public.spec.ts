@@ -18,7 +18,7 @@ test.describe('17 · Reçu public', () => {
     const anonyme = await ClientApi.anonyme();
     const json = await anonyme.get(recuUrl);
     expect(json.status).toBe(200);
-    expect(Object.keys(json.json).sort()).toEqual(['alerte', 'boutique', 'message', 'methode', 'montant_sats', 'montant_xof', 'numero', 'operateur', 'paye_le', 'statut'].sort());
+    expect(Object.keys(json.json).sort()).toEqual(['alerte', 'boutique', 'lignes', 'message', 'methode', 'montant_sats', 'montant_xof', 'moyen', 'numero', 'operateur', 'paye_le', 'statut'].sort());
     expect(json.texte).not.toContain(boutique.compte.identifiant);
     await anonyme.fermer();
 

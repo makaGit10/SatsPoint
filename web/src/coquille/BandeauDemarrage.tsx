@@ -34,7 +34,7 @@ export function BandeauDemarrage({ className }: { className?: string }) {
           <span className="truncate font-medium text-texte">{t('demarrage.continuer')}</span>
           <span className="shrink-0 text-xs text-texte-2 tabulaire">{t('demarrage.progression', { faites, total: NOMBRE_ETAPES_DEMARRAGE })}</span>
         </span>
-        <span className="mt-1 block h-1 overflow-hidden rounded-full bg-surface" role="progressbar" aria-valuemin={0} aria-valuemax={NOMBRE_ETAPES_DEMARRAGE} aria-valuenow={faites}>
+        <span className="mt-1 block h-1 overflow-hidden rounded-full bg-surface" role="progressbar" aria-label={t('demarrage.progression', { faites, total: NOMBRE_ETAPES_DEMARRAGE })} aria-valuemin={0} aria-valuemax={NOMBRE_ETAPES_DEMARRAGE} aria-valuenow={faites}>
           <span className="block h-full rounded-full bg-accent transition-[width] duration-300" style={{ width: `${pct}%` }} />
         </span>
       </span>

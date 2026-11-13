@@ -36,7 +36,7 @@ test.describe('16 · Studio audio', () => {
     // Filtre sur la clé « Encaisser » (caisse), case Wolof manquante → panneau d'enregistrement.
     const recherche = page.getByRole('searchbox', { name: 'Chercher une clé ou un texte' });
     await recherche.fill('caisse.encaisser');
-    const caseWolof = page.getByRole('button', { name: /^Wolof — « Encaisser » : Manquant/ }).first();
+    const caseWolof = page.getByRole('button', { name: /^Wolof — « Encaisser » : Manquant|^Encaisser .*— Wolof : Manquant/ }).first();
     await expect(caseWolof).toBeVisible();
     await caseWolof.click();
     const panneau = page.locator('[data-panneau="enregistrement"]');
@@ -47,8 +47,11 @@ test.describe('16 · Studio audio', () => {
     await depot.setInputFiles({ name: 'texte.txt', mimeType: 'text/plain', buffer: Buffer.from('bonjour') });
     await expect(panneau.getByText('Format non pris en charge : mp3, wav, m4a, ogg ou webm.')).toBeVisible();
 
-    // Dépôt d'un fichier WAV → traitement → brouillon.
-    const envoi = await attendreApi(page, 'POST', /\/api\/v1\/admin\/audio$/, () => depot.setInputFiles({ name: 'encaisser.wav', mimeType: 'audio/wav', buffer: wav() }));
+    // Dépôt d'un fichier WAV → blancs coupés dans le navigateur, aperçu → « Valider » → traitement → brouillon.
+    await depot.setInputFiles({ name: 'encaisser.wav', mimeType: 'audio/wav', buffer: wav() });
+    await expect(panneau.locator('[data-action="valider"]')).toBeVisible({ timeout: 15_000 });
+    await capturer(page, '16-studio-apercu-depot');
+    const envoi = await attendreApi(page, 'POST', /\/api\/v1\/admin\/audio$/, () => panneau.locator('[data-action="valider"]').click());
     expect([201, 202]).toContain(envoi.status());
     await expect(toast(page, 'Enregistrement envoyé')).toBeVisible();
     // Le panneau (feuille sur mobile) indique l'état de la version en préparation.

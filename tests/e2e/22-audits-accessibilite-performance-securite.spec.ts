@@ -88,7 +88,7 @@ test.describe('22 · Audits', () => {
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
     // « Slow 4G » (profil Chrome DevTools) : 150 ms de latence, ~1,6 Mb/s descendant, 750 kb/s montant.
     await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 150, downloadThroughput: (1.6 * 1024 * 1024) / 8, uploadThroughput: (750 * 1024) / 8 });
-    const webVitals = fs.readFileSync(require.resolve('web-vitals/dist/web-vitals.iife.js'), 'utf8');
+    const webVitals = fs.readFileSync(path.join(__dirname, 'node_modules/web-vitals/dist/web-vitals.iife.js'), 'utf8');
     await page.addInitScript(webVitals);
     await page.addInitScript(() => {
       const w = window as unknown as { __vitals: Record<string, number>; webVitals: { onLCP: Function; onINP: Function; onFCP: Function; onCLS: Function } };

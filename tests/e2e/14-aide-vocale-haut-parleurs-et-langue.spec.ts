@@ -28,7 +28,8 @@ test.describe('14 · Aide vocale', () => {
     await page.goto('/langue');
     const hpWolof = page.locator('[data-haut-parleur="langue.wo"]');
     await expect(hpWolof).toBeVisible();
-    await expect(page.locator('[data-haut-parleur="langue.srr"]')).toHaveCount(0); // aucun audio : jamais de haut-parleur muet
+    // Pas d'audio seereer : la tuile parle quand même (enregistrement français, sinon voix du navigateur) — aucun bouton muet.
+    await expect(page.locator('[data-haut-parleur="langue.srr"]')).toBeVisible();
     const lecture = page.waitForResponse((r) => /\/audio\/wo\/langue\.wo\.[0-9a-f]{8}\.mp3$/.test(new URL(r.url()).pathname));
     await hpWolof.click();
     expect([200, 206]).toContain((await lecture).status());

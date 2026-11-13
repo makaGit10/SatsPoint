@@ -70,13 +70,11 @@ test.describe('12 · Articles, import et export', () => {
     await expect(toast(page, 'Article supprimé')).toBeVisible();
     await expect(liste.getByRole('listitem')).toHaveCount(2);
 
-    // Les articles actifs sont des tuiles de la caisse (bureau) ou dans la feuille « Articles » (mobile).
+    // Les articles actifs sont des tuiles de la caisse : grille sous le montant (bureau), bande d'images au-dessus du pavé (mobile).
     await page.goto('/caisse');
     await ecranPret(page, 'caisse');
-    const boutonArticles = page.getByRole('button', { name: 'Articles', exact: true });
-    if (await boutonArticles.count()) await boutonArticles.click();
-    await page.getByRole('button', { name: new RegExp(`^${PREFIXE_TEST} Thé`) }).click();
-    await expect(page.getByText(/Total/).first()).toBeVisible();
+    await page.getByRole('button', { name: new RegExp(`^${PREFIXE_TEST} Thé`) }).filter({ visible: true }).first().click();
+    await expect(page.getByText(/Total|Panier · 1 · 1\s?300\sFCFA/).filter({ visible: true }).first()).toBeVisible();
   });
 
   test('import CSV avec correspondance, rapport, export ; caissier en lecture', async ({ pageProprietaire: page, boutique, ouvrir }) => {

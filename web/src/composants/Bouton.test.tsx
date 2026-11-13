@@ -66,7 +66,8 @@ describe('Bouton', () => {
       </Bouton>,
       { wrapper: ({ children }) => <Enveloppe client={clientAvecManifeste()}>{children}</Enveloppe> },
     )
-    const hautParleur = screen.getByRole('button', { name: 'Écouter' })
+    const hautParleur = document.querySelector<HTMLElement>('[data-haut-parleur]')!
+    expect(hautParleur).toHaveAttribute('aria-hidden', 'true')
     expect(hautParleur).toBeInTheDocument()
     fireEvent.click(hautParleur)
     expect(onClick).not.toHaveBeenCalled()
@@ -79,6 +80,6 @@ describe('Bouton', () => {
     render(<Bouton voix="cle.sans.audio">Encaisser</Bouton>, {
       wrapper: ({ children }) => <Enveloppe client={clientAvecManifeste()}>{children}</Enveloppe>,
     })
-    expect(screen.queryByRole('button', { name: 'Écouter' })).toBeNull()
+    expect(document.querySelector('[data-haut-parleur]')).toBeNull()
   })
 })

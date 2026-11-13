@@ -23,7 +23,8 @@ export function BoutonVoix({ className }: { className?: string }) {
   const { langues } = useCatalogue()
   const code = activee && langueAudio ? langueAudio : localeCourante()
   const nom = langues.find((l) => l.code === code)?.nom_local ?? t(`langue.${code === 'en' ? 'en' : 'fr'}`)
-  const libelle = `${t('voix.ouvrirAide', { langue: nom })}${activee ? '' : ` — ${t('voix.coupee')}`}`
+  // Le nom accessible commence par le code affiché (« WO — Aide vocale (Wolof) », WCAG 2.5.3).
+  const libelle = `${code.toUpperCase()} — ${t('voix.ouvrirAide', { langue: nom })}${activee ? '' : ` — ${t('voix.coupee')}`}`
 
   return (
     <>

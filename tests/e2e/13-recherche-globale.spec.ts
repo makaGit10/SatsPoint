@@ -39,7 +39,7 @@ test.describe('13 · Recherche globale', () => {
     const memo = await attendreApi(page, 'POST', /\/recherche\/recentes$/, () => champ.press('Enter'));
     expect(memo.status()).toBe(204);
     await expect(page.getByRole('dialog', { name: "Modifier l'article" })).toBeVisible();
-    await expect(page.getByRole('dialog', { name: "Modifier l'article" }).getByLabel('Nom', { exact: true })).toHaveValue(`${PREFIXE_TEST} Bissap`);
+    await expect(page.getByRole('dialog', { name: "Modifier l'article" }).getByLabel('Nom écrit')).toHaveValue(`${PREFIXE_TEST} Bissap`);
     await page.keyboard.press('Escape');
 
     // Vente par numéro → détail de la vente.
