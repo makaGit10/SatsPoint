@@ -32,6 +32,34 @@ describe('HautParleur', () => {
     expect(screen.queryByRole('button')).toBeNull()
   })
 
+  it("sans aucun enregistrement, la voix du navigateur lit le texte affiché (aucun bouton muet)", () => {
+    const parler = vi.fn()
+    const cancel = vi.fn()
+    class Enonce {
+      lang = ''
+      rate = 1
+      voice: unknown = null
+      onend: (() => void) | null = null
+      onerror: (() => void) | null = null
+      text: string
+      constructor(text: string) {
+        this.text = text
+      }
+    }
+    vi.stubGlobal('SpeechSynthesisUtterance', Enonce)
+    Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: { speak: parler, cancel, getVoices: () => [] } })
+    try {
+      rendre(<HautParleur cle="caisse.encaisser" />, creerClient({ wo: {}, fr: {} }))
+      fireEvent.click(screen.getByRole('button', { name: 'Écouter' }))
+      expect(parler).toHaveBeenCalledTimes(1)
+      expect((parler.mock.calls[0]![0] as Enonce).text).toBe('Encaisser')
+    } finally {
+      arreter()
+      Reflect.deleteProperty(window, 'speechSynthesis')
+      vi.unstubAllGlobals()
+    }
+  })
+
   it('utilise le repli français quand la langue choisie ne couvre pas la clé', () => {
     rendre(<HautParleur cle="caisse.encaisser" />, creerClient({ wo: {}, fr: { 'caisse.encaisser': 'data:audio/wav;base64,FR' } }))
     expect(screen.getByRole('button', { name: 'Écouter' })).toBeInTheDocument()

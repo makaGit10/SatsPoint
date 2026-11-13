@@ -13,7 +13,6 @@ import { peut, useAuth } from '@/auth/store'
 import { Bouton, BoutonLien } from '@/composants/Bouton'
 import { BoutonIcone } from '@/composants/BoutonIcone'
 import { Carte, CarteEnTete } from '@/composants/Carte'
-import { Champ } from '@/composants/Champ'
 import { Dialogue } from '@/composants/Dialogue'
 import { notifier } from '@/composants/toastStore'
 import { useMessageErreur } from '@/ecrans/auth/useMessageErreur'
@@ -40,6 +39,7 @@ const GrilleArticles = lazy(() => grille().then((m) => ({ default: m.GrilleArtic
 const Panier = lazy(() => grille().then((m) => ({ default: m.Panier })))
 const BandeauAucunMoyen = lazy(() => import('./caisse/AucunMoyen').then((m) => ({ default: m.BandeauAucunMoyen })))
 const BoutonBrancherMoyen = lazy(() => import('./caisse/AucunMoyen').then((m) => ({ default: m.BoutonBrancherMoyen })))
+const NoteVente = lazy(() => import('./caisse/NoteVente'))
 const BandeauDemarrage = lazy(() => import('@/coquille/BandeauDemarrage').then((m) => ({ default: m.BandeauDemarrage })))
 const MONTANT_MAX_DEFAUT = 2_000_000
 
@@ -246,16 +246,9 @@ export default function Caisse() {
           </div>
 
           {noteVisible && (
-            <Champ
-              libelle={t('caisse.note')} voix="caisse.note"
-              mentionOptionnel={t('commun.optionnel')}
-              placeholder={t('caisse.notePlaceholder')}
-              value={note}
-              maxLength={120}
-              onChange={(e) => setNote(e.target.value)}
-              classeConteneur=""
-              autoFocus
-            />
+            <Suspense fallback={<div className="h-[72px]" />}>
+              <NoteVente valeur={note} onChange={setNote} />
+            </Suspense>
           )}
 
           {aucunMoyenBranche && (

@@ -2,8 +2,9 @@ import { Volume2 } from 'lucide-react'
 import type { KeyboardEvent, MouseEvent, PointerEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { LangueAudio } from '@/api/types'
+import { localeCourante } from '@/i18n'
 import { cn } from '@/lib/cn'
-import { lire } from './lecteur'
+import { lire, lireTexte, syntheseDisponible } from './lecteur'
 import { useVoix } from './store'
 import { useUrlAudio } from './useManifesteAudio'
 
@@ -25,7 +26,9 @@ export interface PropsHautParleur {
 
 /**
  * Petit haut-parleur : lit l'audio de la clé sans déclencher l'élément parent.
- * Masqué s'il n'existe aucun audio (langue choisie, puis repli français) ou si l'aide vocale est coupée.
+ * Source : l'enregistrement publié (langue choisie, puis repli français) ; à défaut, la voix du navigateur lit le
+ * texte affiché (aucun bouton muet en attendant les enregistrements). Masqué si l'aide vocale est coupée, ou si
+ * ni enregistrement ni voix du navigateur ne sont disponibles.
  */
 export function HautParleur({ cle, langue, dansBouton = false, coin = '-top-1.5 -right-1.5', enLigne = false, taille = 14, className }: PropsHautParleur) {
   const { t } = useTranslation()
@@ -33,13 +36,17 @@ export function HautParleur({ cle, langue, dansBouton = false, coin = '-top-1.5 
   const enLecture = useVoix((s) => s.cleEnLecture === cle)
   const url = useUrlAudio(cle, langue)
 
+  const texte = url ? '' : t(cle, { defaultValue: '' })
+  const synthese = !url && texte !== '' && texte !== cle && syntheseDisponible()
+
   // Le sélecteur de langue parle toujours (langue imposée) ; ailleurs, on respecte la préférence.
-  if (!url || (!langue && !activee)) return null
+  if ((!url && !synthese) || (!langue && !activee)) return null
 
   const declencher = (e: MouseEvent | KeyboardEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    lire(url, cle)
+    if (url) lire(url, cle)
+    else lireTexte(texte, localeCourante() === 'en' ? 'en-US' : 'fr-FR', cle)
   }
   const bloquer = (e: PointerEvent | MouseEvent) => {
     e.stopPropagation()

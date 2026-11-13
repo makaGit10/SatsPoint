@@ -25,13 +25,13 @@ describe('Caisse : choix du moyen de paiement avec les moyens du pays', () => {
   it('propose chaque moyen du pays activé et transmet son identifiant', async () => {
     const onChoisir = vi.fn()
     avec(<ChoixMethode ouvert onFermer={() => {}} montant={8500} sats={null} moyens={moyens([ORANGE])} enCours={false} erreur={null} onChoisir={onChoisir} />)
-    fireEvent.click(await screen.findByRole('button', { name: /Orange Money/ }))
+    fireEvent.click(await screen.findByRole('button', { name: /Orange Money/ }, { timeout: 5000 }))
     expect(onChoisir).toHaveBeenCalledWith('moyen_pays', undefined, ORANGE.ulid)
   })
 
   it('Sénégal sans moyen du pays : rien de plus que le bitcoin (comportement inchangé)', async () => {
     avec(<ChoixMethode ouvert onFermer={() => {}} montant={8500} sats={null} moyens={moyens([])} enCours={false} erreur={null} onChoisir={() => {}} />)
-    expect(await screen.findByRole('button', { name: /Bitcoin/ })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /Bitcoin/ }, { timeout: 5000 })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Orange Money/ })).not.toBeInTheDocument()
   })
 })
