@@ -113,6 +113,7 @@ export default function ImportArticles({ onFermer }: { onFermer: () => void }) {
       ouvert
       onOuvertChange={(o) => !o && onFermer()}
       titre={t('import.titre')}
+      voix="import.titre"
       description={<Etapes indice={indice} />}
       taille="lg"
       pied={
@@ -244,6 +245,7 @@ function Colonnes({ analyse, nomFichier, correspondance, onChange }: { analyse: 
                 <div className="flex min-w-0 items-center gap-1.5">
                   <Selection
                     libelle={t('import.champPour', { colonne })}
+                    voix="import.champPour"
                     libelleVisible={false}
                     taille="sm"
                     value={champ ?? ''}

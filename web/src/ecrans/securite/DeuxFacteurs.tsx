@@ -23,6 +23,8 @@ import { useSaisieEnCours } from '@/temps-reel/useSaisieEnCours'
 import { ChampCode } from './ChampCode'
 import { CodeLocal } from './CodeLocal'
 import { useGuideVocal } from '@/voix/guide'
+import { HautParleur } from '@/voix/HautParleur'
+import { TexteLu } from '@/voix/TexteLu'
 
 /** Secret en groupes de 4 (plus facile à recopier). */
 function grouper(secret: string) {
@@ -39,7 +41,7 @@ export default function DeuxFacteurs() {
 
   return (
     <div className="anim-apparition mx-auto flex w-full max-w-xl flex-col" data-ecran="securite-2fa" data-etape={codes ? 'codes' : etat?.active ? 'active' : 'activation'}>
-      <EnTetePage titre={t('deuxFa.titre')} sousTitre={t('deuxFa.sousTitre')} voix="deuxFa.titre" />
+      <EnTetePage titre={t('deuxFa.titre')} sousTitre={t('deuxFa.sousTitre')} voix="deuxFa.titre" voixSousTitre="deuxFa.sousTitre" />
       {codes ? <CodesSecours codes={codes} /> : etat?.active ? <Desactivation requise={etat.requise} /> : <Activation requise={Boolean(etat?.requise)} onActive={setCodes} />}
     </div>
   )
@@ -102,7 +104,8 @@ function Activation({ requise, onActive }: { requise: boolean; onActive: (codes:
       {requise && (
         <p className="flex items-start gap-2 rounded-md border border-attente/40 bg-attente-doux px-3 py-2 text-sm text-attente-texte" role="status">
           <ShieldAlert size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
-          {t('deuxFa.obligatoire')}
+          <span className="min-w-0 flex-1">{t('deuxFa.obligatoire')}</span>
+          <HautParleur cle="deuxFa.obligatoire" className="-my-1.5 -mr-1.5" />
         </p>
       )}
       <Carte rembourrage="md" className="flex flex-col gap-4">
@@ -110,15 +113,15 @@ function Activation({ requise, onActive }: { requise: boolean; onActive: (codes:
           <li className="flex gap-3">
             <Numero n={1} />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-texte">{t('deuxFa.etape1.titre')}</p>
-              <p className="text-sm text-texte-2">{t('deuxFa.etape1.texte')}</p>
+              <TexteLu voix="deuxFa.etape1.titre" className="text-sm font-semibold text-texte">{t('deuxFa.etape1.titre')}</TexteLu>
+              <TexteLu voix="deuxFa.etape1.texte" className="text-sm text-texte-2">{t('deuxFa.etape1.texte')}</TexteLu>
             </div>
           </li>
           <li className="flex gap-3">
             <Numero n={2} />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-texte">{t('deuxFa.etape2.titre')}</p>
-              <p className="text-sm text-texte-2">{t('deuxFa.etape2.texte')}</p>
+              <TexteLu voix="deuxFa.etape2.titre" className="text-sm font-semibold text-texte">{t('deuxFa.etape2.titre')}</TexteLu>
+              <TexteLu voix="deuxFa.etape2.texte" className="text-sm text-texte-2">{t('deuxFa.etape2.texte')}</TexteLu>
               <div className="mt-3 flex flex-col items-center gap-3 sm:flex-row sm:items-start">
                 {donnees ? (
                   <QrCode valeur={donnees.otpauth_url} libelle={t('deuxFa.qrAria')} taille={168} className="shrink-0 border border-bordure" />
@@ -126,7 +129,7 @@ function Activation({ requise, onActive }: { requise: boolean; onActive: (codes:
                   <Squelette className="size-[168px] shrink-0 rounded-lg" data-chargement="2fa" />
                 )}
                 <div className="flex w-full min-w-0 flex-col gap-1">
-                  <span className="text-xs text-texte-3">{t('deuxFa.secretAide')}</span>
+                  <TexteLu as="span" voix="deuxFa.secretAide" className="text-xs text-texte-3">{t('deuxFa.secretAide')}</TexteLu>
                   <div className="flex items-center gap-1 rounded-md border border-bordure bg-fond-2 py-1 pr-1 pl-2.5">
                     <code className="min-w-0 flex-1 font-mono text-sm break-all text-texte" data-secret>
                       {donnees ? grouper(donnees.secret) : '•••• •••• •••• ••••'}
@@ -145,11 +148,12 @@ function Activation({ requise, onActive }: { requise: boolean; onActive: (codes:
           <li className="flex gap-3">
             <Numero n={3} />
             <form onSubmit={soumettre} noValidate className="flex min-w-0 flex-1 flex-col gap-2">
-              <p className="text-sm font-semibold text-texte">{t('deuxFa.etape3.titre')}</p>
+              <TexteLu voix="deuxFa.etape3.titre" className="text-sm font-semibold text-texte">{t('deuxFa.etape3.titre')}</TexteLu>
               <CodeLocal actif={Boolean(donnees)} onRemplir={(v) => soumettre(undefined, v)} />
               <ChampCode
                 ref={entree}
                 libelle={t('deuxFa.code')}
+                voix="deuxFa.code"
                 valeur={code}
                 onChange={(v) => {
                   setCode(v)
@@ -206,8 +210,8 @@ function CodesSecours({ codes }: { codes: string[] }) {
           <ShieldCheck size={18} />
         </span>
         <div>
-          <h2 className="text-base font-semibold text-texte">{t('deuxFa.codes.titre')}</h2>
-          <p className="text-sm text-texte-2">{t('deuxFa.codes.texte')}</p>
+          <TexteLu as="h2" voix="deuxFa.codes.titre" className="text-base font-semibold text-texte">{t('deuxFa.codes.titre')}</TexteLu>
+          <TexteLu voix="deuxFa.codes.texte" className="text-sm text-texte-2">{t('deuxFa.codes.texte')}</TexteLu>
         </div>
       </div>
       <ul className="grid grid-cols-2 gap-1.5 rounded-md border border-bordure bg-fond-2 p-3 sm:grid-cols-4" aria-label={t('deuxFa.codes.titre')}>
@@ -240,7 +244,8 @@ function CodesSecours({ codes }: { codes: string[] }) {
       </div>
       <label className="flex cursor-pointer items-center gap-2 text-sm text-texte-2">
         <input type="checkbox" checked={range} onChange={(e) => setRange(e.target.checked)} className="size-4 rounded-xs accent-[var(--accent-trait)]" />
-        {t('deuxFa.codes.confirmation')}
+        <span className="min-w-0 flex-1">{t('deuxFa.codes.confirmation')}</span>
+        <HautParleur cle="deuxFa.codes.confirmation" className="-my-1.5" />
       </label>
       <Bouton icone={<Check />} voix="deuxFa.codes.terminer" disabled={!range} onClick={() => navigate(suiteSure(params.get('suite')) ?? cheminAccueil(utilisateur), { replace: true })}>
         {t('deuxFa.codes.terminer')}
@@ -275,9 +280,9 @@ function Desactivation({ requise }: { requise: boolean }) {
           <Smartphone size={20} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-base font-semibold text-texte">{t('deuxFa.activeTitre')}</p>
-          <p className="text-sm text-texte-2">{t('deuxFa.activeTexte')}</p>
-          {requise && <p className="mt-1 text-xs text-texte-3">{t('deuxFa.requiseNote')}</p>}
+          <TexteLu voix="deuxFa.activeTitre" className="text-base font-semibold text-texte">{t('deuxFa.activeTitre')}</TexteLu>
+          <TexteLu voix="deuxFa.activeTexte" className="text-sm text-texte-2">{t('deuxFa.activeTexte')}</TexteLu>
+          {requise && <TexteLu voix="deuxFa.requiseNote" className="mt-1 text-xs text-texte-3">{t('deuxFa.requiseNote')}</TexteLu>}
         </div>
       </Carte>
       <Carte rembourrage="md">
@@ -292,7 +297,7 @@ function Desactivation({ requise }: { requise: boolean }) {
             noValidate
             className="flex flex-col gap-3"
           >
-            <p className="text-sm text-texte-2">{requise ? t('deuxFa.desactiverRequise') : t('deuxFa.desactiverTexte')}</p>
+            <TexteLu voix={requise ? 'deuxFa.desactiverRequise' : 'deuxFa.desactiverTexte'} className="text-sm text-texte-2">{requise ? t('deuxFa.desactiverRequise') : t('deuxFa.desactiverTexte')}</TexteLu>
             <ChampMotDePasse libelle={t('deuxFa.motDePasse')} voix="deuxFa.motDePasse" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} autoFocus />
             <ErreurFormulaire message={erreur} />
             <div className="flex justify-end gap-2">
@@ -309,6 +314,7 @@ function Desactivation({ requise }: { requise: boolean }) {
             <div className="flex items-center gap-2 text-sm text-texte-2">
               <KeyRound size={16} className="text-texte-3" aria-hidden="true" />
               {t('deuxFa.changerTelephone')}
+              <HautParleur cle="deuxFa.changerTelephone" className="-my-1.5" />
             </div>
             <Bouton variante="secondaire" taille="sm" icone={<ShieldOff />} voix="deuxFa.desactiver" onClick={() => setOuvert(true)}>
               {t('deuxFa.desactiver')}

@@ -1,8 +1,11 @@
 import { forwardRef } from 'react'
 import { cn } from '@/lib/cn'
+import { HautParleur } from '@/voix/HautParleur'
 
 export interface PropsChampCode {
   libelle: string
+  /** Clé vocale du libellé (haut-parleur). */
+  voix: string
   valeur: string
   onChange: (valeur: string) => void
   /** Appelé quand les 6 chiffres sont saisis (validation automatique). */
@@ -15,11 +18,14 @@ export interface PropsChampCode {
 }
 
 /** Saisie d'un code à 6 chiffres (ou d'un code de secours), grande et lisible, remplissage automatique du système. */
-export const ChampCode = forwardRef<HTMLInputElement, PropsChampCode>(function ChampCode({ libelle, valeur, onChange, onComplet, secours, erreur, desactive, autoFocus }, ref) {
+export const ChampCode = forwardRef<HTMLInputElement, PropsChampCode>(function ChampCode({ libelle, voix, valeur, onChange, onComplet, secours, erreur, desactive, autoFocus }, ref) {
   return (
     <div className="flex flex-col gap-1">
       <label className="text-sm font-medium text-texte-2">
-        {libelle}
+        <span className="flex items-center gap-1">
+          {libelle}
+          <HautParleur cle={voix} className="-my-1.5" />
+        </span>
         <input
           ref={ref}
           value={valeur}

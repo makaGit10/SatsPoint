@@ -51,3 +51,4 @@ captures/**/*.tmp
 
 # Captures de verification (volumineuses) : conservees localement, quelques references copiees dans docs/images
 captures/
+tools/voix-base/sortie/

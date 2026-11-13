@@ -183,6 +183,7 @@ export default function FormulaireArticle({ article, onFermer }: { article: Arti
       ouvert
       onOuvertChange={(o) => !o && onFermer()}
       titre={article ? t('articles.modifier') : t('articles.ajouter')}
+      voix={article ? 'articles.modifier' : 'articles.ajouter'}
       taille="lg"
       pied={
         <>
@@ -281,6 +282,7 @@ export default function FormulaireArticle({ article, onFermer }: { article: Arti
         {/* 4. Nom écrit (pour qui lit) */}
         <Champ
           libelle={t('articles.form.etapeNomEcrit')}
+          voix="articles.form.etapeNomEcrit"
           mentionOptionnel={t('commun.optionnel')}
           aide={t('articles.form.nomFacultatif')}
           value={nom}
@@ -321,8 +323,8 @@ export default function FormulaireArticle({ article, onFermer }: { article: Arti
             <ChevronDown size={16} className="ml-auto transition-transform group-open:rotate-180" aria-hidden="true" />
           </summary>
           <div className="mt-3 grid grid-cols-2 gap-3">
-            <Champ libelle={t('articles.categorie')} mentionOptionnel={t('commun.optionnel')} value={categorie} onChange={(e) => setCategorie(e.target.value)} autoComplete="off" maxLength={60} />
-            <Champ libelle={t('articles.sku')} mentionOptionnel={t('commun.optionnel')} value={sku} onChange={(e) => setSku(e.target.value)} autoComplete="off" maxLength={40} />
+            <Champ libelle={t('articles.categorie')} voix="articles.categorie" mentionOptionnel={t('commun.optionnel')} value={categorie} onChange={(e) => setCategorie(e.target.value)} autoComplete="off" maxLength={60} />
+            <Champ libelle={t('articles.sku')} voix="articles.sku" mentionOptionnel={t('commun.optionnel')} value={sku} onChange={(e) => setSku(e.target.value)} autoComplete="off" maxLength={40} />
           </div>
         </details>
 

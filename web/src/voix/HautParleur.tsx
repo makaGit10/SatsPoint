@@ -36,7 +36,7 @@ export function HautParleur({ cle, langue, dansBouton = false, coin = '-top-1.5 
   const enLecture = useVoix((s) => s.cleEnLecture === cle)
   const url = useUrlAudio(cle, langue)
 
-  const texte = url ? '' : t(cle, { defaultValue: '' })
+  const texte = url ? '' : t(cle, { defaultValue: '' }).replace(/\{\{[^}]+\}\}/g, '')
   const synthese = !url && texte !== '' && texte !== cle && syntheseDisponible()
 
   // Le sélecteur de langue parle toujours (langue imposée) ; ailleurs, on respecte la préférence.

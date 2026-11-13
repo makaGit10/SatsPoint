@@ -49,13 +49,13 @@ export const ECRANS = [
 export const CODES_LANGUE = ['wo', 'srr', 'ff', 'dyo', 'fr', 'en']
 
 /** Composants dont chaque utilisation doit porter une clé vocale. */
-export const COMPOSANTS_ACTION = ['Bouton', 'BoutonLien', 'BoutonIcone', 'Onglet', 'Champ', 'Selection', 'Interrupteur', 'ChampMotDePasse', 'ChampIdentifiant', 'Dialogue']
+export const COMPOSANTS_ACTION = ['Bouton', 'BoutonLien', 'BoutonIcone', 'Onglet', 'Champ', 'Selection', 'Interrupteur', 'ChampMotDePasse', 'ChampIdentifiant', 'ChampCode', 'Dialogue']
 
 /**
  * Fichiers d'un AUTRE CHANTIER (agent « articles pour les personnes qui ne savent pas écrire ») : il pose lui-même
  * ses haut-parleurs ; exclus du garde-fou tant que son travail n'est pas fusionné (leurs clés restent au registre).
  */
-export const FICHIERS_AUTRE_CHANTIER = ['ecrans/Articles.tsx', 'ecrans/articles/', 'ecrans/caisse/Articles.tsx']
+export const FICHIERS_AUTRE_CHANTIER = []
 
 function autreChantier(chemin) {
   const c = chemin.replace(/\\/g, '/')
@@ -75,6 +75,8 @@ export const EXCEPTIONS_ELEMENTS_BRUTS = [
   { fichier: 'coquille/', motif: /<Marque\b/, raison: "Logo SatsPoint (et nom de la boutique) qui ramène à l'accueil : reconnaissable sans lire, comme dans toutes les applications." },
   { fichier: 'ecrans/landing/Landing.tsx', motif: /className="marque"/, raison: 'Logo SatsPoint qui ramène en haut de la même page (aucune action).' },
   { fichier: 'ecrans/landing/Landing.tsx', motif: /^<a href="#(comment|fonctions|securite|faq)">/, raison: "Menu d'ancres de la page de présentation (bureau) : il ne fait que défiler dans la page, que le guide vocal de l'écran explique." },
+  { fichier: 'ecrans/articles/EcouterArticle.tsx', motif: /./, raison: "Bouton « écouter l'article » : c'est lui-même le haut-parleur (il dit le nom de l'article, enregistré par le marchand)." },
+  { fichier: 'ecrans/articles/FormulaireArticle.tsx', motif: /role="radio"/, raison: "Pastilles de couleur de l'article : la couleur se voit sans lire ; le groupe a son haut-parleur (« Couleur »)." },
   { fichier: 'voix/BoutonGuide.tsx', motif: /./, raison: "Bouton « Réécouter l'aide » : c'est lui-même l'aide vocale (il parle quand on le touche)." },
   { fichier: 'ecrans/admin/console/MoyensAdmin.tsx', motif: /role="radio"[\s\S]*classesCouleur/, raison: 'Pastilles de couleur du moyen de paiement (console super-admin) : la couleur se voit, son nom est en infobulle.' },
   { fichier: 'ecrans/auth/ChampIdentifiant.tsx', motif: /tabIndex=\{-1\}/, raison: "Croix « oublier » d'une suggestion, non focalisable, à l'intérieur d'une ligne de suggestion (donnée saisie par la personne)." },
@@ -160,7 +162,7 @@ function hautParleurApres(code, i) {
     j = parentheseFermante(code, ouvrante) + 1
   }
   const suite = code.slice(j, j + 400)
-  return /^<HautParleur\b/.test(suite) || /^<span\b[^<]*>\s*<HautParleur\b/.test(suite) || /^\{[^{}<]*<HautParleur\b/.test(suite)
+  return /^<(HautParleur|EcouterArticle)\b/.test(suite) || /^<span\b[^<]*>\s*<(HautParleur|EcouterArticle)\b/.test(suite) || /^\{[^{}<]*<(HautParleur|EcouterArticle)\b/.test(suite)
 }
 
 /**
@@ -381,12 +383,12 @@ export function occurrencesFichier(chemin, source) {
   const ajouter = (cle, index, type) => occurrences.push({ cle, index, type, ligne: ligneDe(code, index) })
 
   // Props `voix=` (tout composant) et `cle=` (HautParleur).
-  for (const m of code.matchAll(/\b(voix|cle)=/g)) {
+  for (const m of code.matchAll(/\b(voix|voixSousTitre|cle)=/g)) {
     const balise = balisePour(balises, m.index)
     if (!balise) continue
     if (m[1] === 'cle' && balise.nom !== 'HautParleur') continue
     const valeur = valeurAttribut(code, m.index + m[0].length)
-    const type = TYPES[balise.nom] ?? "Élément d'action"
+    const type = m[1] === 'voixSousTitre' ? 'Texte lu' : (TYPES[balise.nom] ?? "Élément d'action")
     for (const cle of litterauxCles(valeur)) ajouter(cle, m.index, type)
     if (/`langue\.\$\{/.test(valeur)) for (const c of CODES_LANGUE) ajouter(`langue.${c}`, m.index, 'Langue')
     // Autre gabarit `prefixe.${…}` : développé avec les clés de traduction du préfixe (voir construireRegistre).

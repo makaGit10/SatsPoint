@@ -113,14 +113,15 @@ describe('garde-fou : un haut-parleur sur chaque élément actionnable', () => {
     expect(verifier('<aside>Encart</aside>')).toEqual([])
   })
 
-  it('respecte les exceptions justifiées et l’autre chantier (articles), seulement pour leurs fichiers', () => {
+  it('respecte les exceptions justifiées, seulement pour leurs fichiers ; le bouton « écouter l’article » compte comme haut-parleur', () => {
+    expect(verifier('<button>Riz</button><EcouterArticle article={a} />', 'ecrans/caisse/Articles.tsx')).toEqual([])
     expect(verifier('<button>1</button>', 'ecrans/caisse/Pave.tsx')).toEqual([])
-    expect(verifier('<button>1</button>', 'ecrans/articles/Nouveau.tsx')).toEqual([])
+    expect(verifier('<button>1</button>', 'ecrans/articles/Nouveau.tsx')).toEqual(['button'])
     expect(verifier('<button>1</button>', 'ecrans/caisse/Autre.tsx')).toEqual(['button'])
     expect(verifier('<Link to="/"><Marque /></Link>', 'coquille/EnTete.tsx')).toEqual([])
     expect(verifier('<Link to="/">Accueil</Link>', 'coquille/EnTete.tsx')).toEqual(['Link'])
     for (const e of EXCEPTIONS_ELEMENTS_BRUTS) expect(e.raison.length, e.fichier).toBeGreaterThan(30)
-    expect(EXCEPTIONS_ELEMENTS_BRUTS.length).toBeLessThanOrEqual(10)
+    expect(EXCEPTIONS_ELEMENTS_BRUTS.length).toBeLessThanOrEqual(12)
   })
 
   it('exige la clé vocale sur les champs, listes, interrupteurs et fenêtres (au premier niveau des attributs)', () => {

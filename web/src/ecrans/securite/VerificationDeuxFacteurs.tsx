@@ -71,12 +71,13 @@ export default function VerificationDeuxFacteurs() {
       <span className="mb-4 inline-flex size-12 items-center justify-center rounded-full bg-accent-doux text-accent-texte" aria-hidden="true">
         <ShieldCheck size={24} />
       </span>
-      <TitreAuth titre={t('deuxFa.verification.titre')} sousTitre={secours ? t('deuxFa.verification.texteSecours') : t('deuxFa.verification.texte')} voix="deuxFa.verification.titre" />
+      <TitreAuth titre={t('deuxFa.verification.titre')} sousTitre={secours ? t('deuxFa.verification.texteSecours') : t('deuxFa.verification.texte')} voix="deuxFa.verification.titre" voixSousTitre={secours ? 'deuxFa.verification.texteSecours' : 'deuxFa.verification.texte'} />
       <form onSubmit={soumettre} noValidate className="flex flex-col gap-3">
         <CodeLocal actif={!secours} onRemplir={(v) => soumettre(undefined, v)} />
         <ChampCode
           ref={entree}
           libelle={secours ? t('deuxFa.codeSecours') : t('deuxFa.code')}
+          voix={secours ? 'deuxFa.codeSecours' : 'deuxFa.code'}
           valeur={code}
           onChange={(v) => {
             setCode(v)

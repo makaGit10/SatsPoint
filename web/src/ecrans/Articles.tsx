@@ -183,6 +183,7 @@ export default function Articles() {
       {articles && articles.length > ARTICLES_PAR_PAGE / 2 && (
         <Champ
           libelle={t('articles.rechercher')}
+          voix="articles.rechercher"
           type="search"
           inputMode="search"
           icone={<Search />}
@@ -252,6 +253,7 @@ export default function Articles() {
 
       <Dialogue
         ouvert={Boolean(suppression)}
+        voix="articles.supprimerTitre"
         onOuvertChange={(o) => !o && setSuppression(null)}
         titre={t('articles.supprimerTitre', { nom: suppression ? libelleArticle(suppression, t) : '' })}
         description={t('articles.supprimerTexte')}

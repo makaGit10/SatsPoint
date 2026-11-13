@@ -49,12 +49,12 @@ export function GrilleArticles({ articles, onAjouter, panier = [], className }: 
                 </span>
               </span>
             </button>
+            <EcouterArticle article={a} className="absolute top-1 right-1" />
             {quantite > 0 && (
               <span className="pointer-events-none absolute top-1 left-1 flex h-6 min-w-6 items-center justify-center rounded-full bg-accent px-1.5 text-xs font-bold text-sur-accent tabulaire shadow-xs" aria-hidden="true">
                 {quantite}
               </span>
             )}
-            <EcouterArticle article={a} className="absolute top-1 right-1" />
           </li>
         )
       })}

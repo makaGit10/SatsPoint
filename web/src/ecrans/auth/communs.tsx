@@ -8,14 +8,19 @@ import { HautParleur } from '@/voix/HautParleur'
 import { forceMotDePasse, LONGUEUR_MIN_MOT_DE_PASSE } from './motDePasse'
 
 /** Titre + sous-titre d'un écran d'authentification. */
-export function TitreAuth({ titre, sousTitre, voix }: { titre: ReactNode; sousTitre?: ReactNode; voix?: string }) {
+export function TitreAuth({ titre, sousTitre, voix, voixSousTitre }: { titre: ReactNode; sousTitre?: ReactNode; voix?: string; voixSousTitre?: string }) {
   return (
     <div className="mb-5">
       <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-texte">
         {titre}
         {voix && <HautParleur cle={voix} taille={16} />}
       </h1>
-      {sousTitre && <p className="mt-1 text-sm text-texte-2">{sousTitre}</p>}
+      {sousTitre && (
+        <p className="mt-1 flex items-start gap-1 text-sm text-texte-2">
+          <span className="min-w-0 flex-1">{sousTitre}</span>
+          {voixSousTitre && <HautParleur cle={voixSousTitre} className="-my-1.5 -mr-1.5" />}
+        </p>
+      )}
     </div>
   )
 }
