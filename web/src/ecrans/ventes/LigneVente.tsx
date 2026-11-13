@@ -1,5 +1,4 @@
 import type { HTMLAttributes } from 'react'
-import { useTranslation } from 'react-i18next'
 import type { VenteCourte } from '@/api/types'
 import { IconeMethode, PastilleAlerte, PastilleStatutVente } from '@/composants/Statuts'
 import { cn } from '@/lib/cn'
@@ -20,7 +19,6 @@ export interface PropsLigneVente {
  * icône du moyen, n° + heure, caissier, statut, montant. Toute la ligne est cliquable.
  */
 export function LigneVente({ vente, onOuvrir, sansCaissier, compacte, className }: PropsLigneVente) {
-  const { t } = useTranslation()
   const methode = vente.methode_reussie ?? vente.methode_en_cours ?? null
   return (
     <li className={className}>
