@@ -280,6 +280,7 @@
     "aucunMoyenAction": "Activez-en un dans les réglages.",
     "walletInjoignable": "Votre portefeuille ne répond pas.",
     "walletNonConnecte": "Aucun portefeuille connecté : le bitcoin est indisponible.",
+    "walletNonConnecteCourt": "Bitcoin indisponible",
     "connecterWallet": "Connecter mon portefeuille",
     "vide": {
       "titre": "Votre caisse arrive",

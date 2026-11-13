@@ -280,6 +280,7 @@
     "aucunMoyenAction": "Enable one in the settings.",
     "walletInjoignable": "Your wallet is not responding.",
     "walletNonConnecte": "No wallet connected: bitcoin is unavailable.",
+    "walletNonConnecteCourt": "Bitcoin unavailable",
     "connecterWallet": "Connect my wallet",
     "vide": {
       "titre": "Your checkout is on its way",

@@ -1,4 +1,4 @@
-import { CircleAlert, PlugZap } from 'lucide-react'
+import { CircleAlert, Link2, PlugZap, ZapOff } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { BoutonLien } from '@/composants/Bouton'
 import { HautParleur } from '@/voix/HautParleur'
@@ -27,5 +27,21 @@ export function BoutonBrancherMoyen({ vers }: { vers: string }) {
     <BoutonLien to={vers} taille="xl" pleineLargeur icone={<PlugZap />} voix="caisse.brancherMoyen" className="mt-3 h-14 text-lg">
       {t('caisse.brancherMoyen')}
     </BoutonLien>
+  )
+}
+
+/** Portefeuille bitcoin pas encore relié (gestionnaires) : sur mobile, éclair barré + bouton ; sur bureau, la phrase entière. */
+export function BandeauWalletNonConnecte() {
+  const { t } = useTranslation()
+  return (
+    <div data-bandeau="wallet" className="flex items-center gap-3 rounded-xl border border-attente/30 bg-attente-doux py-1.5 pr-1.5 pl-3 text-sm font-medium text-attente-texte md:px-4 md:py-3">
+      {/* Mobile : une ligne courte (la place va au pavé et au bouton « Encaisser »). */}
+      <span className="flex min-w-0 flex-1 items-center md:hidden" title={t('caisse.walletNonConnecteCourt')}>
+        <ZapOff size={20} aria-hidden="true" className="shrink-0" />
+        <span className="sr-only">{t('caisse.walletNonConnecteCourt')}</span>
+      </span>
+      <span className="hidden min-w-0 flex-1 md:inline">{t('caisse.walletNonConnecte')}</span>
+      <BoutonLien to="/portefeuille" variante="secondaire" taille="sm" icone={<Link2 />} voix="caisse.connecterWallet">{t('caisse.connecterWallet')}</BoutonLien>
+    </div>
   )
 }

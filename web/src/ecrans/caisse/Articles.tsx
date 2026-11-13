@@ -63,6 +63,54 @@ export function GrilleArticles({ articles, onAjouter, panier = [], className }: 
 }
 
 /** Panier simple : vignette, quantités, total, vider. */
+/**
+ * Mobile : bande d'articles au-dessus du pavé, défilable au doigt — l'image et le prix, un toucher = un article dans
+ * le panier, le haut-parleur dit le nom. Vendre sans lire ni taper, sans ouvrir de fenêtre.
+ */
+export function BandeArticles({ articles, onAjouter, panier = [], className }: { articles: Article[]; onAjouter: (a: Article) => void; panier?: LignePanier[]; className?: string }) {
+  const { t } = useTranslation()
+  const quantites = new Map(panier.map((l) => [l.article.ulid, l.quantite]))
+  return (
+    <ul
+      className={cn('-mx-5 flex snap-x scroll-px-5 gap-2.5 overflow-x-auto px-5 pt-2 pb-1 [scrollbar-width:none]', className)}
+      aria-label={t('caisse.articles')}
+      data-bande-articles
+    >
+      {articles.map((a) => {
+        const quantite = quantites.get(a.ulid) ?? 0
+        return (
+          <li key={a.ulid} className="relative w-[78px] shrink-0 snap-start" data-article={a.ulid}>
+            <button
+              type="button"
+              onClick={() => {
+                vibrer(10)
+                onAjouter(a)
+              }}
+              aria-label={`${libelleArticle(a, t)}, ${formaterFCFA(a.prix_xof)}${quantite ? ` — ${t('caisse.quantite')} ${quantite}` : ''}`}
+              className={cn(
+                'flex w-full flex-col overflow-hidden rounded-xl border bg-surface shadow-xs transition-transform duration-100 active:scale-[0.96]',
+                quantite ? 'border-accent ring-2 ring-accent/40' : 'border-bordure',
+              )}
+            >
+              <VignetteArticle article={a} taille="plein" className="h-12 [&_svg]:size-8" />
+              <span className="px-1 py-1 text-center text-sm leading-none font-extrabold text-texte tabulaire">
+                {formaterNombre(a.prix_xof)}
+                <span className="ml-0.5 text-[9px] font-bold text-texte-3">F</span>
+              </span>
+            </button>
+            <EcouterArticle article={a} className="absolute -top-1 -right-1 size-7" />
+            {quantite > 0 && (
+              <span className="pointer-events-none absolute -top-1 -left-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-bold text-sur-accent tabulaire shadow-xs" aria-hidden="true">
+                {quantite}
+              </span>
+            )}
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
 export function Panier({ panier, onChanger, onVider, className }: { panier: LignePanier[]; onChanger: (ulid: string, delta: number) => void; onVider: () => void; className?: string }) {
   const { t } = useTranslation()
   if (panier.length === 0) return <p className={cn('text-center text-sm text-texte-3', className)}>{t('caisse.panierVide')}</p>

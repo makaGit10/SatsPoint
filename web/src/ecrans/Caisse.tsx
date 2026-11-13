@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { Link2, NotebookPen, Package, Zap } from 'lucide-react'
+import { NotebookPen, Package, Zap } from 'lucide-react'
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -10,7 +10,7 @@ import { CLE_COURS, useCours } from '@/api/cours'
 import type { MethodePaiement, Operateur } from '@/api/types'
 import { CLE_VENTES, creerVente } from '@/api/paiements'
 import { peut, useAuth } from '@/auth/store'
-import { Bouton, BoutonLien } from '@/composants/Bouton'
+import { Bouton } from '@/composants/Bouton'
 import { BoutonIcone } from '@/composants/BoutonIcone'
 import { Carte, CarteEnTete } from '@/composants/Carte'
 import { Dialogue } from '@/composants/Dialogue'
@@ -37,7 +37,9 @@ const ChoixMethode = lazy(() => import('./caisse/ChoixMethode').then((m) => ({ d
 const grille = () => Promise.all([import('./caisse/Articles'), chargerPaquet('articles')]).then(([m]) => m)
 const GrilleArticles = lazy(() => grille().then((m) => ({ default: m.GrilleArticles })))
 const Panier = lazy(() => grille().then((m) => ({ default: m.Panier })))
+const BandeArticles = lazy(() => grille().then((m) => ({ default: m.BandeArticles })))
 const BandeauAucunMoyen = lazy(() => import('./caisse/AucunMoyen').then((m) => ({ default: m.BandeauAucunMoyen })))
+const BandeauWalletNonConnecte = lazy(() => import('./caisse/AucunMoyen').then((m) => ({ default: m.BandeauWalletNonConnecte })))
 const BoutonBrancherMoyen = lazy(() => import('./caisse/AucunMoyen').then((m) => ({ default: m.BoutonBrancherMoyen })))
 const NoteVente = lazy(() => import('./caisse/NoteVente'))
 const BandeauDemarrage = lazy(() => import('@/coquille/BandeauDemarrage').then((m) => ({ default: m.BandeauDemarrage })))
@@ -194,7 +196,7 @@ export default function Caisse() {
       {/* Mobile : une colonne (montant en haut, pavé en bas). Bureau : montant, conversion et articles à gauche,
           pavé + action à droite, pour que le montant reste toujours visible sans défiler. */}
       <section className="flex min-h-0 flex-1 flex-col md:grid md:grid-cols-[minmax(0,1fr)_minmax(320px,380px)] md:items-start md:gap-8" aria-label={t('caisse.titre')}>
-        <div className="flex min-h-0 flex-1 flex-col gap-4">
+        <div className="flex min-h-0 flex-1 flex-col gap-3 md:gap-4">
           <header className="flex items-center justify-between gap-2">
             <h1 className="flex items-center gap-2 text-2xl text-texte md:text-3xl">
               {t('caisse.titre')}
@@ -216,7 +218,7 @@ export default function Caisse() {
           </header>
 
           {/* Montant + conversion : zone qui respire, centrée (carte sur bureau). */}
-          <div className="verre flex flex-1 flex-col items-center justify-center rounded-xl px-5 py-7 text-center md:flex-none md:py-10" data-montant>
+          <div className={cn('verre flex flex-1 flex-col items-center justify-center rounded-xl px-5 text-center md:flex-none md:py-10', aDesArticles ? 'py-3' : 'py-7')} data-montant>
             <p className={cn('chiffre-geant md:text-7xl', montant === 0 ? 'text-texte-3' : 'text-texte')} aria-live="polite" aria-atomic="true" aria-label={t('caisse.montantAria')}>
               {formaterNombre(montant)}
               <span className="ml-1.5 text-xl font-bold tracking-normal text-accent-texte md:text-2xl">FCFA</span>
@@ -225,7 +227,7 @@ export default function Caisse() {
               {sats !== null ? formaterSats(sats, { approx: true }) : coursDisponible || !cours ? '' : t('caisse.coursIndisponible')}
             </p>
             {coursDisponible ? (
-              <p className="mt-1.5 text-xs text-texte-3 tabulaire">
+              <p className={cn('mt-1.5 text-xs text-texte-3 tabulaire', aDesArticles && 'max-md:hidden')}>
                 {t('caisse.coursValeur', { cours: formaterFCFA(cours!.btc_xof!) })}
                 {ageCours && ` · ${t(ageCours.cle, { count: ageCours.count })}`}
               </p>
@@ -245,6 +247,15 @@ export default function Caisse() {
             )}
           </div>
 
+          {/* Mobile : les articles en images, sous le montant (le bureau a sa grille plus bas). */}
+          {aDesArticles && (
+            <div className="md:hidden">
+              <Suspense fallback={<div className="h-[76px]" data-chargement="articles" />}>
+                <BandeArticles articles={articlesActifs} panier={panier} onAjouter={(a) => setPanier((p) => ajouterAuPanier(p, a))} />
+              </Suspense>
+            </div>
+          )}
+
           {noteVisible && (
             <Suspense fallback={<div className="h-[72px]" />}>
               <NoteVente valeur={note} onChange={setNote} />
@@ -257,10 +268,9 @@ export default function Caisse() {
             </Suspense>
           )}
           {!aucunMoyenBranche && boutique && !boutique.configuration.wallet && boutique.reglages.moyens.lightning && gestion && (
-            <div className="flex items-center gap-3 rounded-xl border border-attente/30 bg-attente-doux px-4 py-3 text-sm font-medium text-attente-texte">
-              <span className="min-w-0 flex-1">{t('caisse.walletNonConnecte')}</span>
-              <BoutonLien to="/portefeuille" variante="secondaire" taille="sm" icone={<Link2 />} voix="caisse.connecterWallet">{t('caisse.connecterWallet')}</BoutonLien>
-            </div>
+            <Suspense fallback={<div className="h-12" />}>
+              <BandeauWalletNonConnecte />
+            </Suspense>
           )}
 
           {/* Bureau : articles rapides + panier sous le montant. */}
@@ -281,25 +291,28 @@ export default function Caisse() {
         </div>
 
         <div className="flex flex-col md:sticky md:top-20">
-          <Pave valeur={saisie} onChange={setSaisie} desactive={creation.isPending} />
+          {/* Avec la bande d'articles, touches un peu moins hautes sur mobile. */}
+          <Pave valeur={saisie} onChange={setSaisie} desactive={creation.isPending} className={aDesArticles ? 'max-md:gap-2 max-md:[&_button]:h-12' : undefined} />
 
           {aucunMoyenBranche && gestion ? (
             <Suspense fallback={<div className="mt-4 h-16" />}>
               <BoutonBrancherMoyen vers={versBranchement} />
             </Suspense>
           ) : (
+            <div className="mt-3 mr-[var(--reserve-guide)] md:mt-4 md:mr-0">
             <Bouton
               taille="xl"
               icone={<Zap />}
               voix="caisse.encaisser"
               // Étiré par la colonne ; sur mobile, la place du bouton rond « Réécouter l'aide » est laissée à droite.
-              className="mt-4 mr-[var(--reserve-guide)] md:mr-0"
+              className="w-full"
               disabled={montant === 0 || horsBornes || aucunMoyenBranche}
               chargement={creation.isPending || (montant > 0 && !horsBornes && !moyensConnus)}
               onClick={encaisser}
             >
               {t('caisse.encaisser')}
             </Bouton>
+            </div>
           )}
         </div>
       </section>

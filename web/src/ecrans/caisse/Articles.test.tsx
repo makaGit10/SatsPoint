@@ -6,7 +6,7 @@ import type { Article } from '@/api/types'
 import { chargerPaquet } from '@/i18n'
 import { queryClient } from '@/lib/queryClient'
 import { useVoix } from '@/voix/store'
-import { GrilleArticles, Panier } from './Articles'
+import { BandeArticles, GrilleArticles, Panier } from './Articles'
 
 const avec = (noeud: ReactNode) => render(<QueryClientProvider client={queryClient}>{noeud}</QueryClientProvider>)
 
@@ -76,5 +76,20 @@ describe('Caisse : grille d\'articles utilisable sans lire', () => {
     expect(screen.getByRole('button', { name: /Thé, ataya, 200\sFCFA — Quantité 3/ })).toBeInTheDocument()
     const ligne = within(screen.getByRole('list', { name: 'Panier' })).getByText('Thé, ataya').closest('li')!
     expect(ligne.querySelector('svg')).not.toBeNull()
+  })
+})
+
+describe('Caisse mobile : bande d\'articles en images', () => {
+  it('une tuile par article (image + prix), un toucher ajoute au panier, la quantité prise est annoncée', () => {
+    const the = article({ pictogramme: 'the', prix_xof: 200 })
+    const riz = article({ pictogramme: 'riz', prix_xof: 750 })
+    const onAjouter = vi.fn()
+    avec(<BandeArticles articles={[the, riz]} panier={[{ article: riz, quantite: 2 }]} onAjouter={onAjouter} />)
+    const bande = screen.getByRole('list')
+    expect(bande).toHaveAttribute('data-bande-articles')
+    expect(within(bande).getAllByRole('listitem')).toHaveLength(2)
+    fireEvent.click(screen.getByRole('button', { name: /^Thé, ataya, 200\sFCFA$/ }))
+    expect(onAjouter).toHaveBeenCalledWith(the)
+    expect(screen.getByRole('button', { name: /750\sFCFA — .* 2$/ })).toBeInTheDocument()
   })
 })
