@@ -7,6 +7,14 @@
 - **`wip/pause-2026-11-08`** : travail VÉRIFIÉ depuis le 8/11 (Pest 404 verts, Vitest 185 verts au 11/11) — direction « Lumière », logo cauri, landing, sélecteurs soleil/lune + FR|EN, « Se souvenir de moi », pagination, super-admin avec sa boutique, pays UEMOA + langues dynamiques + moyens de paiement par pays, correctif ventes, 2FA « virtuelle » en local, API des articles sans écrire, découpe des blancs (serveur + fonctions navigateur), hook `useGuideVocal`.
 - **`wip/pause-2026-11-12`** (dépôt local resté dessus) : + tout le travail NON VÉRIFIÉ des deux chantiers interrompus (commit `178b9a1`).
 
+## Reprise du 13 novembre (fait)
+- Plus aucun haut-parleur muet : **voix française de base** pour les 518 clés (`tools/voix-base/generer_fr.py`, voix neuronale, blancs coupés, importée en local par `audio:importer`) et, à défaut d'enregistrement, la voix du navigateur lit le texte (production comprise).
+- Garde-fou « un haut-parleur sur chaque élément actionnable » étendu aux articles et au champ code ; double authentification entièrement parlée (`TexteLu`, `voixSousTitre`).
+- Caisse mobile : **bande d'articles en images** au-dessus du pavé (vendre sans lire ni taper), « Encaisser » visible en 390×844 et 360×740.
+- Réglages et démarrage sans débordement à 390 px ; guide vocal des articles ; découpe des blancs unifiée (vérifiée : 5,8 s → 0,92 s ; fond bruyant 11,5 s → 5,9 s).
+- Caisse sous le budget (169,4 Ko) ; Vitest 223 verts, Pest 425 verts.
+- Audios : **enregistrer directement sur le site en ligne** après déploiement (Render gratuit n'a pas de console pour `audio:importer`) ; liste par priorité dans `docs/AUDIOS_ESSENTIELS.md` (`node web/scripts/audios-essentiels.mjs`).
+
 ## À finir à la reprise (dans l'ordre)
 1. **Voix (parcours guidé)** : terminer l'audit « un haut-parleur sur chaque élément actionnable » et son garde-fou automatique ; haut-parleurs sur chaque étape de la double authentification (demande de la propriétaire, garder `CodeLocal`) ; régénérer `web/src/voix/cles-vocales.json` puis `docs/AUDIOS_ESSENTIELS.md` ; vérifier à l'écran le panneau de première visite (choix de la langue), le bouton « 🔊 WO » + feuille vocale, le bouton « Réécouter l'aide », l'aide « Vous ne savez pas écrire ? » ; débordement de `/portefeuille` à 390 px.
 2. **Articles sans écrire** (écrans) : vérifier formulaire (photo / pictogramme / nom dit à voix haute, nom écrit facultatif, prix au pavé), galerie de pictogrammes, grille de la caisse, panier, détail de vente, reçu ; brancher `useGuideVocal` ; unifier la découpe des silences (`ecrans/articles/decoupeSilences.ts` → `voix/decoupe*.ts`).
