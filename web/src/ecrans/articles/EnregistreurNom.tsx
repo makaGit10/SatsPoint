@@ -6,7 +6,7 @@ import { useEnregistreur } from '@/ecrans/admin/studio/useEnregistreur'
 import { cn } from '@/lib/cn'
 import { arreter as arreterLecteur } from '@/voix/lecteur'
 import { HautParleur } from '@/voix/HautParleur'
-import { couperSilences } from './decoupeSilences'
+import { couperSilences } from '@/voix/decoupeAudio'
 
 /** Le nom d'un article se dit en quelques secondes : arrêt automatique à 5 s (le serveur accepte 7 s au plus). */
 export const DUREE_NOM_MS = 5_000

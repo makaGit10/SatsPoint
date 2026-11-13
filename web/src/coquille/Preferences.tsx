@@ -33,7 +33,7 @@ function Segment<T extends string>({
   libelle: string
 }) {
   return (
-    <div role="radiogroup" aria-label={libelle} className="inline-flex h-12 w-full items-stretch gap-1 rounded-full bg-surface-2 p-1 md:h-11">
+    <div role="radiogroup" aria-label={libelle} className="inline-flex min-h-12 w-full items-stretch gap-1 rounded-2xl bg-surface-2 p-1 sm:h-12 sm:rounded-full md:h-11">
       {options.map((o) => {
         const Icone = o.icone
         const actif = o.valeur === valeur
@@ -45,13 +45,16 @@ function Segment<T extends string>({
             aria-checked={actif}
             onClick={() => onChange(o.valeur)}
             className={cn(
-              'relative inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-semibold whitespace-nowrap transition-colors duration-150',
+              // Mobile : icône et haut-parleur au-dessus du mot (trois options tiennent en 390 px) ; une ligne dès 640 px.
+              'relative inline-flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1.5 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors duration-150 sm:flex-row sm:gap-1.5 sm:rounded-full sm:px-3 sm:py-0 sm:text-sm',
               actif ? 'bg-inverse text-inverse-texte shadow-sm' : 'text-texte-2 hover:text-texte',
             )}
           >
-            {Icone && <Icone size={15} aria-hidden="true" />}
-            {o.libelle}
-            <HautParleur cle={o.voix} dansBouton enLigne />
+            <span className="inline-flex items-center gap-1 sm:contents">
+              {Icone && <Icone size={15} aria-hidden="true" />}
+              <HautParleur cle={o.voix} dansBouton enLigne className="sm:order-last" />
+            </span>
+            <span className="max-w-full truncate">{o.libelle}</span>
           </button>
         )
       })}

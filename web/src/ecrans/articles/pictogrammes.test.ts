@@ -5,7 +5,6 @@ import en from '@/i18n/articles.en.json'
 import fr from '@/i18n/articles.fr.json'
 import { COULEURS_ARTICLES } from '@/lib/couleursArticles'
 import { libelleArticle } from './libelle'
-import { bornesVoix, encoderWav } from './decoupeSilences'
 import { dimensionsReduites } from './photo'
 import { CATEGORIES_PICTOS, pictogramme, PICTOGRAMMES } from './pictogrammes'
 
@@ -47,43 +46,6 @@ describe('libellé d\'un article sans nom écrit', () => {
     expect(libelleArticle({ nom: null, pictogramme: 'pain' }, t)).toBe('Pain')
     expect(libelleArticle({ nom: '   ', pictogramme: null }, t)).toBe('Article')
     expect(libelleArticle({ nom: null, pictogramme: 'inconnu' }, t)).toBe('Article')
-  })
-})
-
-describe('découpe des silences du nom dit (version locale, à fusionner)', () => {
-  const taux = 16_000
-  const signal = (silenceS: number, voixS: number, finS: number, bruit = 0.002) => {
-    const n = Math.round((silenceS + voixS + finS) * taux)
-    const s = new Float32Array(n)
-    for (let i = 0; i < n; i++) {
-      const tps = i / taux
-      const voix = tps >= silenceS && tps < silenceS + voixS ? 0.4 * Math.sin(2 * Math.PI * 220 * tps) : 0
-      s[i] = voix + bruit * Math.sin(i * 12.9898)
-    }
-    return s
-  }
-
-  it('garde la voix et 120 ms autour, coupe les silences du début et de la fin', () => {
-    const bornes = bornesVoix(signal(1, 0.8, 1.2), taux)
-    expect(bornes).not.toBeNull()
-    const [debut, fin] = bornes!
-    expect(debut / taux).toBeGreaterThan(0.8)
-    expect(debut / taux).toBeLessThan(1)
-    expect(fin / taux).toBeGreaterThan(1.8)
-    expect(fin / taux).toBeLessThan(2.0)
-  })
-
-  it('ne trouve aucune voix dans un silence (l\'enregistrement est alors gardé tel quel)', () => {
-    expect(bornesVoix(new Float32Array(taux), taux)).toBeNull()
-  })
-
-  it('produit un WAV PCM 16 bits mono valide', async () => {
-    const wav = encoderWav(new Float32Array([0, 0.5, -0.5, 1]), taux)
-    expect(wav.type).toBe('audio/wav')
-    const octets = new Uint8Array(await wav.arrayBuffer())
-    expect(String.fromCharCode(...octets.slice(0, 4))).toBe('RIFF')
-    expect(String.fromCharCode(...octets.slice(8, 12))).toBe('WAVE')
-    expect(octets.length).toBe(44 + 4 * 2)
   })
 })
 

@@ -3,7 +3,7 @@
  * Les fichiers restent dans le navigateur (URL `blob:`) ; mêmes règles que le serveur pour les cas utiles aux écrans :
  * type d'image, 4 Mo / 1 Mo, et un article garde toujours au moins une identité (`ARTICLE_SANS_IDENTITE`).
  */
-import { encoderWav } from '@/ecrans/articles/decoupeSilences'
+import { encoderWav } from '@/voix/decoupe'
 import type { Article } from './types'
 
 const PICTOS = new Set(['pain', 'riz', 'sucre', 'huile', 'farine', 'lait', 'oeufs', 'viande', 'poulet', 'poisson', 'legumes', 'fruits', 'plat', 'sandwich', 'gateau', 'bonbons', 'glace', 'epicerie', 'eau', 'the', 'cafe', 'jus', 'boisson', 'tissu', 'vetement', 'chaussure', 'sac', 'bijou', 'coiffure', 'beaute', 'savon', 'menage', 'bebe', 'gaz', 'electricite', 'credit', 'telephone', 'medicament', 'cigarette', 'fournitures', 'reparation', 'service', 'divers'])
@@ -27,7 +27,7 @@ export function voixDemo(): string | null {
     const enveloppe = Math.min(1, (tps % 0.33) * 40) * Math.max(0, 1 - ((tps % 0.33) / 0.33) ** 2)
     signal[i] = 0.35 * enveloppe * Math.sin(2 * Math.PI * frequence * tps)
   }
-  return URL.createObjectURL(encoderWav(signal, taux))
+  return URL.createObjectURL(new Blob([encoderWav(signal, taux)], { type: 'audio/wav' }))
 }
 
 export interface CorpsArticleMock {

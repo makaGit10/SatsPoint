@@ -30,6 +30,7 @@ import { usePaginationLocale } from '@/lib/usePagination'
 import { useDonneesEnDirect } from '@/temps-reel/useDonneesEnDirect'
 import { EcouterArticle } from './articles/EcouterArticle'
 import { VignetteArticle } from './articles/VignetteArticle'
+import { useGuideVocal } from '@/voix/guide'
 
 // Assistant d'import : chargé à la demande avec son paquet de traductions (rien pour la caisse).
 const ImportArticles = lazy(() => Promise.all([import('./articles/ImportArticles'), chargerPaquet('admin')]).then(([m]) => m))
@@ -45,6 +46,7 @@ const ARTICLES_PAR_PAGE = 20
  */
 export default function Articles() {
   const { t, i18n } = useTranslation()
+  useGuideVocal('guide.articles')
   void i18n.language
   const utilisateur = useAuth((s) => s.utilisateur)
   const peutGerer = peut(utilisateur, ['proprietaire', 'gerant'])

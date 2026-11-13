@@ -29,6 +29,7 @@
     "venteDetail": "Here are the details of the sale: the amount, the payment method and the time. The buttons at the bottom send the receipt or resume the payment.",
     "tableau": "Your dashboard: at the top, the money collected and the number of sales; the curve shows your sales day after day. The round buttons at the top change the period.",
     "portefeuille": "Your bitcoin wallet: the big number is your balance. Tap the yellow button to receive, the white button to send; the history is below.",
+    "articles": "Your items, with their picture and price. Tap an item's speaker to hear its name. To create one, tap the yellow “Add” button: a photo or a picture, its name said out loud, then its price on the big keys.",
     "equipe": "Your team: each person with their role. Tap the yellow button to invite a cashier or a manager with a link to send them.",
     "reglages": "Your shop settings: its name, the payment methods and your preferences. After a change, tap the yellow “Save” button of the part you changed.",
     "recu": "Here is the receipt of the purchase: the amount paid, the shop and the time. You can keep it on your phone or print it.",

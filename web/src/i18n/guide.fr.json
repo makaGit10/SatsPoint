@@ -29,6 +29,7 @@
     "venteDetail": "Voici le détail de la vente : le montant, le moyen de paiement et l'heure. Les boutons du bas servent à envoyer le reçu ou à reprendre le paiement.",
     "tableau": "Votre tableau de bord : en haut, l'argent encaissé et le nombre de ventes ; la courbe montre vos ventes jour après jour. Les boutons ronds en haut changent la période.",
     "portefeuille": "Votre portefeuille bitcoin : le grand chiffre est votre solde. Touchez le bouton jaune pour recevoir, le bouton blanc pour envoyer ; l'historique est en dessous.",
+    "articles": "Vos articles, avec leur image et leur prix. Touchez le haut-parleur d'un article pour entendre son nom. Pour en créer un, touchez le bouton jaune « Ajouter » : une photo ou une image, son nom dit à voix haute, puis son prix sur les grosses touches.",
     "equipe": "Votre équipe : chaque personne avec son rôle. Touchez le bouton jaune pour inviter un caissier ou un gérant avec un lien à lui envoyer.",
     "reglages": "Les réglages de la boutique : son nom, les moyens de paiement et vos préférences. Après un changement, touchez le bouton jaune « Enregistrer » de la partie modifiée.",
     "recu": "Voici le reçu de l'achat : le montant payé, la boutique et l'heure. Vous pouvez le garder sur votre téléphone ou l'imprimer.",

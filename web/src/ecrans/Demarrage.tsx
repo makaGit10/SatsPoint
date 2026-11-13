@@ -235,7 +235,7 @@ function FormulaireBoutique() {
         <AideProche />
       </Suspense>
       <Champ libelle={t('reglages.nom')} voix="reglages.nom" value={nom} onChange={(e) => setNom(e.target.value)} erreur={champs.nom} autoComplete="organization" icone={<Store />} />
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <Champ libelle={t('reglages.telephone')} voix="reglages.telephone" mentionOptionnel={t('commun.optionnel')} value={telephone} onChange={(e) => setTelephone(e.target.value)} inputMode="tel" autoComplete="tel" />
         <Champ libelle={t('reglages.ville')} voix="reglages.ville" value={ville} onChange={(e) => setVille(e.target.value)} erreur={champs.ville} autoComplete="address-level2" />
       </div>
@@ -336,7 +336,7 @@ function FormulaireMobileMoney({ boutique, onPasser }: { boutique: BoutiqueDetai
       {choix === 'paytech' ? (
         <>
           <p className="text-sm text-texte-2">{t('reglages.paytechTexte')}</p>
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <Champ libelle={t('reglages.apiKey')} voix="reglages.apiKey" type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} erreur={champs.api_key} aide={boutique.paytech.configure ? t('reglages.secretAide') : undefined} autoComplete="off" icone={<KeyRound />} />
             <Champ libelle={t('reglages.apiSecret')} voix="reglages.apiSecret" type="password" value={apiSecret} onChange={(e) => setApiSecret(e.target.value)} erreur={champs.api_secret} aide={boutique.paytech.configure ? t('reglages.secretAide') : undefined} autoComplete="off" icone={<KeyRound />} />
           </div>

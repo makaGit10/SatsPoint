@@ -43,7 +43,7 @@ export default function Reglages() {
       {isPending || !boutique ? (
         <SqueletteEcran />
       ) : (
-        <div className="grid gap-3 md:grid-cols-2 md:items-start">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:items-start">
           <div className="flex flex-col gap-3">
             <div id="boutique" className="scroll-mt-20">
               <FormulaireBoutique key={`${boutique.nom}|${boutique.telephone ?? ''}|${boutique.ville}|${boutique.pays ?? ''}`} boutique={boutique} proprietaire={proprietaire} />
