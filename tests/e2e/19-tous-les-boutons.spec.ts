@@ -77,6 +77,10 @@ async function cliquerTout(page: Page, ecran: string, chemin: string, lignes: Li
       lignes.push({ ecran, element: `(sans nom) #${el.index}`, role: el.role, resultat: 'KO', effet: 'élément cliquable sans nom accessible' });
       continue;
     }
+    if (/^(Touche \d+|Effacer — )/.test(el.nom)) {
+      lignes.push({ ecran, element: el.nom, role: el.role, resultat: 'IGNORÉ', effet: "touche du pavé : saisie testée chiffre par chiffre dans le parcours 03 (dans l'inventaire, l'ordre des clics atteint le montant maximal puis Échap vide la saisie)" });
+      continue;
+    }
     if (EXCLUS.test(el.nom)) {
       lignes.push({ ecran, element: el.nom, role: el.role, resultat: 'IGNORÉ', effet: el.nom === 'Me déconnecter' ? 'testé dans le parcours 15' : RAISON_EXCLUS });
       continue;
@@ -111,7 +115,7 @@ async function cliquerTout(page: Page, ecran: string, chemin: string, lignes: Li
       });
     }, SELECTEUR);
     const element = (await elements.evaluateHandle((arr, i) => (arr as HTMLElement[])[i], rang)).asElement()!;
-    const dejaActif = await element.evaluate((e) => e.getAttribute('aria-checked') === 'true' || e.getAttribute('aria-selected') === 'true' || e.getAttribute('aria-current') === 'page');
+    const dejaActif = await element.evaluate((e) => e.getAttribute('aria-checked') === 'true' || e.getAttribute('aria-selected') === 'true' || e.getAttribute('aria-pressed') === 'true' || e.getAttribute('aria-current') === 'page');
     if (dejaActif) {
       lignes.push({ ecran, element: el.nom, role: el.role, resultat: 'OK', effet: 'déjà sélectionné (état courant affiché)' });
       continue;
@@ -137,9 +141,12 @@ async function cliquerTout(page: Page, ecran: string, chemin: string, lignes: Li
     try {
       if (el.role === 'combobox') {
         valeurInitiale = await element.evaluate((s) => (s as HTMLSelectElement).value);
-        const autre = await element.evaluate((s) => [...(s as HTMLSelectElement).options].map((o) => o.value).find((v) => v !== (s as HTMLSelectElement).value));
+        // Dernière option différente : la première voisine peut être sans effet visible (ex. « Tous les pays » → Sénégal quand toutes les langues sont sénégalaises).
+        const autre = await element.evaluate((s) => [...(s as HTMLSelectElement).options].map((o) => o.value).reverse().find((v) => v !== (s as HTMLSelectElement).value));
         if (autre !== undefined) await element.selectOption(autre);
       } else {
+        // Centré à l'écran avant le clic (comme le ferait une personne) : jamais sous l'en-tête collant ni la barre du bas.
+        await element.evaluate((e) => e.scrollIntoView({ block: 'center', inline: 'center' }));
         await element.click({ timeout: 5_000 });
       }
       let copie = false;
@@ -151,7 +158,7 @@ async function cliquerTout(page: Page, ecran: string, chemin: string, lignes: Li
             copie = pp !== pressePapiersAvant && pp !== '';
             return copie;
           },
-          { timeout: 5_000, intervals: [100, 200, 400] },
+          { timeout: 8_000, intervals: [100, 200, 400] },
         )
         .toBe(true);
       const apres = await signature(page);
@@ -170,7 +177,7 @@ async function cliquerTout(page: Page, ecran: string, chemin: string, lignes: Li
                   : 'état modifié (ARIA / contenu)';
       lignes.push({ ecran, element: el.nom, role: el.role, resultat: 'OK', effet });
     } catch {
-      lignes.push({ ecran, element: el.nom, role: el.role, resultat: 'KO', effet: 'aucun effet constaté en 5 s' });
+      lignes.push({ ecran, element: el.nom, role: el.role, resultat: 'KO', effet: 'aucun effet constaté en 8 s' });
     } finally {
       page.off('request', surRequete);
       page.off('download', surDl);

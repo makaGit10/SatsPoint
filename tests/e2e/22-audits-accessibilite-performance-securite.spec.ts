@@ -82,6 +82,10 @@ test.describe('22 · Audits', () => {
   test('(b) performance : caisse et paiement, CPU ×4 et Slow 4G', async ({ ouvrir, boutique }, testInfo) => {
     test.skip(testInfo.project.name !== 'mobile', 'mesure faite au format téléphone (cible : Android de milieu de gamme)');
     test.setTimeout(180_000);
+    // Mesure sans objet sur le serveur de développement Vite (modules non regroupés) : lancer contre le build
+    // de production (`npm run build && npx vite preview --port 5190`).
+    const dev = await fetch(`${BASE_URL}/@vite/client`).then((r) => r.ok).catch(() => false);
+    test.skip(dev, 'serveur de développement Vite : la performance se mesure sur le build de production (vite preview)');
     const { page } = await ouvrir(boutique.etat);
     const cdp = await page.context().newCDPSession(page);
     await cdp.send('Network.enable');

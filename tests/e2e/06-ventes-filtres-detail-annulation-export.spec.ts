@@ -30,7 +30,7 @@ test.describe('06 · Ventes', () => {
     await recherche.fill(b.vente.numero);
     expect((await rep).status()).toBe(200);
     await expect(liste.getByRole('button')).toHaveCount(1);
-    await expect(liste.getByRole('button', { name: new RegExp(`^${b.vente.numero} · `) })).toBeVisible();
+    await expect(liste.getByRole('button', { name: new RegExp(`${b.vente.numero}\\b`) })).toBeVisible();
     await recherche.fill('');
     await expect(liste.getByRole('button')).toHaveCount(3);
 
@@ -54,7 +54,7 @@ test.describe('06 · Ventes', () => {
     await page.getByRole('radio', { name: "Aujourd'hui" }).click();
 
     // Détail de B : annulation refusée puis confirmée.
-    await liste.getByRole('button', { name: new RegExp(`^${b.vente.numero} · `) }).click();
+    await liste.getByRole('button', { name: new RegExp(`${b.vente.numero}\\b`) }).click();
     const detail = page.getByRole('dialog', { name: `Détail de la vente · ${b.vente.numero}` });
     await expect(detail).toBeVisible();
     await expect(detail.getByText(note)).toBeVisible();
@@ -77,7 +77,7 @@ test.describe('06 · Ventes', () => {
     await detailB.getByRole('button', { name: 'Fermer' }).first().click();
 
     // C : reprendre le paiement.
-    await liste.getByRole('button', { name: new RegExp(`^${c.vente.numero} · `) }).click();
+    await liste.getByRole('button', { name: new RegExp(`${c.vente.numero}\\b`) }).click();
     await page.getByRole('dialog', { name: `Détail de la vente · ${c.vente.numero}` }).getByRole('button', { name: /^Reprendre le paiement/ }).click();
     await expect(page).toHaveURL(new RegExp(`/caisse/paiement/${c.paiement.ulid}$`));
     await expect(page.locator('[data-ecran="paiement"]')).toHaveAttribute('data-etat', 'en_attente');
@@ -93,7 +93,7 @@ test.describe('06 · Ventes', () => {
     // Données conservées après rechargement : B annulée.
     await page.reload();
     await ecranPret(page, 'ventes');
-    await expect(page.getByRole('list', { name: 'Ventes' }).getByRole('button', { name: new RegExp(`^${b.vente.numero} · .* · Annulée`) })).toBeVisible();
+    await expect(page.getByRole('list', { name: 'Ventes' }).getByRole('button', { name: new RegExp(`${b.vente.numero}\\b.*Annulée`) })).toBeVisible();
 
     // Exports (CSV, Excel, PDF) : fichiers téléchargés, contenu CSV vérifié.
     for (const [libelle, extension] of [
@@ -131,8 +131,8 @@ test.describe('06 · Ventes', () => {
     await expect(page.getByText("Vos ventes d'aujourd'hui")).toBeVisible();
     const liste = page.getByRole('list', { name: 'Ventes' });
     await expect(liste.getByRole('button')).toHaveCount(1);
-    await expect(liste.getByRole('button', { name: new RegExp(`^${sienne.vente.numero} · `) })).toBeVisible();
-    await expect(liste.getByRole('button', { name: new RegExp(`^${proprio.vente.numero} · `) })).toHaveCount(0);
+    await expect(liste.getByRole('button', { name: new RegExp(`${sienne.vente.numero}\\b`) })).toBeVisible();
+    await expect(liste.getByRole('button', { name: new RegExp(`${proprio.vente.numero}\\b`) })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Exporter' })).toHaveCount(0);
     await page.getByRole('button', { name: 'Filtrer' }).click();
     await expect(page.getByRole('radiogroup', { name: 'Période' })).toHaveCount(0);

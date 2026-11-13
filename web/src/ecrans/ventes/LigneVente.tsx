@@ -27,7 +27,6 @@ export function LigneVente({ vente, onOuvrir, sansCaissier, compacte, className 
       <button
         type="button"
         onClick={() => onOuvrir(vente)}
-        aria-label={`${vente.numero} · ${formaterFCFA(vente.montant_xof)} · ${t(`statuts.${vente.statut}`)}`}
         className={cn(
           'flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors duration-150 hover:bg-surface-2 active:bg-surface-2',
           !compacte && 'md:grid md:grid-cols-[28px_minmax(0,1.4fr)_minmax(0,1fr)_auto_minmax(96px,auto)] md:items-center md:gap-3',
@@ -37,7 +36,7 @@ export function LigneVente({ vente, onOuvrir, sansCaissier, compacte, className 
         <span className="min-w-0 flex-1 md:flex-none">
           <span className="flex items-center gap-1.5">
             <span className="text-sm font-medium whitespace-nowrap text-texte tabulaire">{vente.numero}</span>
-            <span className="text-xs text-texte-3 tabulaire">{formaterHeure(vente.cree_le)}</span>
+            <span className="text-xs text-texte-3 tabulaire">{formaterHeure(vente.cree_le)}</span>{' '}
           </span>
           {!sansCaissier && <span className={cn('block truncate text-xs text-texte-3', !compacte && 'md:hidden')}>{vente.caissier.nom}</span>}
         </span>
@@ -49,6 +48,7 @@ export function LigneVente({ vente, onOuvrir, sansCaissier, compacte, className 
             </span>
           )}
           <span className={cn('inline-flex', !compacte && 'md:hidden')}>
+            {/* Nom de la ligne = son contenu (WCAG 2.5.3) ; la pastille sans texte porte le statut en toutes lettres (aria-label). */}
             <PastilleStatutVente statut={vente.statut} sansTexte />
           </span>
           {!compacte && (

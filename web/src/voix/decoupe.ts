@@ -118,6 +118,9 @@ export interface Seuil {
 export function seuilAdaptatif(env: Float32Array, options: OptionsDecoupe = OPTIONS_DECOUPE): Seuil {
   const bruitDb = Math.max(-90, centile(env, 0.1))
   const creteDb = centile(env, 0.99)
+  // Signal fort d'un bout à l'autre, sans creux (fichier déjà coupé, parole continue) : tout est de la voix,
+  // rien n'est coupé — sinon le « fond » mesuré serait la voix elle-même et l'enregistrement serait refusé.
+  if (creteDb - bruitDb < 10 && bruitDb > -35) return { bruitDb, creteDb, seuilDb: Math.max(options.seuilMinDb, bruitDb - 10), voix: true }
   const brut = Math.min(bruitDb + options.margeBruitDb, (bruitDb + creteDb) / 2)
   const seuilDb = Math.min(options.seuilMaxDb, Math.max(options.seuilMinDb, brut))
   const voix = creteDb - bruitDb >= 10 && creteDb > -50 && creteDb > seuilDb

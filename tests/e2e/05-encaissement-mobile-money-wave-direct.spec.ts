@@ -80,7 +80,7 @@ test.describe('05 · Mobile money — Wave direct', () => {
 
     await page.goto('/ventes');
     await ecranPret(page, 'ventes');
-    await page.getByRole('button', { name: new RegExp(`^${venteCaissier.numero} · `) }).click();
+    await page.getByRole('button', { name: new RegExp(`${venteCaissier.numero}\\b`) }).click();
     const detail = page.getByRole('dialog', { name: `Détail de la vente · ${venteCaissier.numero}` });
     await detail.getByRole('button', { name: /^Confirmer la réception/ }).click();
     await page.getByRole('dialog', { name: /^Confirmer la réception de/ }).getByRole('button', { name: /^Confirmer la réception/ }).click();

@@ -56,6 +56,14 @@ describe('découpe des blancs (fonctions pures)', () => {
     expect(Math.abs(r.dureeMs - 1500)).toBeLessThanOrEqual(20)
   })
 
+  it('garde entier un son continu sans aucun creux (fichier déjà coupé net) au lieu de le refuser', () => {
+    const ton = new Float32Array(TAUX * 1.2)
+    for (let k = 0; k < ton.length; k++) ton[k] = 0.37 * Math.sin((2 * Math.PI * 440 * k) / TAUX)
+    const r = decouperSignal(ton, TAUX)
+    expect(r.voix).toBe(true)
+    expect(Math.abs(r.dureeMs - 1200)).toBeLessThanOrEqual(20)
+  })
+
   it('signale « aucune voix » sur un silence (bruit de fond seul) et ne coupe rien', () => {
     const source = signal([['silence', 2000]])
     const r = decouperSignal(source, TAUX)

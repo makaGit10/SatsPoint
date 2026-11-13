@@ -126,8 +126,6 @@ export function MatriceMobile({ cles, langues, langue, selection, onChoisir }: P
                   <button
                     type="button"
                     onClick={() => onChoisir(c.cle, langue)}
-                    // Nom accessible = texte visible (FR puis EN) suivi de la langue et du statut (WCAG 2.5.3).
-                    aria-label={`${c.texte_fr} ${c.texte_en} — ${nomLangue} : ${t(`studio.statuts.${statut}`)}`}
                     data-statut={statut}
                     className={cn('flex min-h-12 min-w-0 flex-1 items-center gap-3 px-3 py-2 text-left', selection === c.cle && 'bg-surface-2')}
                   >
@@ -137,7 +135,10 @@ export function MatriceMobile({ cles, langues, langue, selection, onChoisir }: P
                         <span className="truncate text-sm font-medium text-texte">{c.texte_fr}</span>
                         {c.essentielle && <Star size={11} className="shrink-0 fill-current text-accent-trait" aria-hidden="true" />}
                       </span>
+                      {' '}
                       <span className="block truncate text-xs text-texte-3">{c.texte_en}</span>
+                      {/* Nom de la case = son contenu (WCAG 2.5.3), complété de la langue et du statut pour les lecteurs d'écran. */}
+                      <span className="sr-only">{` — ${nomLangue} : ${t(`studio.statuts.${statut}`)}`}</span>
                     </span>
                     <ChevronRight size={16} className="shrink-0 text-texte-3" aria-hidden="true" />
                   </button>

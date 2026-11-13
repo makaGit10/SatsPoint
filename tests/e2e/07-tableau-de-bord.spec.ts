@@ -43,7 +43,7 @@ test.describe('07 · Tableau de bord', () => {
     await page.getByRole('radio', { name: "Aujourd'hui" }).click();
 
     // Détail depuis les dernières ventes, lien vers toutes les ventes.
-    await dernieres.getByRole('button', { name: new RegExp(`^${wave.vente.numero} · `) }).click();
+    await dernieres.getByRole('button', { name: new RegExp(`${wave.vente.numero}\\b`) }).click();
     const detail = page.getByRole('dialog', { name: `Détail de la vente · ${wave.vente.numero}` });
     await expect(detail).toBeVisible();
     await detail.getByRole('button', { name: 'Fermer' }).first().click();
@@ -57,7 +57,7 @@ test.describe('07 · Tableau de bord', () => {
     const v = await creerVente(caissier.api, 4000);
     expect((await caissier.api.post(`/paiements/${v.paiement.ulid}/simuler`)).status).toBe(200);
     await expect(ecran).toContainText(/7\s?000\sFCFA/, { timeout: 5_000 });
-    await expect(dernieres.getByRole('button', { name: new RegExp(`^${v.vente.numero} · `) })).toBeVisible();
+    await expect(dernieres.getByRole('button', { name: new RegExp(`${v.vente.numero}\\b`) })).toBeVisible();
 
     // Vue du caissier : ses chiffres du jour seulement, pas de période.
     const { page: pageCaissier } = await ouvrir(caissier.etat);

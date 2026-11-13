@@ -78,7 +78,7 @@ test.describe('03 · Encaissement Lightning simulé', () => {
     await expect(page).toHaveURL(/\/caisse$/);
     await page.goto('/ventes');
     await ecranPret(page, 'ventes');
-    await expect(page.getByRole('button', { name: new RegExp(`^${vente.numero} · 1\\s?500\\sFCFA · Payée`) })).toBeVisible();
+    await expect(page.getByRole('button', { name: new RegExp(`${vente.numero}\\b.*Payée.*1\\s?500\\sFCFA`) })).toBeVisible();
 
     const api = await boutique.api.get(`/ventes/${vente.ulid}`);
     expect(api.json.vente.statut).toBe('payee');
