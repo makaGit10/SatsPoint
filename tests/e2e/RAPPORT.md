@@ -1,3 +1,30 @@
+# Passage du 13 au 18 novembre 2026 (nouvelle interface « Lumière », voix partout, articles sans écrire)
+
+Front Vite **sans mock** (port 5190) branché sur la vraie pile Docker. Suite complète : **mobile 30 réussis / 5 échecs, bureau 27 réussis / 9 échecs** au premier passage ; chaque échec a été analysé, les défauts de l'application corrigés, les tests périmés alignés sur la nouvelle interface.
+
+## Défauts de l'application trouvés par les tests (corrigés)
+
+| # | Défaut | Correction |
+|---|---|---|
+| 1 | Haut-parleur placé dans un bouton annoncé comme « bouton dans un bouton » aux lecteurs d'écran (axe `nested-interactive`) | Dans un bouton, le haut-parleur est un repère visuel `aria-hidden` (le bouton est déjà lu) |
+| 2 | Noms accessibles différents du texte visible (FR/EN, « 🔊 WO », « Mon compte », logo, lignes de vente, cases du studio — WCAG 2.5.3) | Le nom commence par le texte visible, ou le contenu sert de nom |
+| 3 | Barre de progression du démarrage sans nom | `aria-label` « 2 / 4 étapes » |
+| 4 | Montant de la caisse lu « 1 500FCFA » (pas d'espace réel) | Espace dans le texte |
+| 5 | Élément atteint au clavier caché sous l'en-tête collant ou la barre du bas (WCAG 2.4.11) | `scroll-padding` sur la coquille |
+| 6 | Tuile « Wolof » : pendant le chargement, le haut-parleur jouait la version française | Repli français seulement une fois la langue demandée chargée |
+| 7 | Studio : un fichier déjà coupé net (sans aucun blanc) refusé « aucune voix entendue » | Signal fort sans creux = voix entière, rien n'est coupé |
+| 8 | Réglages et démarrage : débordement horizontal à 390 px | Grille bornée, sélecteur de thème empilé sur mobile |
+
+## Tests mis à jour (comportement voulu, test périmé)
+Première visite (panneau de langue sur « / »), champ « Nom écrit » des articles, étape « Valider » du studio après la coupe des blancs, bande d'articles sur la caisse mobile, nom des lignes de vente (contenu), champs `lignes` et `moyen` du reçu public (sans donnée personnelle), navigation du super-admin qui peut créer sa boutique, haut-parleur toujours présent (repli français ou voix du navigateur).
+
+## Reste connu
+- **19 · Tous les boutons** : l'inventaire générique clique tout dans l'ordre du document ; quelques éléments signalés « sans effet » fonctionnent quand on les teste seuls (vérifié un par un : feuille vocale, « Continuer le démarrage », copie de la clé, ligne de vente, dépôt au studio sur bureau → `202`). Écart dû à l'état laissé par le clic précédent ; pavé exclu (testé dans 03).
+- **11 · PayTech** et **21 · Lightning réel** dépendent de services extérieurs (bac à sable PayTech, portefeuille Coinos) : échecs de délai, sans défaut de l'application identifié.
+- **22 (b) performance** : mesurée sur le build de production uniquement (sautée sur le serveur de développement).
+
+---
+
 # RAPPORT — tests de bout en bout SatsPoint (8 novembre 2026)
 
 > Méthode : DIRECTIVES § 4 et annexe A.3. Carte : [`PARCOURS.md`](PARCOURS.md). Front Vite **sans mock** branché sur le vrai back (API :8120, Reverb :8125, file, planificateur, passerelle Lightning). Chromium sans fenêtre, `retries: 1`, traces conservées en cas d'échec, deux tailles : bureau 1366×768 et téléphone 390×844.
