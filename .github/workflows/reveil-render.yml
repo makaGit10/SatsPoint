@@ -1,0 +1,27 @@
+# Garde le site de démonstration éveillé (offre gratuite Render : mise en veille après 15 min sans visite,
+# ~1 min d'attente au réveil). Appelle /up toutes les 10 minutes, jusqu'à la fin du jugement seulement :
+# au-delà de DATE_FIN, le job ne fait plus rien (budget de calcul Neon). Lancement manuel possible (Actions → Run).
+name: Réveil du site de démo
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  reveil:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      DATE_FIN: '2026-11-30'
+    steps:
+      - name: Appeler /up
+        run: |
+          if [ "$(date -u +%F)" \> "$DATE_FIN" ]; then echo "Après $DATE_FIN : réveil désactivé."; exit 0; fi
+          for essai in 1 2 3; do
+            if curl -fsS --max-time 90 -o /dev/null -w "HTTP %{http_code} en %{time_total} s\n" https://satspoint.onrender.com/up; then exit 0; fi
+            sleep 15
+          done
+          exit 1
