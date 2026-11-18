@@ -187,3 +187,32 @@ it('confirme manuellement un paiement Wave direct (propriétaire / gérant), aud
     $this->postJson("/api/v1/paiements/{$wave->ulid}/confirmer-manuellement", ['confirmation' => true])->assertOk()->assertJsonPath('paiement.statut', 'reussi');
     expect(Vente::toutesBoutiques()->whereKey($vente->id)->value('alerte'))->toBeNull();
 });
+
+it('portefeuille muet (Coinos) : la relecture GET vérifie la facture, au plus une fois toutes les 2 s, et l\'écran passe au vert', function () {
+    passerelleFake(['statut' => 'reglee', 'regle_le' => now()->toIso8601String()]);
+    ['vente' => $vente, 'paiement' => $p] = venteAvecTentative($this->boutique, $this->user);
+    $lookups = fn () => collect(Http::recorded())->filter(fn ($r) => str_ends_with($r[0]->url(), '/factures/'.HASH_TEST))->count();
+
+    // Aucune notification reçue : la seule relecture de l'écran suffit à constater le paiement.
+    connecte($this->user)->getJson("/api/v1/paiements/{$p->ulid}")->assertOk()
+        ->assertJsonPath('paiement.statut', 'reussi')->assertJsonPath('vente.statut', 'payee');
+    expect($lookups())->toBe(1)->and($vente->fresh()->statut)->toBe('payee');
+
+    // Déjà payé : plus aucun appel au portefeuille.
+    $this->getJson("/api/v1/paiements/{$p->ulid}")->assertOk();
+    expect($lookups())->toBe(1);
+});
+
+it('relecture GET : en attente → un seul lookup par fenêtre de 2 s ; portefeuille indisponible → simple relecture', function () {
+    passerelleFake(['statut' => 'en_attente']);
+    ['paiement' => $p] = venteAvecTentative($this->boutique, $this->user);
+    $lookups = fn () => collect(Http::recorded())->filter(fn ($r) => str_ends_with($r[0]->url(), '/factures/'.HASH_TEST))->count();
+
+    connecte($this->user)->getJson("/api/v1/paiements/{$p->ulid}")->assertOk()->assertJsonPath('paiement.statut', 'en_attente');
+    $this->getJson("/api/v1/paiements/{$p->ulid}")->assertOk();
+    expect($lookups())->toBe(1);
+
+    $this->travel(3)->seconds();
+    passerelleFake([], ['*/connexions/*/factures/*' => Http::response(['code' => 'PORTEFEUILLE_INJOIGNABLE', 'message' => 'relais muet'], 503)]);
+    $this->getJson("/api/v1/paiements/{$p->ulid}")->assertOk()->assertJsonPath('paiement.statut', 'en_attente');
+});

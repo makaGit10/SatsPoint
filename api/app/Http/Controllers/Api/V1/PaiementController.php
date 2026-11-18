@@ -15,6 +15,7 @@ use App\Services\BoutiqueCourante;
 use App\Services\MachineEtatPaiement;
 use App\Services\PaiementsLightning;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PaiementController extends Controller
@@ -29,6 +30,18 @@ class PaiementController extends Controller
     public function show(Paiement $paiement): JsonResponse
     {
         $this->authorize('view', $paiement);
+
+        // Secours quand le portefeuille ne notifie pas (Coinos n'envoie aucune notification NWC) : l'écran relit
+        // toutes les 3 s, et chaque relecture d'une facture Lightning en attente la vérifie auprès du portefeuille
+        // (lookup_invoice), au plus une fois toutes les 2 s par paiement. Portefeuille muet → simple relecture.
+        if ($paiement->estLightning() && $paiement->estEnAttente() && Cache::add('paiement:sondage:'.$paiement->ulid, 1, 2)) {
+            try {
+                $this->lightning->verifier($paiement);
+                $paiement->refresh();
+            } catch (ErreurMetier) {
+                // Portefeuille indisponible : la prochaine relecture réessaiera.
+            }
+        }
 
         return $this->reponse($paiement);
     }
