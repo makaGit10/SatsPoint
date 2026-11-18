@@ -79,7 +79,7 @@ class User extends Authenticatable
     /** La 2FA est exigée pour la console plateforme (super-admin). */
     public function deuxFaRequise(): bool
     {
-        return $this->estSuperAdmin();
+        return $this->estSuperAdmin() && config('satspoint.deux_fa_super_admin', true);
     }
 
     /** Préférences complétées par les valeurs par défaut. */

@@ -101,6 +101,8 @@ services:
         sync: false
       - key: SUPERADMIN_PASSWORD
         sync: false                  # ≥ 12 caractères (vide = généré une fois, affiché dans les journaux)
+      - key: SUPERADMIN_2FA_OBLIGATOIRE
+        sync: false                  # "true" par défaut ; "false" = 2FA suspendue temporairement (tournage) — remettre "true" avant le jury
       - key: DEMO_SEED
         value: "true"
       - key: DEMO_PASSWORD

@@ -24,6 +24,11 @@ class ExigerDeuxFacteurs
             return response()->json(['message' => 'Connexion requise.', 'code' => 'NON_AUTHENTIFIE'], 401);
         }
 
+        // Suspendue temporairement (SUPERADMIN_2FA_OBLIGATOIRE=false) et pas encore activée : accès sans code.
+        if (! $utilisateur->deuxFaRequise() && ! $utilisateur->deuxFaActive()) {
+            return $next($request);
+        }
+
         if (! $utilisateur->deuxFaActive()) {
             return response()->json([
                 'message' => 'La double authentification est obligatoire pour la console plateforme. Activez-la dans votre profil.',

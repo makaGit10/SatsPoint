@@ -162,3 +162,20 @@ it('impose la 2FA au super-admin sur toute la console, jamais sur les routes 2FA
     $this->postJson('/api/v1/auth/2fa/activer', ['code' => codeTotp($s)])->assertOk();
     $this->getJson('/api/v1/admin/statistiques')->assertForbidden()->assertJsonPath('code', 'INTERDIT');
 });
+
+it('SUPERADMIN_2FA_OBLIGATOIRE=false suspend la 2FA du super-admin (console sans code), jamais pour un propriétaire', function () {
+    config(['satspoint.deux_fa_super_admin' => false]);
+    $admin = User::factory()->superAdmin()->create();
+
+    connecte($admin)->getJson('/api/v1/moi')->assertOk()->assertJsonPath('utilisateur.deux_fa', ['active' => false, 'requise' => false, 'validee' => false]);
+    $this->getJson('/api/v1/admin/statistiques')->assertOk();
+    $this->getJson('/api/v1/admin/audio/matrice')->assertOk();
+
+    // Le rôle reste vérifié : un propriétaire n'entre toujours pas dans la console.
+    ['user' => $proprio] = boutiqueAvec('proprietaire');
+    connecte($proprio)->getJson('/api/v1/admin/statistiques')->assertForbidden()->assertJsonPath('code', 'INTERDIT');
+
+    // Remise en service : de nouveau exigée.
+    config(['satspoint.deux_fa_super_admin' => true]);
+    connecte($admin)->getJson('/api/v1/admin/statistiques')->assertForbidden()->assertJsonPath('code', 'DEUX_FA_REQUISE');
+});

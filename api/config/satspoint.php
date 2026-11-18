@@ -99,6 +99,13 @@ return [
      */
     'deux_fa_code_local' => env('APP_ENV') === 'local' && filter_var(env('DEUX_FA_CODE_LOCAL', false), FILTER_VALIDATE_BOOL),
 
+    /*
+     * 2FA obligatoire pour la console plateforme (super-admin). Activée par défaut ; SUPERADMIN_2FA_OBLIGATOIRE=false
+     * la suspend TEMPORAIREMENT (tournage, enregistrement des voix) — à remettre à true avant le jury. Une 2FA déjà
+     * activée par le super-admin reste demandée à la connexion.
+     */
+    'deux_fa_super_admin' => filter_var(env('SUPERADMIN_2FA_OBLIGATOIRE', true), FILTER_VALIDATE_BOOL),
+
     'superadmin' => [
         'email' => env('SUPERADMIN_EMAIL', 'admin@satspoint.local'),
         'mot_de_passe' => env('SUPERADMIN_PASSWORD'),
