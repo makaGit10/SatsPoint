@@ -1,7 +1,7 @@
 # Les 137 phrases essentielles à enregistrer
 
 > Généré par `npm run audios-essentiels` (web/) depuis le registre des clés vocales — ne pas modifier à la main.
-> Toutes les autres phrases (381) ont aussi un haut-parleur : tant qu'elles ne sont pas enregistrées, l'application les dit en français.
+> Toutes les autres phrases (385) ont aussi un haut-parleur : tant qu'elles ne sont pas enregistrées, l'application les dit en français.
 
 À enregistrer dans chaque langue : **wolof, seereer, pulaar, joola** au Sénégal, et dans **chaque langue ajoutée depuis la console** (onglet « Langues »). Une phrase = un fichier de **15 secondes maximum**. Les blancs du début et de la fin (le « 3, 2, 1 ») sont coupés automatiquement.
 
@@ -104,7 +104,7 @@ Une explication par écran, lue automatiquement à l’arrivée (ventes, tableau
 | 80 | articles | Vos articles, avec leur image et leur prix. Touchez le haut-parleur d'un article pour entendre son nom. Pour en créer un, touchez le bouton jaune « Ajouter » : une photo ou une image, son nom dit à voix haute, puis son prix sur les grosses touches. | `guide.articles` |
 | 81 | articles | Prenez une photo de l'article, ou choisissez une image. | `guide.formulaireArticle.debut` |
 | 82 | articles | Comment s'appelle ce produit ? Appuyez sur le micro et dites son nom : vous l'entendrez chaque fois que vous le toucherez. | `guide.formulaireArticle.nom` |
-| 83 | articles | Tapez le prix sur le pavé. | `guide.formulaireArticle.prix` |
+| 83 | articles | Tapez le prix sur le pavé, ou touchez « Dire le prix » et dites-le : il s'écrit tout seul, vous pouvez le corriger. | `guide.formulaireArticle.prix` |
 | 84 | articles | Appuyez sur Enregistrer. | `guide.formulaireArticle.enregistrer` |
 | 85 | equipe | Votre équipe : chaque personne avec son rôle. Touchez le bouton jaune pour inviter un caissier ou un gérant avec un lien à lui envoyer. | `guide.equipe` |
 | 86 | invitation | Une boutique vous invite dans son équipe. Touchez le bouton jaune pour accepter ; si vous n'avez pas encore de compte, vous allez d'abord en créer un. | `guide.invitation` |
@@ -167,7 +167,7 @@ Libellés de la page de présentation et des écrans du parcours.
 | 136 | connexion | Me connecter | `auth.connexion.valider` |
 | 137 | connexion | Créer ma boutique | `auth.connexion.creer` |
 
-## Toutes les autres phrases (381), écran par écran
+## Toutes les autres phrases (385), écran par écran
 
 Moins urgentes : tant qu'elles ne sont pas enregistrées, l'application les dit en français. Elles sont toutes dans le studio (filtre par écran).
 
@@ -617,7 +617,7 @@ Moins urgentes : tant qu'elles ne sont pas enregistrées, l'application les dit 
 | 512 | Arrêter | `studio.micro.arreter` |
 | 513 | Enregistrer | `studio.micro.enregistrer` |
 
-### Divers (5)
+### Divers (9)
 
 | N° | Phrase (français) | Code |
 |---|---|---|
@@ -626,3 +626,7 @@ Moins urgentes : tant qu'elles ne sont pas enregistrées, l'application les dit 
 | 516 | Page suivante | `pagination.suivante` |
 | 517 | Retour à l'accueil | `introuvable.retour` |
 | 518 | Cette page est réservée au propriétaire de la boutique. | `erreurs.accesRefuse` |
+| 519 | Prix compris | `dictee.comprisCourt` |
+| 520 | Je n'ai pas compris le prix. Réessayez, ou tapez-le sur le pavé. | `dictee.incompris` |
+| 521 | Je vous écoute : dites le prix | `dictee.ecoute` |
+| 522 | Dire le prix | `dictee.dire` |

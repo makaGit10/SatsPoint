@@ -126,7 +126,7 @@
     "formulaireArticle": {
       "debut": "Prenez une photo de l'article, ou choisissez une image.",
       "nom": "Comment s'appelle ce produit ? Appuyez sur le micro et dites son nom : vous l'entendrez chaque fois que vous le toucherez.",
-      "prix": "Tapez le prix sur le pavé.",
+      "prix": "Tapez le prix sur le pavé, ou touchez « Dire le prix » et dites-le : il s'écrit tout seul, vous pouvez le corriger.",
       "enregistrer": "Appuyez sur Enregistrer."
     }
   }

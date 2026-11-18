@@ -336,5 +336,12 @@
     "horsLigne": "You are offline. Screens remain available.",
     "miseAJour": "A new version is ready.",
     "recharger": "Update"
+  },
+  "dictee": {
+    "dire": "Say the price",
+    "ecoute": "Listening: say the price",
+    "compris": "Got it: {{prix}}",
+    "comprisCourt": "Price understood",
+    "incompris": "I didn't catch the price. Try again, or type it on the keypad."
   }
 }

@@ -42,6 +42,7 @@ const BandeauAucunMoyen = lazy(() => import('./caisse/AucunMoyen').then((m) => (
 const BandeauWalletNonConnecte = lazy(() => import('./caisse/AucunMoyen').then((m) => ({ default: m.BandeauWalletNonConnecte })))
 const BoutonBrancherMoyen = lazy(() => import('./caisse/AucunMoyen').then((m) => ({ default: m.BoutonBrancherMoyen })))
 const NoteVente = lazy(() => import('./caisse/NoteVente'))
+const DicteePrix = lazy(() => import('@/voix/DicteePrix'))
 const BandeauDemarrage = lazy(() => import('@/coquille/BandeauDemarrage').then((m) => ({ default: m.BandeauDemarrage })))
 const MONTANT_MAX_DEFAUT = 2_000_000
 
@@ -213,6 +214,9 @@ export default function Caisse() {
                   className="md:hidden"
                 />
               )}
+              <Suspense fallback={null}>
+                <DicteePrix compact onPrix={(n) => setSaisie(String(n))} />
+              </Suspense>
               <BoutonIcone libelle={t('caisse.note')} icone={<NotebookPen />} voix="caisse.note" actif={noteVisible} onClick={() => setNoteVisible((v) => !v)} />
             </div>
           </header>

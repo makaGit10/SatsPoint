@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { Camera, Check, ChevronDown, Images, Shapes, X } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
+import { type ChangeEvent, type FormEvent, lazy, type ReactNode, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CLE_ARTICLES } from '@/api/articles'
 import { creerArticle, envoyerPhotoArticle, envoyerVoixArticle, modifierArticle, supprimerPhotoArticle, supprimerVoixArticle, type CorpsArticle } from '@/api/articlesEcriture'
@@ -27,6 +27,8 @@ import { EnregistreurNom, type ValeurVoix } from './EnregistreurNom'
 import { GaleriePictogrammes } from './GaleriePictogrammes'
 import { ErreurPhoto, preparerPhoto } from './photo'
 import { VignetteArticle } from './VignetteArticle'
+
+const DicteePrix = lazy(() => import('@/voix/DicteePrix'))
 
 interface ValeurPhoto {
   url: string
@@ -277,6 +279,9 @@ export default function FormulaireArticle({ article, onFermer }: { article: Arti
             <span className="text-lg font-bold text-accent-texte">FCFA</span>
           </div>
           <Pave valeur={prix} onChange={setPrix} className="gap-2 [&_button]:h-12 md:[&_button]:h-11" />
+          <Suspense fallback={null}>
+            <DicteePrix onPrix={(n) => setPrix(String(n))} pleineLargeur />
+          </Suspense>
         </Section>
 
         {/* 4. Nom écrit (pour qui lit) */}

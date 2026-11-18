@@ -126,7 +126,7 @@
     "formulaireArticle": {
       "debut": "Take a photo of the item, or choose a picture.",
       "nom": "What is this product called? Press the microphone and say its name: you will hear it every time you tap it.",
-      "prix": "Type the price on the keypad.",
+      "prix": "Type the price on the keypad, or tap “Say the price” and say it: it is written for you, and you can correct it.",
       "enregistrer": "Tap Save."
     }
   }

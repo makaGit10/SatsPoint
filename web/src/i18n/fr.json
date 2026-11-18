@@ -336,5 +336,12 @@
     "horsLigne": "Vous êtes hors ligne. Les écrans restent consultables.",
     "miseAJour": "Une nouvelle version est prête.",
     "recharger": "Mettre à jour"
+  },
+  "dictee": {
+    "dire": "Dire le prix",
+    "ecoute": "Je vous écoute : dites le prix",
+    "compris": "Compris : {{prix}}",
+    "comprisCourt": "Prix compris",
+    "incompris": "Je n'ai pas compris le prix. Réessayez, ou tapez-le sur le pavé."
   }
 }
