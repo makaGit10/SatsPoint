@@ -11,10 +11,10 @@
 - Tests : Vitest 224, Pest 425, Playwright de bout en bout lancé sur la vraie pile (rapport `tests/e2e/RAPPORT.md`), image de production construite localement avant la mise en ligne.
 
 ## À faire par la propriétaire (dans l'ordre)
-1. **Render → Environment** : `SUPERADMIN_PASSWORD` (celui du `.env` local), `DEMO_PASSWORD`, `DEMO_NWC_URI` (nouvelle connexion Coinos, l'ancienne est passée dans le chat), mot de passe Neon (`DATABASE_URL`). Puis « Manual Deploy » si Render ne redémarre pas seul.
-2. **Audios** sur le site **en ligne** (super-admin → Studio audio, mode rafale) : d'abord les 72 phrases « Priorité 1 » de `docs/AUDIOS_ESSENTIELS.md` en wolof (puis seereer, pulaar, joola si le temps le permet), puis « Publier les brouillons ».
-3. **Paiement réel** de 100 FCFA chronométré (sats Coinos) pour la vidéo.
-4. **Vidéo 3 min** (`tools/video/SCRIPT.md`, déjà aligné sur la nouvelle interface), YouTube.
+1. **Render → Environment** : fait le 18/11 (super-admin, mot de passe démo, `DEMO_NWC_URI` = nouvelle connexion Coinos). Reste : mot de passe Neon (`DATABASE_URL`), révoquer la clé API Render passée dans le chat, supprimer l'ancienne connexion Coinos.
+2. **Audios** sur le site **en ligne** (super-admin → Studio audio, mode rafale) : d'abord les 22 voix de la vidéo, puis les 72 phrases « Priorité 1 » de `docs/AUDIOS_ESSENTIELS.md` en wolof, puis « Publier les brouillons ». Noms d'articles de la vidéo (Café Touba…) : dits par la propriétaire en créant l'article.
+3. **Paiement réel** de 100 FCFA chronométré pour la vidéo — répétition faite le 18/11 (Wallet of Satoshi → Coinos, réglé) ; détection corrigée (Coinos ne notifie pas : l'écran vérifie la facture toutes les 3 s).
+4. **Deux vidéos de 3 min, mêmes images** : version française (voix Rémy, sous-titres anglais) et version anglaise (voix Andrew) — `tools/video/SCRIPT.md` (photo d'article, nom dit à voix haute, « Dire le prix », vrai paiement) ; voix off prêtes dans `tools/video/voix/` et `tools/video/voix-en/` ; deux liens YouTube sur Devpost.
 5. **Devpost** : profil « Student », texte, liens, soumission **avant le 20/11 18 h**.
 6. Avant le jury : rechanger tous les secrets passés dans le chat (super-admin, PayTech, Coinos, Neon, démo).
 

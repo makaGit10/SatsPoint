@@ -1,12 +1,16 @@
 """
 Voix off de la vidéo SatsPoint : une phrase = un fichier audio, pour la caler sur l'image.
 
-Lit le tableau de SCRIPT.md (colonne « Voix off »), synthétise chaque phrase avec
-edge-tts (voix Azure masculine fr-FR-RemyMultilingualNeural, secours fr-FR-HenriNeural),
-coupe les silences de début et de fin, égalise le volume (EBU R128), et écrit
-voix/NN.wav (48 kHz mono) + timeline.json (durée de chaque phrase).
+Deux versions de la vidéo (mêmes images) :
+- français : colonne « Voix off française », voix Azure masculine fr-FR-RemyMultilingualNeural
+  (secours fr-FR-HenriNeural) → voix/NN.wav ;
+- anglais (--en) : colonne « Voix off anglaise », voix masculine en-US-AndrewMultilingualNeural
+  (secours en-US-AndrewNeural, en-GB-RyanNeural) → voix-en/NN.wav.
+Coupe les silences de début et de fin, égalise le volume (EBU R128), écrit NN.wav (48 kHz mono)
++ timeline.json (durée de chaque phrase).
 
-Usage :  python -I tools/video/generer_voix.py            # tout
+Usage :  python -I tools/video/generer_voix.py            # tout, en français
+         python -I tools/video/generer_voix.py --en       # tout, en anglais
          python -I tools/video/generer_voix.py 7 11       # seulement les phrases 7 et 11
 Dépendances : pip install edge-tts imageio-ffmpeg
 """
@@ -22,8 +26,13 @@ import edge_tts
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "SCRIPT.md")
-OUT = os.path.join(HERE, "voix")
-VOIX = ["fr-FR-RemyMultilingualNeural", "fr-FR-HenriNeural"]  # voix masculines
+ANGLAIS = "--en" in sys.argv
+if ANGLAIS:
+    sys.argv.remove("--en")
+OUT = os.path.join(HERE, "voix-en" if ANGLAIS else "voix")
+# Voix masculines.
+VOIX = ["en-US-AndrewMultilingualNeural", "en-US-AndrewNeural", "en-GB-RyanNeural"] if ANGLAIS else ["fr-FR-RemyMultilingualNeural", "fr-FR-HenriNeural"]
+COLONNE = 5 if ANGLAIS else 4
 VITESSE = "+0%"  # « -5% » si le débit paraît pressé
 
 
@@ -43,9 +52,9 @@ def lire_phrases() -> list[tuple[int, str]]:
     """Extrait (numéro, phrase) des lignes du tableau de SCRIPT.md."""
     phrases = []
     for ligne in open(SCRIPT, encoding="utf-8"):
-        m = re.match(r"^\|\s*(\d+)\s*\|([^|]*)\|([^|]*)\|([^|]*)\|", ligne)
+        m = re.match(r"^\|\s*(\d+)\s*\|([^|]*)\|([^|]*)\|([^|]*)\|([^|]*)\|", ligne)
         if m:
-            phrases.append((int(m.group(1)), m.group(4).strip()))
+            phrases.append((int(m.group(1)), m.group(COLONNE).strip()))
     return phrases
 
 
