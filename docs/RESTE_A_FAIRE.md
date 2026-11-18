@@ -1,28 +1,22 @@
-# SatsPoint — pause du 12 novembre 2026 : où on en est
+# SatsPoint — état au 18 novembre 2026
 
 > Échéance : **vendredi 20 novembre 2026, 20 h 00 (Dakar = UTC)** — soumission visée avant 18 h.
-> **Rien n'est en ligne** depuis le 8/11 : https://satspoint.onrender.com montre encore l'ancienne version (`main`).
+> **Mis en ligne le 18/11** : `main` = toute la reprise (captures validées par la propriétaire) → https://satspoint.onrender.com.
 
-## Branches
-- **`wip/pause-2026-11-08`** : travail VÉRIFIÉ depuis le 8/11 (Pest 404 verts, Vitest 185 verts au 11/11) — direction « Lumière », logo cauri, landing, sélecteurs soleil/lune + FR|EN, « Se souvenir de moi », pagination, super-admin avec sa boutique, pays UEMOA + langues dynamiques + moyens de paiement par pays, correctif ventes, 2FA « virtuelle » en local, API des articles sans écrire, découpe des blancs (serveur + fonctions navigateur), hook `useGuideVocal`.
-- **`wip/pause-2026-11-12`** (dépôt local resté dessus) : + tout le travail NON VÉRIFIÉ des deux chantiers interrompus (commit `178b9a1`).
+## Fait (13–18 novembre)
+- Voix : aucun haut-parleur muet (voix française de base en local, voix du navigateur en ligne en attendant les enregistrements) ; garde-fou étendu à toute l'application ; double authentification entièrement parlée ; repli français seulement une fois la langue demandée chargée.
+- Caisse mobile : bande d'articles en images ; articles sans écrire (photo, pictogramme, nom dit à voix haute).
+- Accessibilité : noms = texte visible (WCAG 2.5.3), haut-parleur dans un bouton `aria-hidden`, défilement jamais sous les barres fixes.
+- Studio : coupe des blancs vérifiée (navigateur + serveur) ; fichier sans blanc accepté ; dépôt + « Valider » vérifié sur bureau (`202`).
+- Tests : Vitest 224, Pest 425, Playwright de bout en bout lancé sur la vraie pile (rapport `tests/e2e/RAPPORT.md`), image de production construite localement avant la mise en ligne.
 
-## Reprise du 13 novembre (fait)
-- Plus aucun haut-parleur muet : **voix française de base** pour les 518 clés (`tools/voix-base/generer_fr.py`, voix neuronale, blancs coupés, importée en local par `audio:importer`) et, à défaut d'enregistrement, la voix du navigateur lit le texte (production comprise).
-- Garde-fou « un haut-parleur sur chaque élément actionnable » étendu aux articles et au champ code ; double authentification entièrement parlée (`TexteLu`, `voixSousTitre`).
-- Caisse mobile : **bande d'articles en images** au-dessus du pavé (vendre sans lire ni taper), « Encaisser » visible en 390×844 et 360×740.
-- Réglages et démarrage sans débordement à 390 px ; guide vocal des articles ; découpe des blancs unifiée (vérifiée : 5,8 s → 0,92 s ; fond bruyant 11,5 s → 5,9 s).
-- Caisse sous le budget (169,4 Ko) ; Vitest 223 verts, Pest 425 verts.
-- Audios : **enregistrer directement sur le site en ligne** après déploiement (Render gratuit n'a pas de console pour `audio:importer`) ; liste par priorité dans `docs/AUDIOS_ESSENTIELS.md` (`node web/scripts/audios-essentiels.mjs`).
-
-## À finir à la reprise (dans l'ordre)
-1. **Voix (parcours guidé)** : terminer l'audit « un haut-parleur sur chaque élément actionnable » et son garde-fou automatique ; haut-parleurs sur chaque étape de la double authentification (demande de la propriétaire, garder `CodeLocal`) ; régénérer `web/src/voix/cles-vocales.json` puis `docs/AUDIOS_ESSENTIELS.md` ; vérifier à l'écran le panneau de première visite (choix de la langue), le bouton « 🔊 WO » + feuille vocale, le bouton « Réécouter l'aide », l'aide « Vous ne savez pas écrire ? » ; débordement de `/portefeuille` à 390 px.
-2. **Articles sans écrire** (écrans) : vérifier formulaire (photo / pictogramme / nom dit à voix haute, nom écrit facultatif, prix au pavé), galerie de pictogrammes, grille de la caisse, panier, détail de vente, reçu ; brancher `useGuideVocal` ; unifier la découpe des silences (`ecrans/articles/decoupeSilences.ts` → `voix/decoupe*.ts`).
-3. Vérifications complètes : `tsc`, `oxlint`, `vitest`, `build`, `taille` (caisse ≈ 169,8/170 Ko : libérer de la place si besoin), Pest complet, captures 390/1366 clair/sombre FR/EN, puis **Playwright de bout en bout sur la vraie pile** (jamais lancé) et `tests/e2e/RAPPORT.md`.
-4. Montrer les captures à la propriétaire → « valide » → fusion dans `main` → Render.
-5. Propriétaire : enregistrer les audios sur le **front réel** (http://localhost:5190, jamais le mode démo qui ne garde rien) une fois la découpe des blancs vérifiée ; recouper les anciens avec `php artisan audio:retraiter --simulation` puis sans l'option ; exporter vers la production (`audio:exporter` / `audio:importer`).
-6. Propriétaire : Render `SUPERADMIN_PASSWORD` (nouveau mot de passe dans `.env`), `DEMO_NWC_URI` (nouvelle connexion Coinos), `DEMO_PASSWORD`, mot de passe Neon ; rechanger tous les secrets passés dans le chat avant le jury.
-7. Paiement réel (Banxaas samedi 14/11 ?), vidéo (script à mettre à jour avec la nouvelle interface), README (captures, mesures), Devpost (profil Student), soumission avant le 20/11 18 h.
+## À faire par la propriétaire (dans l'ordre)
+1. **Render → Environment** : `SUPERADMIN_PASSWORD` (celui du `.env` local), `DEMO_PASSWORD`, `DEMO_NWC_URI` (nouvelle connexion Coinos, l'ancienne est passée dans le chat), mot de passe Neon (`DATABASE_URL`). Puis « Manual Deploy » si Render ne redémarre pas seul.
+2. **Audios** sur le site **en ligne** (super-admin → Studio audio, mode rafale) : d'abord les 72 phrases « Priorité 1 » de `docs/AUDIOS_ESSENTIELS.md` en wolof (puis seereer, pulaar, joola si le temps le permet), puis « Publier les brouillons ».
+3. **Paiement réel** de 100 FCFA chronométré (sats Coinos) pour la vidéo.
+4. **Vidéo 3 min** (`tools/video/SCRIPT.md`, déjà aligné sur la nouvelle interface), YouTube.
+5. **Devpost** : profil « Student », texte, liens, soumission **avant le 20/11 18 h**.
+6. Avant le jury : rechanger tous les secrets passés dans le chat (super-admin, PayTech, Coinos, Neon, démo).
 
 ## Environnement local
 - Docker : `docker compose up -d` dans `C:\SatsPoint` (si le moteur répond 500 : fermer de force les processus `C:\Program Files\Docker\*` puis relancer Docker Desktop).
