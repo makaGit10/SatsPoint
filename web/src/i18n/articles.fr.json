@@ -125,7 +125,7 @@
   "guide": {
     "formulaireArticle": {
       "debut": "Prenez une photo de l'article, ou choisissez une image.",
-      "nom": "Appuyez sur le micro et dites le nom de l'article.",
+      "nom": "Comment s'appelle ce produit ? Appuyez sur le micro et dites son nom : vous l'entendrez chaque fois que vous le toucherez.",
       "prix": "Tapez le prix sur le pavé.",
       "enregistrer": "Appuyez sur Enregistrer."
     }

@@ -27,6 +27,17 @@ const sections = groupes.map(([p, titre, texte]) => {
   return `## ${titre} (${liste.length})\n\n${texte}\n\n| N° | Écran | Phrase (français) | Code |\n|---|---|---|---|\n${lignes.join('\n')}\n`
 })
 
+// Toutes les autres clés, regroupées par écran (dernier segment du contexte : « Bouton — Caisse » → « Caisse »).
+const parEcran = new Map()
+for (const e of registre.filter((x) => !x.essentielle)) {
+  const ecran = e.contexte.split(' — ').pop()
+  if (!parEcran.has(ecran)) parEcran.set(ecran, [])
+  parEcran.get(ecran).push(e)
+}
+const autres = [...parEcran]
+  .map(([ecran, liste]) => `### ${ecran} (${liste.length})\n\n| N° | Phrase (français) | Code |\n|---|---|---|\n${liste.map((e) => `| ${++n} | ${e.texte_fr.replace(/\|/g, '\\|').replace(/\n/g, ' ')} | \`${e.cle}\` |`).join('\n')}\n`)
+  .join('\n')
+
 const doc = `# Les ${essentielles.length} phrases essentielles à enregistrer
 
 > Généré par \`npm run audios-essentiels\` (web/) depuis le registre des clés vocales — ne pas modifier à la main.
@@ -38,6 +49,11 @@ const doc = `# Les ${essentielles.length} phrases essentielles à enregistrer
 
 **Sur quel site** : enregistrer directement sur le site **en ligne** une fois la nouvelle version déployée (les enregistrements y restent). Jamais en mode démo, qui ne garde rien.
 
-${sections.join('\n')}`
+${sections.join('\n')}
+## Toutes les autres phrases (${registre.length - essentielles.length}), écran par écran
+
+Moins urgentes : tant qu'elles ne sont pas enregistrées, l'application les dit en français. Elles sont toutes dans le studio (filtre par écran).
+
+${autres}`
 await writeFile(resolve(racine, '../docs/AUDIOS_ESSENTIELS.md'), doc)
 console.log(`${essentielles.length} phrases essentielles → docs/AUDIOS_ESSENTIELS.md (${groupes.map(([p]) => essentielles.filter((e) => priorite(e) === p).length).join(' / ')})`)

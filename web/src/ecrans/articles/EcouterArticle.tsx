@@ -2,9 +2,9 @@ import { Volume2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { Article } from '@/api/types'
 import { cn } from '@/lib/cn'
-import { lire, lireTexte, syntheseDisponible } from '@/voix/lecteur'
+import { arreter, lire, lireTexte, syntheseDisponible } from '@/voix/lecteur'
 import { useVoix } from '@/voix/store'
-import { useUrlAudio } from '@/voix/useManifesteAudio'
+import { obtenirUrlAudio, useUrlAudio } from '@/voix/useManifesteAudio'
 import { libelleArticle } from './libelle'
 
 type ArticleEcoutable = Pick<Article, 'ulid' | 'nom' | 'pictogramme' | 'voix_url'>
@@ -30,6 +30,25 @@ export function useEcouteArticle(article: ArticleEcoutable): { jouer: () => void
   if (nom && syntheseDisponible()) return { jouer: () => void lireTexte(libelleArticle(article, t), i18n.language.startsWith('en') ? 'en-US' : 'fr-FR', cle), enLecture }
   if (urlPicto) return { jouer: () => lire(urlPicto, cle), enLecture }
   return null
+}
+
+/**
+ * Caisse : toucher un article DIT son nom (aide vocale active) — d'abord la voix enregistrée par le commerçant,
+ * sinon le nom écrit par la voix du téléphone, sinon le nom de l'image enregistré au studio. Le son repart du
+ * début à chaque toucher (deux thés = deux fois « thé »). Hors React : appelé depuis le clic de la tuile.
+ */
+export function direArticle(article: ArticleEcoutable, libelle: string, locale: string) {
+  const { activee, langueAudio } = useVoix.getState()
+  if (!activee) return
+  const cle = `article:${article.ulid}`
+  arreter()
+  if (article.voix_url) return lire(article.voix_url, cle)
+  if (article.nom?.trim() && syntheseDisponible()) return void lireTexte(libelle, locale.startsWith('en') ? 'en-US' : 'fr-FR', cle)
+  if (article.pictogramme && langueAudio) {
+    void obtenirUrlAudio(`pictos.${article.pictogramme}`, langueAudio).then((url) => {
+      if (url) lire(url, cle)
+    })
+  }
 }
 
 /**

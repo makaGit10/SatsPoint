@@ -103,7 +103,7 @@ Une explication par écran, lue automatiquement à l’arrivée (ventes, tableau
 | 79 | portefeuille | Votre portefeuille bitcoin : le grand chiffre est votre solde. Touchez le bouton jaune pour recevoir, le bouton blanc pour envoyer ; l'historique est en dessous. | `guide.portefeuille` |
 | 80 | articles | Vos articles, avec leur image et leur prix. Touchez le haut-parleur d'un article pour entendre son nom. Pour en créer un, touchez le bouton jaune « Ajouter » : une photo ou une image, son nom dit à voix haute, puis son prix sur les grosses touches. | `guide.articles` |
 | 81 | articles | Prenez une photo de l'article, ou choisissez une image. | `guide.formulaireArticle.debut` |
-| 82 | articles | Appuyez sur le micro et dites le nom de l'article. | `guide.formulaireArticle.nom` |
+| 82 | articles | Comment s'appelle ce produit ? Appuyez sur le micro et dites son nom : vous l'entendrez chaque fois que vous le toucherez. | `guide.formulaireArticle.nom` |
 | 83 | articles | Tapez le prix sur le pavé. | `guide.formulaireArticle.prix` |
 | 84 | articles | Appuyez sur Enregistrer. | `guide.formulaireArticle.enregistrer` |
 | 85 | equipe | Votre équipe : chaque personne avec son rôle. Touchez le bouton jaune pour inviter un caissier ou un gérant avec un lien à lui envoyer. | `guide.equipe` |
@@ -166,3 +166,463 @@ Libellés de la page de présentation et des écrans du parcours.
 | 135 | connexion | Mot de passe oublié ? | `auth.connexion.oubli` |
 | 136 | connexion | Me connecter | `auth.connexion.valider` |
 | 137 | connexion | Créer ma boutique | `auth.connexion.creer` |
+
+## Toutes les autres phrases (381), écran par écran
+
+Moins urgentes : tant qu'elles ne sont pas enregistrées, l'application les dit en français. Elles sont toutes dans le studio (filtre par écran).
+
+### Menu (11)
+
+| N° | Phrase (français) | Code |
+|---|---|---|
+| 138 | Caisse | `nav.caisse` |
+| 139 | Ventes | `nav.ventes` |
+| 140 | Tableau de bord | `nav.tableau` |
+| 141 | Tableau | `nav.tableauCourt` |
+| 142 | Portefeuille | `nav.portefeuille` |
+| 143 | Articles | `nav.articles` |
+| 144 | Équipe | `nav.equipe` |
+| 145 | Réglages | `nav.reglages` |
+| 146 | Démarrage guidé | `nav.demarrage` |
+| 147 | Console | `nav.admin` |
+| 148 | Studio audio | `nav.studio` |
+
+### En-tête et menus (23)
+
+| N° | Phrase (français) | Code |
+|---|---|---|
+| 149 | Continuer le démarrage | `demarrage.continuer` |
+| 150 | Plus | `nav.plus` |
+| 151 | Déplier le menu | `nav.deplier` |
+| 152 | Replier le menu | `nav.replier` |
+| 153 | Aide vocale | `voix.feuille.titre` |
+| 154 | Mon compte | `entete.menuUtilisateur` |
+| 155 | Sécurité du compte | `utilisateur.securite` |
+| 156 | Me déconnecter | `utilisateur.deconnexion` |
+| 157 | Écouter l'aide de cette page | `voix.feuille.ecouterPage` |
+| 158 | Voix activée | `voix.feuille.activer` |
+| 159 | Langue de la voix | `voix.feuille.langues` |
+| 160 | Clair | `theme.clair` |
+| 161 | Sombre | `theme.sombre` |
+| 162 | Automatique | `theme.auto` |
+| 163 | Thème | `theme.titre` |
+| 164 | Langue de l'interface | `entete.langueInterface` |
+| 165 | Aide vocale | `utilisateur.aideVocale` |
+| 166 | Langue de la voix | `utilisateur.langueAudio` |
+| 167 | Recherche globale | `entete.rechercheAria` |
+| 168 | Fermer | `commun.fermer` |
+| 169 | Effacer la recherche | `recherche.vider` |
+| 170 | Effacer les dernières recherches | `recherche.effacerRecentes` |
+| 171 | Recherche | `recherche.titre` |
+
+### Compte (18)
+
+| N° | Phrase (français) | Code |
+|---|---|---|
+| 172 | Créer ma boutique | `auth.inscription.titre` |
+| 173 | Votre nom | `auth.inscription.nom` |
+| 174 | Téléphone ou e-mail | `auth.inscription.identifiant` |
+| 175 | Mot de passe | `auth.inscription.motDePasse` |
+| 176 | Créer mon compte | `auth.inscription.valider` |
+| 177 | J'ai déjà un compte | `auth.inscription.jaiUnCompte` |
+| 178 | Retour à la connexion | `auth.oubli.retourConnexion` |
+| 179 | Mot de passe oublié | `auth.oubli.titre` |
+| 180 | Téléphone ou e-mail | `auth.oubli.identifiant` |
+| 181 | Envoyer le lien | `auth.oubli.valider` |
+| 182 | Mot de passe changé. Vous pouvez vous connecter. | `auth.reinit.succes` |
+| 183 | Nouveau mot de passe | `auth.reinit.titre` |
+| 184 | Téléphone ou e-mail | `auth.reinit.identifiant` |
+| 185 | Nouveau mot de passe | `auth.reinit.motDePasse` |
+| 186 | Confirmez le mot de passe | `auth.reinit.confirmation` |
+| 187 | Changer le mot de passe | `auth.reinit.valider` |
+| 188 | Masquer le mot de passe | `auth.connexion.masquerMotDePasse` |
+| 189 | Afficher le mot de passe | `auth.connexion.afficherMotDePasse` |
+
+### Ventes (28)
+
+| N° | Phrase (français) | Code |
+|---|---|---|
+| 190 | Export téléchargé | `ventes.exportOk` |
+| 191 | L'export n'a pas pu être téléchargé. Réessayez. | `ventes.exportErreur` |
+| 192 | Ventes | `ventes.titre` |
+| 193 | Filtrer | `ventes.filtrer` |
+| 194 | Exporter | `ventes.exporter` |
+| 195 | CSV | `export.csv` |
+| 196 | Excel | `export.xlsx` |
+| 197 | PDF | `export.pdf` |
+| 198 | N° ou montant | `ventes.rechercher` |
+| 199 | Vente annulée | `ventes.annulee` |
+| 200 | Réception confirmée | `ventes.confirmee` |
+| 201 | Voir le reçu | `ventes.voirRecu` |
+| 202 | Annuler la vente | `ventes.annuler` |
+| 203 | Confirmer la réception | `ventes.confirmer` |
+| 204 | Reprendre le paiement | `ventes.reprendre` |
+| 205 | Détail de la vente | `ventes.detail` |
+| 206 | Période | `periodes.titre` |
+| 207 | Aujourd'hui | `periodes.aujourdhui` |
+| 208 | Hier | `periodes.hier` |
+| 209 | 7 jours | `periodes.j7` |
+| 210 | 30 jours | `periodes.j30` |
+| 211 | Personnalisée | `periodes.perso` |
+| 212 | Du | `periodes.du` |
+| 213 | Au | `periodes.au` |
+| 214 | Statut | `ventes.statut` |
+| 215 | Moyen | `ventes.methode` |
+| 216 | Caissier | `ventes.caissier` |
+| 217 | Réinitialiser les filtres | `ventes.reinitialiser` |
+
+### Tableau de bord (2)
+
+| N° | Phrase (français) | Code |
+|---|---|---|
+| 218 | Tableau de bord | `tableau.titre` |
+| 219 | Voir toutes les ventes | `tableau.voirVentes` |
+
+### Portefeuille (25)
+
+| N° | Phrase (français) | Code |
+|---|---|---|
+| 220 | Portefeuille | `portefeuille.titre` |
+| 221 | Recevoir | `portefeuille.recevoir` |
+| 222 | Envoyer | `portefeuille.envoyer` |
+| 223 | Portefeuille connecté | `portefeuille.connecteOk` |
+| 224 | Lien Nostr Wallet Connect | `portefeuille.uri` |
+| 225 | Quels portefeuilles ? | `portefeuille.quelsPortefeuilles` |
+| 226 | Connecter mon portefeuille | `portefeuille.connecter` |
+| 227 | Connexion révoquée | `portefeuille.revoque` |
+| 228 | Copier | `commun.copier` |
+| 229 | Révoquer | `portefeuille.revoquer` |
+| 230 | Révoquer la connexion ? | `portefeuille.revoquerTitre` |
+| 231 | Envoyer des sats | `portefeuille.envoyerTitre` |
+| 232 | Facture ou adresse Lightning | `portefeuille.destination` |
+| 233 | Coller | `portefeuille.coller` |
+| 234 | Scanner un code | `portefeuille.scanner` |
+| 235 | Montant en sats | `portefeuille.montantSats` |
+| 236 | Aperçu | `portefeuille.apercu` |
+| 237 | Retour | `commun.retour` |
+| 238 | Votre mot de passe pour confirmer | `portefeuille.motDePasse` |
+| 239 | Confirmer l'envoi | `portefeuille.confirmerEnvoi` |
+| 240 | Modifier le montant | `portefeuille.modifierMontant` |
+| 241 | Recevoir des sats | `portefeuille.recevoirTitre` |
+| 242 | Montant en FCFA | `portefeuille.montantFcfa` |
+| 243 | Description | `portefeuille.description` |
+| 244 | Créer la demande | `portefeuille.generer` |
+
+### Articles (93)
+
+| N° | Phrase (français) | Code |
+|---|---|---|
+| 245 | Article supprimé | `articles.supprime` |
+| 246 | Articles | `articles.titre` |
+| 247 | Importer | `articles.importer` |
+| 248 | Exporter les articles | `articles.exporter` |
+| 249 | Ajouter un article | `articles.ajouter` |
+| 250 | Rechercher un article | `articles.rechercher` |
+| 251 | Monter | `articles.monter` |
+| 252 | Descendre | `articles.descendre` |
+| 253 | Modifier l'article | `articles.modifier` |
+| 254 | Supprimer | `commun.supprimer` |
+| 255 | Supprimer {{nom}} ? | `articles.supprimerTitre` |
+| 256 | Réécouter | `articles.form.reecouter` |
+| 257 | Recommencer | `articles.form.refaire` |
+| 258 | Garder | `articles.form.garder` |
+| 259 | Effacer le nom dit | `articles.form.supprimerVoix` |
+| 260 | Arrêter | `articles.form.arreter` |
+| 261 | Dire le nom | `articles.form.parler` |
+| 262 | Article enregistré | `articles.enregistre` |
+| 263 | Enregistrer | `commun.enregistrer` |
+| 264 | Photo ou image | `articles.form.etapeVisuel` |
+| 265 | Retirer la photo | `articles.form.retirerPhoto` |
+| 266 | Retirer l'image | `articles.form.retirerImage` |
+| 267 | Prendre une photo | `articles.form.prendrePhoto` |
+| 268 | Galerie | `articles.form.galerie` |
+| 269 | Images | `articles.form.images` |
+| 270 | Nom dit à voix haute | `articles.form.etapeNom` |
+| 271 | Prix | `articles.form.etapePrix` |
+| 272 | Nom écrit | `articles.form.etapeNomEcrit` |
+| 273 | Couleur | `articles.couleur` |
+| 274 | Visible dans la caisse | `articles.actif` |
+| 275 | Plus d'options | `articles.form.plusOptions` |
+| 276 | Catégorie | `articles.categorie` |
+| 277 | Référence | `articles.sku` |
+| 278 | Alimentation | `articles.categoriesPictos.alimentation` |
+| 279 | Boissons | `articles.categoriesPictos.boissons` |
+| 280 | Mode et beauté | `articles.categoriesPictos.mode` |
+| 281 | Maison | `articles.categoriesPictos.maison` |
+| 282 | Téléphone et services | `articles.categoriesPictos.services` |
+| 283 | Pain | `pictos.pain` |
+| 284 | Riz | `pictos.riz` |
+| 285 | Sucre | `pictos.sucre` |
+| 286 | Huile | `pictos.huile` |
+| 287 | Farine, céréales | `pictos.farine` |
+| 288 | Lait | `pictos.lait` |
+| 289 | Œufs | `pictos.oeufs` |
+| 290 | Viande | `pictos.viande` |
+| 291 | Poulet | `pictos.poulet` |
+| 292 | Poisson | `pictos.poisson` |
+| 293 | Légumes | `pictos.legumes` |
+| 294 | Fruits | `pictos.fruits` |
+| 295 | Plat cuisiné | `pictos.plat` |
+| 296 | Sandwich | `pictos.sandwich` |
+| 297 | Gâteau, beignet | `pictos.gateau` |
+| 298 | Bonbons | `pictos.bonbons` |
+| 299 | Glace | `pictos.glace` |
+| 300 | Épicerie | `pictos.epicerie` |
+| 301 | Eau | `pictos.eau` |
+| 302 | Thé, ataya | `pictos.the` |
+| 303 | Café | `pictos.cafe` |
+| 304 | Jus, bissap | `pictos.jus` |
+| 305 | Boisson | `pictos.boisson` |
+| 306 | Tissu, wax, bazin | `pictos.tissu` |
+| 307 | Vêtement | `pictos.vetement` |
+| 308 | Chaussure | `pictos.chaussure` |
+| 309 | Sac | `pictos.sac` |
+| 310 | Bijou | `pictos.bijou` |
+| 311 | Coiffure, couture | `pictos.coiffure` |
+| 312 | Beauté | `pictos.beaute` |
+| 313 | Savon, hygiène | `pictos.savon` |
+| 314 | Ménage | `pictos.menage` |
+| 315 | Bébé | `pictos.bebe` |
+| 316 | Gaz | `pictos.gaz` |
+| 317 | Électricité | `pictos.electricite` |
+| 318 | Crédit téléphone | `pictos.credit` |
+| 319 | Téléphone | `pictos.telephone` |
+| 320 | Médicament | `pictos.medicament` |
+| 321 | Cigarette | `pictos.cigarette` |
+| 322 | Cahier, fournitures | `pictos.fournitures` |
+| 323 | Réparation | `pictos.reparation` |
+| 324 | Service | `pictos.service` |
+| 325 | Divers | `pictos.divers` |
+| 326 | Créer seulement les nouveaux | `import.modes.creer.titre` |
+| 327 | Créer et mettre à jour | `import.modes.creer_et_mettre_a_jour.titre` |
+| 328 | Ignorer les lignes en erreur | `import.modes.ignorer_erreurs.titre` |
+| 329 | Importer des articles | `import.titre` |
+| 330 | Importer {{count}} lignes | `import.lancer` |
+| 331 | Déposez votre fichier ici | `import.deposer` |
+| 332 | Télécharger un modèle | `import.modele.telecharger` |
+| 333 | Correspondance des colonnes | `import.correspondance` |
+| 334 | Champ SatsPoint pour la colonne « {{colonne}} » | `import.champPour` |
+| 335 | Import terminé | `import.termine` |
+| 336 | Télécharger le rapport | `import.telechargerRapport` |
+| 337 | Terminer | `import.terminer` |
+
+### Équipe (18)
+
+| N° | Phrase (français) | Code |
+|---|---|---|
+| 338 | Équipe | `equipe.titre` |
+| 339 | Inviter | `equipe.inviter` |
+| 340 | Désactiver {{nom}} ? | `equipe.desactiverTitre` |
+| 341 | Désactiver | `equipe.desactiver` |
+| 342 | Retirer {{nom}} de l'équipe ? | `equipe.retirerTitre` |
+| 343 | Retirer de l'équipe | `equipe.retirer` |
+| 344 | Changer le rôle | `equipe.changerRole` |
+| 345 | Réactiver | `equipe.reactiver` |
+| 346 | Annuler l'invitation | `equipe.annulerInvitation` |
+| 347 | Invitation envoyée | `equipe.invitationEnvoyee` |
+| 348 | Invitation créée | `equipe.lienTitre` |
+| 349 | Lien d'invitation | `equipe.lienInvitation` |
+| 350 | Copier le lien | `equipe.copierLien` |
+| 351 | Lien copié | `equipe.lienCopie` |
+| 352 | Envoyer par WhatsApp | `equipe.envoyerWhatsApp` |
+| 353 | Inviter une personne | `equipe.inviterTitre` |
+| 354 | Téléphone ou e-mail | `equipe.contact` |
+| 355 | Rôle | `equipe.role` |
+
+### Invitation (10)
+
+| N° | Phrase (français) | Code |
+|---|---|---|
+| 356 | Bienvenue chez {{boutique}} | `invitation.bienvenue` |
+| 357 | Retour à l'accueil | `invitation.retourAccueil` |
+| 358 | Vous êtes invité | `invitation.titre` |
+| 359 | Propriétaire | `roles.proprietaire` |
+| 360 | Gérant | `roles.gerant` |
+| 361 | Caissier | `roles.caissier` |
+| 362 | Administration | `roles.super_admin` |
+| 363 | Rejoindre la boutique | `invitation.accepter` |
+| 364 | Créer mon compte | `invitation.creerCompte` |
+| 365 | J'ai déjà un compte | `invitation.meConnecter` |
+
+### Réglages (22)
+
+| N° | Phrase (français) | Code |
+|---|---|---|
+| 366 | Réglages | `reglages.titre` |
+| 367 | Réglages enregistrés | `reglages.enregistre` |
+| 368 | Nom de la boutique | `reglages.nom` |
+| 369 | Téléphone | `reglages.telephone` |
+| 370 | Ville | `reglages.ville` |
+| 371 | Pays de la boutique | `reglages.pays` |
+| 372 | Moyens de paiement du pays | `reglages.moyensPays.titre` |
+| 373 | Activer ce moyen de paiement | `reglages.moyensPays.activer` |
+| 374 | Numéro marchand | `reglages.moyensPays.numero` |
+| 375 | Lien de paiement marchand | `reglages.moyensPays.lien` |
+| 376 | Montant maximum par vente | `reglages.montantMax` |
+| 377 | Bitcoin (Lightning) | `reglages.lightning` |
+| 378 | Mobile money (PayTech) | `reglages.paytech` |
+| 379 | Wave direct | `reglages.waveManuel` |
+| 380 | Lien Wave direct | `reglages.waveLien` |
+| 381 | Clé API | `reglages.apiKey` |
+| 382 | Secret API | `reglages.apiSecret` |
+| 383 | Test | `reglages.test` |
+| 384 | Production | `reglages.prod` |
+| 385 | Supprimer les clés | `reglages.supprimerCles` |
+| 386 | Tester la connexion | `reglages.tester` |
+| 387 | Supprimer les clés PayTech ? | `reglages.supprimerTitre` |
+
+### Démarrage guidé (10)
+
+| N° | Phrase (français) | Code |
+|---|---|---|
+| 388 | Ma boutique | `demarrage.etapes.boutique` |
+| 389 | Mon portefeuille | `demarrage.etapes.portefeuille` |
+| 390 | Mobile money | `demarrage.etapes.mobileMoney` |
+| 391 | Paiement test | `demarrage.etapes.test` |
+| 392 | Démarrage guidé | `demarrage.titre` |
+| 393 | Aller à la caisse | `demarrage.allerCaisse` |
+| 394 | Modifier | `commun.modifier` |
+| 395 | Créer ma boutique | `demarrage.creerBoutique` |
+| 396 | Passer cette étape | `demarrage.passer` |
+| 397 | Lancer le paiement test | `demarrage.lancerTest` |
+
+### Reçu (1)
+
+| N° | Phrase (français) | Code |
+|---|---|---|
+| 398 | Imprimer | `recu.imprimer` |
+
+### Sécurité du compte (36)
+
+| N° | Phrase (français) | Code |
+|---|---|---|
+| 399 | Remplir | `deuxFa.codeLocal.remplir` |
+| 400 | Double authentification | `deuxFa.titre` |
+| 401 | Un code à 6 chiffres sur votre téléphone, en plus du mot de passe. | `deuxFa.sousTitre` |
+| 402 | Double authentification activée | `deuxFa.activee` |
+| 403 | La console plateforme exige la double authentification. Activez-la pour continuer. | `deuxFa.obligatoire` |
+| 404 | Installez une application d'authentification | `deuxFa.etape1.titre` |
+| 405 | Google Authenticator, Microsoft Authenticator, Aegis ou 2FAS : elles sont gratuites. | `deuxFa.etape1.texte` |
+| 406 | Scannez ce code avec l'application | `deuxFa.etape2.titre` |
+| 407 | Ou recopiez la clé secrète si vous ne pouvez pas scanner. | `deuxFa.etape2.texte` |
+| 408 | Clé secrète | `deuxFa.secretAide` |
+| 409 | Copier la clé secrète | `deuxFa.copierSecret` |
+| 410 | Saisissez le code affiché | `deuxFa.etape3.titre` |
+| 411 | Code à 6 chiffres | `deuxFa.code` |
+| 412 | Activer | `deuxFa.activer` |
+| 413 | Vos codes de secours | `deuxFa.codes.titre` |
+| 414 | Chacun sert une seule fois si vous perdez votre téléphone. Ils ne seront plus jamais affichés : rangez-les en lieu sûr. | `deuxFa.codes.texte` |
+| 415 | Copier les codes | `deuxFa.codes.copier` |
+| 416 | Télécharger | `deuxFa.codes.telecharger` |
+| 417 | J'ai rangé ces codes en lieu sûr | `deuxFa.codes.confirmation` |
+| 418 | Terminer | `deuxFa.codes.terminer` |
+| 419 | Double authentification désactivée | `deuxFa.desactivee` |
+| 420 | Double authentification activée | `deuxFa.activeTitre` |
+| 421 | À chaque connexion, un code de votre application vous sera demandé. | `deuxFa.activeTexte` |
+| 422 | Obligatoire pour la console plateforme. | `deuxFa.requiseNote` |
+| 423 | Votre compte en a besoin pour la console : vous devrez la réactiver avec votre nouveau téléphone. Confirmez avec votre mot de passe. | `deuxFa.desactiverRequise` |
+| 424 | Confirmez avec votre mot de passe. | `deuxFa.desactiverTexte` |
+| 425 | Mot de passe | `deuxFa.motDePasse` |
+| 426 | Désactiver | `deuxFa.desactiver` |
+| 427 | Nouveau téléphone ? Désactivez puis réactivez. | `deuxFa.changerTelephone` |
+| 428 | Code de vérification | `deuxFa.verification.titre` |
+| 429 | Saisissez l'un de vos codes de secours (il ne servira qu'une fois). | `deuxFa.verification.texteSecours` |
+| 430 | Ouvrez votre application d'authentification et saisissez le code à 6 chiffres. | `deuxFa.verification.texte` |
+| 431 | Code de secours | `deuxFa.codeSecours` |
+| 432 | Vérifier | `deuxFa.verifier` |
+| 433 | Utiliser l'application | `deuxFa.utiliserApplication` |
+| 434 | Utiliser un code de secours | `deuxFa.utiliserSecours` |
+
+### Console plateforme (79)
+
+| N° | Phrase (français) | Code |
+|---|---|---|
+| 435 | Console plateforme | `admin.titre` |
+| 436 | Vue d'ensemble | `admin.onglets.ensemble` |
+| 437 | Boutiques | `admin.onglets.boutiques` |
+| 438 | Langues | `admin.onglets.langues` |
+| 439 | Moyens de paiement | `admin.onglets.moyens` |
+| 440 | Santé | `admin.onglets.sante` |
+| 441 | Journal | `admin.onglets.journal` |
+| 442 | Tout est enregistré en {{langue}} | `studio.toutFait` |
+| 443 | Audio publié : disponible chez tout le monde | `studio.publie` |
+| 444 | Studio audio | `studio.titre` |
+| 445 | Publier les brouillons | `studio.publierTout` |
+| 446 | Pays | `studio.pays` |
+| 447 | Manquants seulement | `studio.manquantsSeulement` |
+| 448 | Mode rafale | `studio.rafale` |
+| 449 | Effacer les filtres | `studio.effacerFiltres` |
+| 450 | Ils seront lus chez tous les commerçants dès maintenant. | `studio.publierToutTexte` |
+| 451 | Nom, ville ou propriétaire | `admin.boutiques.rechercher` |
+| 452 | Toutes | `admin.boutiques.toutes` |
+| 453 | Actives | `admin.boutiques.actives` |
+| 454 | Suspendues | `admin.boutiques.suspendues` |
+| 455 | Suspendre la boutique | `admin.boutiques.suspendre` |
+| 456 | Réactiver la boutique | `admin.boutiques.reactiver` |
+| 457 | Suspendre « {{nom}} » ? | `admin.boutiques.suspendreTitre` |
+| 458 | Réactiver « {{nom}} » ? | `admin.boutiques.reactiverTitre` |
+| 459 | Type d'action | `admin.journal.action` |
+| 460 | Du | `admin.journal.du` |
+| 461 | Au | `admin.journal.au` |
+| 462 | Langue enregistrée | `admin.langues.enregistree` |
+| 463 | Langue supprimée | `admin.langues.supprimee` |
+| 464 | Pays | `admin.langues.filtrePays` |
+| 465 | Ajouter une langue | `admin.langues.ajouter` |
+| 466 | Langue active | `admin.langues.active` |
+| 467 | Modifier la langue | `admin.langues.modifier` |
+| 468 | Supprimer la langue | `admin.langues.supprimer` |
+| 469 | Enregistrer les noms au studio | `admin.langues.enregistrerNom` |
+| 470 | Supprimer la langue {{nom}} ? | `admin.langues.supprimerTitre` |
+| 471 | Langue ajoutée | `admin.langues.creee` |
+| 472 | Modifier {{nom}} | `admin.langues.modifierTitre` |
+| 473 | Code | `admin.langues.code` |
+| 474 | Nom dans la langue | `admin.langues.nomLocal` |
+| 475 | Nom en français | `admin.langues.nomFr` |
+| 476 | Nom en anglais | `admin.langues.nomEn` |
+| 477 | Pays enregistré | `admin.moyens.paysEnregistre` |
+| 478 | Moyen enregistré | `admin.moyens.enregistre` |
+| 479 | Moyen supprimé | `admin.moyens.supprime` |
+| 480 | Pays | `admin.moyens.pays` |
+| 481 | Ajouter un moyen | `admin.moyens.ajouter` |
+| 482 | Pays ouvert aux nouvelles boutiques | `admin.moyens.paysOuvert` |
+| 483 | Moyen actif | `admin.moyens.actif` |
+| 484 | Modifier le moyen | `admin.moyens.modifier` |
+| 485 | Supprimer le moyen | `admin.moyens.supprimer` |
+| 486 | Supprimer {{nom}} ? | `admin.moyens.supprimerTitre` |
+| 487 | Moyen ajouté | `admin.moyens.cree` |
+| 488 | Modifier {{nom}} | `admin.moyens.modifierTitre` |
+| 489 | Nom | `admin.moyens.nom` |
+| 490 | Numéro marchand | `admin.moyens.types.numero` |
+| 491 | Lien de paiement | `admin.moyens.types.lien` |
+| 492 | Instructions (français) | `admin.moyens.instructionsFr` |
+| 493 | Instructions (anglais) | `admin.moyens.instructionsEn` |
+| 494 | Actualiser | `commun.actualiser` |
+| 495 | Commerçants actifs | `admin.stats.actifs` |
+| 496 | Paiements par commerçant | `admin.stats.paiements` |
+| 497 | Confirmation médiane | `admin.stats.delai` |
+| 498 | Bitcoin / mobile money | `admin.stats.repartition` |
+| 499 | Ouvrir le studio | `admin.ouvrirStudio` |
+| 500 | Langue de travail | `studio.langueTravail` |
+| 501 | Enregistrement envoyé | `studio.envoye` |
+| 502 | Brouillon supprimé | `studio.supprime` |
+| 503 | Clé précédente | `studio.precedent` |
+| 504 | Case manquante suivante | `studio.suivant` |
+| 505 | Écouter le brouillon | `studio.ecouterBrouillon` |
+| 506 | Publier | `studio.publier` |
+| 507 | Supprimer le brouillon | `studio.supprimer` |
+| 508 | Déposer un fichier audio | `studio.deposer` |
+| 509 | Réécouter | `studio.micro.reecouter` |
+| 510 | Refaire | `studio.micro.refaire` |
+| 511 | Valider | `studio.micro.valider` |
+| 512 | Arrêter | `studio.micro.arreter` |
+| 513 | Enregistrer | `studio.micro.enregistrer` |
+
+### Divers (5)
+
+| N° | Phrase (français) | Code |
+|---|---|---|
+| 514 | Votre compte est créé. Bienvenue ! | `auth.inscription.succes` |
+| 515 | Page précédente | `pagination.precedente` |
+| 516 | Page suivante | `pagination.suivante` |
+| 517 | Retour à l'accueil | `introuvable.retour` |
+| 518 | Cette page est réservée au propriétaire de la boutique. | `erreurs.accesRefuse` |

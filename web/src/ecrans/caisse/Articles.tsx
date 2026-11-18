@@ -5,7 +5,7 @@ import { totalPanier, type LignePanier } from './panier'
 import { libelleArticle } from '@/ecrans/articles/libelle'
 import { BoutonIcone } from '@/composants/BoutonIcone'
 import { EtatVide } from '@/composants/EtatVide'
-import { EcouterArticle } from '@/ecrans/articles/EcouterArticle'
+import { direArticle, EcouterArticle } from '@/ecrans/articles/EcouterArticle'
 import { VignetteArticle } from '@/ecrans/articles/VignetteArticle'
 import { cn } from '@/lib/cn'
 import { formaterFCFA, formaterNombre } from '@/lib/format'
@@ -17,7 +17,7 @@ import { vibrer } from '@/lib/vibrer'
  * Un toucher = un article dans le panier ; la quantité déjà prise s'affiche sur la tuile.
  */
 export function GrilleArticles({ articles, onAjouter, panier = [], className }: { articles: Article[]; onAjouter: (a: Article) => void; panier?: LignePanier[]; className?: string }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   if (articles.length === 0) return <EtatVide ton="neutre" icone={<Package />} titre={t('articles.vide.titre')} texte={t('articles.vide.texte')} className="py-6" />
   const quantites = new Map(panier.map((l) => [l.article.ulid, l.quantite]))
   return (
@@ -33,6 +33,7 @@ export function GrilleArticles({ articles, onAjouter, panier = [], className }: 
               onClick={() => {
                 vibrer(10)
                 onAjouter(a)
+                direArticle(a, libelleArticle(a, t), i18n.language)
               }}
               aria-label={`${libelle}, ${formaterFCFA(a.prix_xof)}${quantite ? ` — ${t('caisse.quantite')} ${quantite}` : ''}`}
               className={cn(
@@ -68,7 +69,7 @@ export function GrilleArticles({ articles, onAjouter, panier = [], className }: 
  * le panier, le haut-parleur dit le nom. Vendre sans lire ni taper, sans ouvrir de fenêtre.
  */
 export function BandeArticles({ articles, onAjouter, panier = [], className }: { articles: Article[]; onAjouter: (a: Article) => void; panier?: LignePanier[]; className?: string }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const quantites = new Map(panier.map((l) => [l.article.ulid, l.quantite]))
   return (
     <ul
@@ -85,6 +86,7 @@ export function BandeArticles({ articles, onAjouter, panier = [], className }: {
               onClick={() => {
                 vibrer(10)
                 onAjouter(a)
+                direArticle(a, libelleArticle(a, t), i18n.language)
               }}
               aria-label={`${libelleArticle(a, t)}, ${formaterFCFA(a.prix_xof)}${quantite ? ` — ${t('caisse.quantite')} ${quantite}` : ''}`}
               className={cn(

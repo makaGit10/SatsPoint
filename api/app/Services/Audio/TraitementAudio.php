@@ -45,6 +45,12 @@ class TraitementAudio
 
     private const NORMALISATION = 'loudnorm=I=-16:TP=-1.5:LRA=11';
 
+    /**
+     * Voix « nickel » : réduction du bruit de fond (souffle du micro, rue, ventilateur) puis égalisation du volume
+     * au fil de la phrase (une syllabe forte et une faible au même niveau, sans pompage), avant la normalisation finale.
+     */
+    public const NETTOYAGE = 'afftdn=nr=12:nf=-40:tn=1,dynaudnorm=f=150:g=15:p=0.9:m=8';
+
     private const COUPE_BAS = 'highpass=f=75';
 
     public function __construct(
@@ -126,13 +132,14 @@ class TraitementAudio
             'areverse',
             sprintf('silenceremove=start_periods=1:start_threshold=%s:start_silence=%.2f:%s', $s, self::MARGE_FIN_S, $detection),
             'areverse',
+            self::NETTOYAGE,
             self::NORMALISATION,
         ]);
     }
 
     public static function filtresSansDecoupe(): string
     {
-        return self::COUPE_BAS.','.self::NORMALISATION;
+        return self::COUPE_BAS.','.self::NETTOYAGE.','.self::NORMALISATION;
     }
 
     /**

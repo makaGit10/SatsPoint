@@ -103,7 +103,10 @@ it('calcule un seuil adaptatif borné à partir du bruit de fond (fonction pure)
     // Les valeurs de la chaîne de filtres sont toujours bornées et numériques.
     expect(TraitementAudio::filtres(-999))->toContain('start_threshold=-55.0dB')
         ->and(TraitementAudio::filtres(0))->toContain('stop_threshold=-30.0dB')
-        ->and(TraitementAudio::filtres(-40))->toContain('stop_periods=-1:stop_duration=0.25')->toContain('start_silence=0.10')->toContain('start_silence=0.12');
+        ->and(TraitementAudio::filtres(-40))->toContain('stop_periods=-1:stop_duration=0.25')->toContain('start_silence=0.10')->toContain('start_silence=0.12')
+        // Voix nickel : bruit de fond réduit et volume égalisé, après la découpe et avant la normalisation finale.
+        ->and(TraitementAudio::filtres(-40))->toMatch('/areverse,afftdn=[^,]+,dynaudnorm=[^,]+,loudnorm=/')
+        ->and(TraitementAudio::filtresSansDecoupe())->toContain('afftdn=')->toContain('dynaudnorm=');
 });
 
 it('coupe les blancs d\'une prise de téléphone : début, fin et pause interne, sans manger les mots', function () {
