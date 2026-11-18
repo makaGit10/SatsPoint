@@ -7,7 +7,24 @@ export interface FiltresStudio {
   ecran: string | null
   manquants: boolean
   q: string
+  /** « Vidéo » : seulement les phrases entendues dans la vidéo de démonstration, dans l'ordre des plans. */
+  video?: boolean
 }
+
+/**
+ * Phrases entendues dans la vidéo de démonstration (tools/video/SCRIPT.md), dans l'ordre des plans :
+ * langue, accueil, ajout d'article, caisse, paiement, écran vert, images d'articles.
+ */
+export const CLES_VIDEO: readonly string[] = [
+  'langue.titre', 'langue.wo', 'guide.langue',
+  'landing.voix.bienvenue', 'landing.hero.creer',
+  'guide.formulaireArticle.debut', 'guide.formulaireArticle.nom', 'guide.formulaireArticle.prix', 'guide.formulaireArticle.enregistrer', 'dictee.dire',
+  'caisse.titre', 'guide.caisse', 'caisse.encaisser', 'caisse.panier',
+  'guide.choixMoyen', 'guide.paiement.bitcoin', 'guide.paiement.mobileMoney',
+  'paiement.recu', 'guide.succes', 'succes.envoyerRecu', 'succes.nouvelleVente',
+  'pictos.the', 'pictos.pain',
+]
+const RANG_VIDEO = new Map(CLES_VIDEO.map((c, i) => [c, i]))
 
 export function statutDe(cle: CleAudio, langue: LangueAudio): StatutAudio {
   return cle.etats[langue]?.statut ?? 'manquant'
@@ -22,8 +39,9 @@ export function aEnregistrer(statut: StatutAudio): boolean {
 export function filtrerCles(cles: readonly CleAudio[], filtres: FiltresStudio): CleAudio[] {
   const q = filtres.q.trim()
   return [...cles]
-    .sort((a, b) => a.ordre - b.ordre)
+    .sort((a, b) => (filtres.video ? (RANG_VIDEO.get(a.cle) ?? 0) - (RANG_VIDEO.get(b.cle) ?? 0) : a.ordre - b.ordre))
     .filter((c) => {
+      if (filtres.video && !RANG_VIDEO.has(c.cle)) return false
       if (filtres.ecran && c.ecran !== filtres.ecran) return false
       if (filtres.manquants && !aEnregistrer(statutDe(c, filtres.langue))) return false
       if (q && Math.max(pertinence(c.cle, q), pertinence(c.texte_fr, q), pertinence(c.texte_en, q)) === 0) return false

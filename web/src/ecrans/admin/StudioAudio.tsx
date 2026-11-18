@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { CheckCheck, Filter, Mic, Search, Send, Zap } from 'lucide-react'
+import { CheckCheck, Clapperboard, Filter, Mic, Search, Send, Zap } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CLE_MATRICE, publierAudios, useMatriceAudio } from '@/api/admin'
@@ -36,6 +36,8 @@ import { invaliderManifestes } from '@/voix/useManifesteAudio'
 const CLE_LANGUE = 'satspoint.studio.langue'
 const CLE_RAFALE = 'satspoint.studio.rafale'
 const CLE_PAYS = 'satspoint.studio.pays'
+/** Filtre « Vidéo » : actif par défaut tant que la propriétaire ne l'a pas retiré. */
+const CLE_VIDEO = 'satspoint.studio.video'
 /** Lignes de la matrice par page (lignes compactes : 50 restent lisibles d'un coup d'œil). */
 const CLES_PAR_PAGE = 50
 
@@ -55,7 +57,7 @@ export default function StudioAudio() {
 
   const [filtres, setFiltres] = useState<FiltresStudio>(() => {
     const l = lireStockage(CLE_LANGUE)
-    return { langue: estLangueAudio(l) ? l : 'wo', ecran: null, manquants: false, q: '' }
+    return { langue: estLangueAudio(l) ? l : 'wo', ecran: null, manquants: false, q: '', video: lireStockage(CLE_VIDEO) !== '0' }
   })
   // Filtre pays : n'affiche que les colonnes des langues de ce pays (+ celles de tous les pays, comme le français).
   const catalogue = useCatalogue()
@@ -113,6 +115,12 @@ export default function StudioAudio() {
     // « Manquants seulement » dépend de la langue : la liste change, on repart de la page 1.
     if (filtres.manquants) filtrer((f) => ({ ...f, langue: l }))
     else setFiltres((f) => ({ ...f, langue: l }))
+  }
+  const basculerVideo = () => {
+    const actif = !filtres.video
+    ecrireStockage(CLE_VIDEO, actif ? '1' : '0')
+    setSelectionChoisie(null)
+    filtrer((f) => ({ ...f, video: actif }))
   }
   const choisirPays = (valeur: string) => {
     ecrireStockage(CLE_PAYS, valeur || null)
@@ -245,6 +253,9 @@ export default function StudioAudio() {
                 data-filtre-pays
               />
             )}
+            <Puce actif={Boolean(filtres.video)} icone={<Clapperboard />} voix="studio.video" titre={t('studio.videoAide')} onClick={basculerVideo}>
+              {t('studio.video')}
+            </Puce>
             <Puce actif={filtres.manquants} icone={<Filter />} voix="studio.manquantsSeulement" onClick={() => filtrer((f) => ({ ...f, manquants: !f.manquants }))}>
               {t('studio.manquantsSeulement')}
             </Puce>
@@ -262,7 +273,7 @@ export default function StudioAudio() {
                 titre={filtres.manquants ? t('studio.vide.toutFait', { langue: nomLangue }) : t('studio.vide.titre')}
                 texte={t('studio.vide.texte')}
                 action={
-                  <Bouton variante="secondaire" voix="studio.effacerFiltres" onClick={() => filtrer((f) => ({ ...f, ecran: null, manquants: false, q: '' }))}>
+                  <Bouton variante="secondaire" voix="studio.effacerFiltres" onClick={() => filtrer((f) => ({ ...f, ecran: null, manquants: false, q: '', video: false }))}>
                     {t('studio.effacerFiltres')}
                   </Bouton>
                 }

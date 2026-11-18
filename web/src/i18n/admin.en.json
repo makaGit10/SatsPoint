@@ -281,6 +281,8 @@
     "rechercher": "Search a key or a text",
     "ecran": "Screen",
     "tousEcrans": "All screens",
+    "video": "For the video",
+    "videoAide": "Only the phrases heard in the demo video, in shot order.",
     "manquantsSeulement": "Missing only",
     "rafale": "Burst mode",
     "rafaleAide": "After each validation, moves to the next missing cell and restarts the 3-2-1.",

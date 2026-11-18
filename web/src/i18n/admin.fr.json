@@ -281,6 +281,8 @@
     "rechercher": "Chercher une clé ou un texte",
     "ecran": "Écran",
     "tousEcrans": "Tous les écrans",
+    "video": "Pour la vidéo",
+    "videoAide": "Seulement les phrases entendues dans la vidéo de démonstration, dans l’ordre des plans.",
     "manquantsSeulement": "Manquants seulement",
     "rafale": "Mode rafale",
     "rafaleAide": "Après chaque validation, passe à la case manquante suivante et relance le 3-2-1.",

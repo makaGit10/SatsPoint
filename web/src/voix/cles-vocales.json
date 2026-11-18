@@ -445,6 +445,7 @@
   {"cle":"studio.titre","ecran":"admin","contexte":"Titre de l'écran — Console plateforme","texte_fr":"Studio audio","texte_en":"Audio studio","essentielle":false},
   {"cle":"studio.publierTout","ecran":"admin","contexte":"Bouton — Console plateforme","texte_fr":"Publier les brouillons","texte_en":"Publish drafts","essentielle":false},
   {"cle":"studio.pays","ecran":"admin","contexte":"Liste de choix — Console plateforme","texte_fr":"Pays","texte_en":"Country","essentielle":false},
+  {"cle":"studio.video","ecran":"admin","contexte":"Élément d'action — Console plateforme","texte_fr":"Pour la vidéo","texte_en":"For the video","essentielle":false},
   {"cle":"studio.manquantsSeulement","ecran":"admin","contexte":"Élément d'action — Console plateforme","texte_fr":"Manquants seulement","texte_en":"Missing only","essentielle":false},
   {"cle":"studio.rafale","ecran":"admin","contexte":"Élément d'action — Console plateforme","texte_fr":"Mode rafale","texte_en":"Burst mode","essentielle":false},
   {"cle":"studio.effacerFiltres","ecran":"admin","contexte":"Bouton — Console plateforme","texte_fr":"Effacer les filtres","texte_en":"Clear filters","essentielle":false},
