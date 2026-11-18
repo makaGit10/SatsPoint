@@ -768,7 +768,7 @@ CPU faible (premier affichage après réveil ≈ 1 min).
 | `README.md` | Problème, utilisateur principal, avant / après, solution, captures, **schéma d'architecture**, « Testez en 2 minutes », installation en une commande, comptes de démo, **contraintes et limites connues**, **indicateurs suivis**, **prochaine itération**, mesures de performance |
 | `docs/THREAT_MODEL.md` | Modèle de menaces STRIDE |
 | MVP en ligne | URL HTTPS publique, vrai réseau Lightning, PayTech |
-| Vidéo de 3 min | **Dans l'ordre exigé par le jury** : problème (30 s) → solution, démontrée en vrai sur téléphone, sécurité comprise (1 min 30) → impact et portée (30 s) → prochaines étapes (30 s). Voix off `fr-FR-VivienneMultilingualNeural` selon les directives ; sous-titres anglais (jury en partie anglophone) |
+| Vidéo de 3 min | **Dans l'ordre exigé par le jury** : problème (30 s) → solution, démontrée en vrai sur téléphone, sécurité comprise (1 min 30) → impact et portée (30 s) → prochaines étapes (30 s). Voix off masculine `fr-FR-RemyMultilingualNeural` selon les directives ; sous-titres anglais (jury en partie anglophone) |
 | Page Devpost | Texte déjà rédigé (à aligner sur ce qui est réellement livré) |
 
 ## 18. Planning

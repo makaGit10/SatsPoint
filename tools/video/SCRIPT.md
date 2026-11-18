@@ -1,7 +1,7 @@
 # Vidéo de démonstration — 3 minutes
 
 Ordre imposé par le jury : **problème → solution → impact → prochaines étapes**.
-Voix off : `fr-FR-VivienneMultilingualNeural` (secours `fr-FR-DeniseNeural`), vitesse 1,0, pas d'émotion forcée, musique très basse ou absente, **sous-titres anglais** incrustés. Règles d'écriture : une idée par phrase, 15 à 25 mots, pas de sigle, les mots anglais toujours à l'intérieur d'une phrase française, une phrase par bloc audio. Voir [DIRECTIVES.md § 5](../../docs/DIRECTIVES.md).
+Voix off : `fr-FR-RemyMultilingualNeural` (voix masculine, secours `fr-FR-HenriNeural`), vitesse 1,0, pas d'émotion forcée, musique très basse ou absente, **sous-titres anglais** incrustés. Règles d'écriture : une idée par phrase, 15 à 25 mots, pas de sigle, les mots anglais toujours à l'intérieur d'une phrase française, une phrase par bloc audio. Voir [DIRECTIVES.md § 5](../../docs/DIRECTIVES.md).
 
 Durée cible par partie : problème 0:00–0:30 · solution 0:30–2:00 · impact 2:00–2:30 · suite 2:30–3:00.
 
@@ -36,5 +36,5 @@ Durée cible par partie : problème 0:00–0:30 · solution 0:30–2:00 · impac
 - **Voix de l'application** : tous les plans où un haut-parleur est touché doivent faire entendre **les enregistrements wolof de la propriétaire** (studio en ligne, publiés), jamais la voix française de secours. Seereer et pulaar s'ajouteront ensuite ; la vidéo montre que toute langue peut être ajoutée (console → Langues → « Ajouter une langue »).
 - Enregistrements d'écran : téléphone Android réel (ou émulateur 390×844) en mode sombre pour les plans caisse, mode clair pour le tableau de bord ; cacher toute donnée personnelle ; jamais le lien NWC à l'écran.
 - Le paiement du plan 10–12 est un **vrai paiement mainnet** de 100 FCFA, chronométré ; le chiffre incrusté au plan 12 est la mesure réelle.
-- Génération de la voix : `tools/video/generer_voix.py` (edge-tts, voix `fr-FR-VivienneMultilingualNeural`, un fichier par ligne), puis découpe des silences et normalisation (ffmpeg `silenceremove` + `loudnorm`), réécoute de chaque phrase, surtout celles avec « SatsPoint », « Lightning », « Wave », « WhatsApp ».
+- Génération de la voix : `tools/video/generer_voix.py` (edge-tts, voix masculine `fr-FR-RemyMultilingualNeural`, un fichier par ligne), puis découpe des silences et normalisation (ffmpeg `silenceremove` + `loudnorm`), réécoute de chaque phrase, surtout celles avec « SatsPoint », « Lightning », « Wave », « WhatsApp ».
 - Montage : une phrase = un plan ; sous-titres anglais en bas, police lisible, fond semi-transparent ; export 1080p, 30 i/s, ≤ 3:00.

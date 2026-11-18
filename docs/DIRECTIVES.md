@@ -122,7 +122,7 @@ jamais de `waitForTimeout`, jamais la production.
 
 ## 5. Voix off des vidéos
 
-Voix Azure **`fr-FR-VivienneMultilingualNeural`** (secours : `fr-FR-DeniseNeural`), vitesse 1,0 (ou 0,95),
+Voix Azure masculine **`fr-FR-RemyMultilingualNeural`** (secours : `fr-FR-HenriNeural`), vitesse 1,0 (ou 0,95),
 pas de voix clonée ni « émotionnelle », musique très basse ou absente. Texte écrit pour être dit :
 une idée par phrase (15–25 mots), pas de sigles, mots anglais toujours au milieu d'une phrase française,
 une phrase par bloc audio. Après génération : couper les silences, égaliser, réécouter (texte complet en annexe A.4).
@@ -267,7 +267,7 @@ une phrase par bloc audio. Après génération : couper les silences, égaliser,
 
 ### A.4 Voix off
 
-> Pour la voix off de cette vidéo, utilise la voix Microsoft Azure « fr-FR-VivienneMultilingualNeural » (affichée souvent comme « Vivienne (Multilingual) – Français (France) », voix féminine). Si elle n'est pas disponible, prends « fr-FR-DeniseNeural » (« Denise – Français (France) »). N'utilise pas de voix clonée ni de voix « expressive » ou « émotionnelle » : ce sont elles qui sonnent artificiel.
+> Pour la voix off de cette vidéo, utilise la voix Microsoft Azure « fr-FR-RemyMultilingualNeural » (affichée souvent comme « Rémy (Multilingual) – Français (France) », voix masculine). Si elle n'est pas disponible, prends « fr-FR-HenriNeural » (« Henri – Français (France) », voix masculine). N'utilise pas de voix clonée ni de voix « expressive » ou « émotionnelle » : ce sont elles qui sonnent artificiel.
 >
 > Réglages : vitesse normale (1,0, ou 0,95 si le débit paraît pressé), hauteur normale, aucune émotion forcée, aucune musique par-dessus la voix sauf à très bas volume.
 >

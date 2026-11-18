@@ -2,7 +2,7 @@
 Voix off de la vidéo SatsPoint : une phrase = un fichier audio, pour la caler sur l'image.
 
 Lit le tableau de SCRIPT.md (colonne « Voix off »), synthétise chaque phrase avec
-edge-tts (voix Azure fr-FR-VivienneMultilingualNeural, secours fr-FR-DeniseNeural),
+edge-tts (voix Azure masculine fr-FR-RemyMultilingualNeural, secours fr-FR-HenriNeural),
 coupe les silences de début et de fin, égalise le volume (EBU R128), et écrit
 voix/NN.wav (48 kHz mono) + timeline.json (durée de chaque phrase).
 
@@ -23,7 +23,7 @@ import edge_tts
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, "SCRIPT.md")
 OUT = os.path.join(HERE, "voix")
-VOIX = ["fr-FR-VivienneMultilingualNeural", "fr-FR-DeniseNeural"]
+VOIX = ["fr-FR-RemyMultilingualNeural", "fr-FR-HenriNeural"]  # voix masculines
 VITESSE = "+0%"  # « -5% » si le débit paraît pressé
 
 
