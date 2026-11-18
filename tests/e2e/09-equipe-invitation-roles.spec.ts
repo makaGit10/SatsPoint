@@ -111,7 +111,7 @@ test.describe('09 · Équipe', () => {
     await ligneCaissier.getByRole('button', { name: 'Changer le rôle' }).click();
     await page.getByRole('dialog', { name: 'Changer le rôle' }).getByRole('combobox', { name: 'Rôle' }).selectOption({ label: 'Caissier' });
     await page.getByRole('dialog', { name: 'Changer le rôle' }).getByRole('button', { name: /^Enregistrer/ }).click();
-    await expect(ligneCaissier.getByText('Caissier')).toBeVisible();
+    await expect(ligneCaissier.getByText('Caissier', { exact: true }).first()).toBeVisible();
 
     // Désactiver : « Annuler » ne change rien ; confirmer coupe la session du membre ; réactiver.
     const apiMembre = await ClientApi.connecte(compte);

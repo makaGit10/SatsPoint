@@ -80,7 +80,7 @@ test.describe('15 · Super-admin : 2FA et console', () => {
     await expect(page.getByText('Commerçants actifs')).toBeVisible();
     await capturer(page, '15-console-ensemble');
     const nav = page.getByRole('navigation', { name: 'Navigation principale' });
-    await expect(nav.getByRole('link')).toHaveText(estMobile(page) ? ['Console', 'Studio audio'] : ['Console', 'Studio audio']);
+    await expect(nav.getByRole('link')).toHaveText(estMobile(page) ? ['Console', 'Studio audio'] : ['Console', 'Studio audio', 'Démarrage guidé']) // bureau : le super-admin peut aussi créer SA boutique;
 
     // Boutiques : recherche, filtre, suspension (annuler puis confirmer) puis réactivation.
     await page.getByRole('tab', { name: 'Boutiques' }).click();

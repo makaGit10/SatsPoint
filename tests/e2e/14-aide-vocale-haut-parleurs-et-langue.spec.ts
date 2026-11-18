@@ -47,7 +47,8 @@ test.describe('14 · Aide vocale', () => {
     expect([200, 206]).toContain((await lecture2).status());
     await expect(page).toHaveURL(/\/accueil$/); // le haut-parleur ne déclenche pas le lien
     await capturer(page, '14-accueil-haut-parleurs');
-    await creer.click({ position: { x: 10, y: 10 } });
+    // Les ondes du haut-parleur s'animent pendant la lecture : Playwright attendrait leur fin pour juger l'élément « stable ».
+    await creer.click({ position: { x: 10, y: 10 }, force: true });
     await expect(page).toHaveURL(/\/inscription$/);
 
     // 3. Commerçant en pulaar : repli sur le français pour « Encaisser » ; désactivation de l'aide vocale.

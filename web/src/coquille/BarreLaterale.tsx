@@ -34,8 +34,10 @@ export function BarreLaterale() {
       )}
     >
       <div className={cn('flex h-[var(--hauteur-entete)] items-center', repliee ? 'justify-center px-2' : 'px-5')}>
-        <NavLink to={cheminAccueil(utilisateur)} aria-label={t('entete.accueil')} className="flex min-w-0 items-center">
+        {/* Nom accessible = texte visible (« SatsPoint ») + destination (WCAG 2.5.3) ; barre repliée : logo seul. */}
+        <NavLink to={cheminAccueil(utilisateur)} aria-label={repliee ? t('entete.accueil') : undefined} className="flex min-w-0 items-center">
           <Marque taille="sm" sansTexte={repliee} />
+          {!repliee && <span className="sr-only">{` — ${t('entete.accueil')}`}</span>}
         </NavLink>
       </div>
 

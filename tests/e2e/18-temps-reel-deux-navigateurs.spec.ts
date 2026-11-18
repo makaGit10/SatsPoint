@@ -109,7 +109,7 @@ test.describe('18 · Temps réel à deux navigateurs (A.2)', () => {
     const { vente } = await creerVente(membre.api, 800, { note: `${PREFIXE_TEST} temps réel` });
     await b.reload();
     await ecranPret(b, 'ventes');
-    await b.getByRole('list', { name: 'Ventes' }).getByRole('button', { name: new RegExp(`^${vente.numero} · `) }).click();
+    await b.getByRole('list', { name: 'Ventes' }).getByRole('button', { name: new RegExp(`${vente.numero}\\b`) }).click();
     const detail = b.getByRole('dialog', { name: `Détail de la vente · ${vente.numero}` });
     await expect(detail.getByText('En attente').first()).toBeVisible();
     // A (propriétaire) annule la vente du caissier.
@@ -119,7 +119,7 @@ test.describe('18 · Temps réel à deux navigateurs (A.2)', () => {
     await capturer(b, '18-temps-reel-fenetre-ouverte');
     // La liste derrière la fenêtre (masquée aux technologies d'assistance tant que la fenêtre est ouverte) est à jour aussi.
     await detail.getByRole('button', { name: 'Fermer' }).first().click();
-    await expect(b.getByRole('list', { name: 'Ventes' }).getByRole('button', { name: new RegExp(`^${vente.numero} · .* · Annulée`) })).toBeVisible();
+    await expect(b.getByRole('list', { name: 'Ventes' }).getByRole('button', { name: new RegExp(`${vente.numero}\\b.*Annulée`) })).toBeVisible();
   });
 
   test('5. Un onglet caché se met à jour quand il redevient visible', async ({ ouvrir }) => {
