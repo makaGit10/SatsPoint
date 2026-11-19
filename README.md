@@ -71,7 +71,7 @@ Without any configuration the stack starts in **demo mode** (a banner says so): 
 ## 🎬 Demo
 
 - **Live:** https://satspoint.onrender.com (free tier: the first visit after 15 min of inactivity takes ~1 min to wake up)
-- **Video (3 min):** `[YouTube — added at submission]`
+- **Video (3 min):** English https://youtu.be/i93TtM1nols · Français https://youtu.be/LayPRfuntFI
 - Screenshots: `[added when the UI lands]`
 
 ## 🏗 Architecture

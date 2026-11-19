@@ -138,6 +138,11 @@ sensitive actions; strict validation and rate limits; a written
 - **Pilot:** 10 merchants in one Dakar neighbourhood, tracking weekly active
   merchants, payments per merchant, and the delay between settlement and green
   screen — published every week.
+
+## Demo videos
+
+- English: https://youtu.be/i93TtM1nols
+- French (version française) : https://youtu.be/LayPRfuntFI
 ```
 
 ## Built with
@@ -150,7 +155,7 @@ bitcoin, lightning-network, nostr, nostr-wallet-connect, laravel, php, postgresq
 - `https://github.com/makaGit10/SatsPoint` (rendre le dépôt **public** avant de soumettre)
 
 ## Video demo link
-- Version anglaise : `[lien YouTube SatsPoint — EN]` (à mettre dans le champ principal « Video demo link »)
-- Version française : `[lien YouTube SatsPoint — FR]` (à ajouter à la fin du texte « About the project » : *French version of the demo video: …*)
+- Champ principal « Video demo link » (version anglaise) : `https://youtu.be/i93TtM1nols`
+- Version française : `https://youtu.be/LayPRfuntFI` (déjà ajoutée à la fin du texte « About the project »)
 
 Fichiers : `docs/videos/SatsPoint-EN.mp4`, `docs/videos/SatsPoint-FR.mp4` (2 min 59 chacune).
