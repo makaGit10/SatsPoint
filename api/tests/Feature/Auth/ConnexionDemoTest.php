@@ -78,3 +78,44 @@ it('protège la boutique partagée : portefeuille, équipe, réglages, suppressi
     config(['satspoint.demo.connexion_rapide' => false]);
     connecte($comptes['proprietaire'])->patchJson('/api/v1/boutique', ['nom' => 'Boutique Démo'])->assertOk();
 });
+
+it('Studio (démo jury) : console en lecture seule, sans 2FA ; le vrai super-admin reste protégé', function () {
+    config(['satspoint.demo.connexion_rapide' => true]);
+    boutiqueDemoJury();
+    $studio = User::factory()->superAdmin()->create(['email' => config('satspoint.demo.email_studio')]);
+    $vrai = User::factory()->superAdmin()->create();
+
+    $this->getJson('/api/v1/auth/demo/profils')->assertOk()->assertJsonPath('profils.3.profil', 'studio');
+    $this->postJson('/api/v1/auth/demo/connexion', ['profil' => 'studio'])->assertOk()->assertJsonPath('utilisateur.email', $studio->email);
+
+    connecte($studio);
+    $this->getJson('/api/v1/moi')->assertOk()->assertJsonPath('utilisateur.deux_fa.requise', false);
+    $this->getJson('/api/v1/admin/audio/matrice')->assertOk();
+    $this->getJson('/api/v1/admin/statistiques')->assertOk();
+    $this->getJson('/api/v1/admin/langues')->assertOk();
+    foreach (['admin/journal', 'admin/boutiques'] as $chemin) {
+        $this->getJson("/api/v1/$chemin")->assertForbidden()->assertJsonPath('code', 'DEMO_PROTEGE');
+    }
+    $this->postJson('/api/v1/admin/langues', ['code' => 'xx'])->assertForbidden()->assertJsonPath('code', 'DEMO_PROTEGE');
+
+    // Le wolof publié de la propriétaire : écoute seulement, jamais remplacé, publié ni supprimé par le jury.
+    $cle = \App\Models\CleAudio::query()->firstOrCreate(['cle' => 'caisse.encaisser'], ['ecran' => 'caisse', 'contexte' => 'Bouton — Caisse', 'texte_fr' => 'Encaisser', 'texte_en' => 'Charge', 'essentielle' => true, 'ordre' => 1]);
+    $wo = \App\Models\Audio::query()->create(['cle_audio_id' => $cle->id, 'langue' => 'wo', 'statut' => 'publie', 'chemin' => 'audio/wo/caisse.encaisser.mp3', 'empreinte' => str_repeat('a', 64), 'duree_ms' => 1000, 'taille' => 1000, 'publie_at' => now()]);
+    $this->postJson('/api/v1/admin/audio', ['cle' => 'caisse.encaisser', 'langue' => 'wo'])->assertForbidden()->assertJsonPath('code', 'DEMO_PROTEGE');
+    $this->postJson('/api/v1/admin/audio/publier', ['ids' => [$wo->id]])->assertForbidden();
+    $this->postJson('/api/v1/admin/audio/publier', ['cle' => 'caisse.encaisser', 'langue' => 'wo'])->assertForbidden();
+    $this->deleteJson("/api/v1/admin/audio/{$wo->id}")->assertForbidden();
+    expect($wo->fresh()->statut)->toBe('publie');
+
+    // La langue d'essai (bambara) : le jury enregistre et publie pour de vrai (la validation métier reprend la main).
+    $this->postJson('/api/v1/admin/audio', ['cle' => 'caisse.encaisser', 'langue' => 'bm'])->assertStatus(422);
+    $this->postJson('/api/v1/admin/audio/publier', ['cle' => 'caisse.encaisser', 'langue' => 'bm'])->assertJsonMissing(['code' => 'DEMO_PROTEGE']);
+
+    // Le vrai super-admin n'est jamais concerné : 2FA toujours exigée, console complète.
+    connecte($vrai)->getJson('/api/v1/admin/statistiques')->assertForbidden()->assertJsonPath('code', 'DEUX_FA_REQUISE');
+
+    // Accès rapide coupé : plus de connexion en un clic, et le compte Studio retombe sous la 2FA obligatoire.
+    config(['satspoint.demo.connexion_rapide' => false]);
+    $this->postJson('/api/v1/auth/demo/connexion', ['profil' => 'studio'])->assertNotFound();
+    connecte($studio)->getJson('/api/v1/admin/audio/matrice')->assertForbidden()->assertJsonPath('code', 'DEUX_FA_REQUISE');
+});

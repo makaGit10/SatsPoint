@@ -176,7 +176,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     });
 
     // ---- Console plateforme (CONTRAT_API vague 3 § 1 et 3) : super-admin + 2FA vérifiée ----
-    Route::middleware(['auth:sanctum', 'session.valide', 'super.admin', '2fa.obligatoire', 'throttle:api'])->prefix('admin')->name('admin.')->group(function () {
+    Route::middleware(['auth:sanctum', 'session.valide', 'super.admin', '2fa.obligatoire', 'demo.console', 'throttle:api'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('audio/matrice', [AudioStudioController::class, 'matrice'])->name('audio.matrice');
         Route::post('audio', [AudioStudioController::class, 'store'])->middleware('throttle:upload-audio')->name('audio.store');
         Route::post('audio/publier', [AudioStudioController::class, 'publier'])->name('audio.publier');

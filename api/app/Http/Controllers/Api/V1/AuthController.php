@@ -126,7 +126,8 @@ class AuthController extends Controller
         $profils = self::profilsDemoConfigures();
         $donnees = $request->validate(['profil' => ['required', 'string', 'in:'.implode(',', array_keys($profils))]]);
         $utilisateur = User::query()->where('email', $profils[$donnees['profil']])->firstOrFail();
-        abort_if($utilisateur->estSuperAdmin(), 403);
+        // Le seul super-admin joignable est le compte « Studio (démo jury) », en lecture seule ; jamais le vrai super-admin.
+        abort_if($utilisateur->estSuperAdmin() && ! $utilisateur->estStudioDemo(), 403);
 
         Auth::guard('web')->login($utilisateur);
         $this->ouvrirSession($request, $utilisateur, true);
@@ -142,6 +143,7 @@ class AuthController extends Controller
             'proprietaire' => (string) config('satspoint.demo.email_proprietaire'),
             'gerant' => (string) config('satspoint.demo.email_gerant'),
             'caissier' => (string) config('satspoint.demo.email_caissier'),
+            'studio' => (string) config('satspoint.demo.email_studio'),
         ]);
     }
 

@@ -79,7 +79,15 @@ class User extends Authenticatable
     /** La 2FA est exigée pour la console plateforme (super-admin). */
     public function deuxFaRequise(): bool
     {
-        return $this->estSuperAdmin() && config('satspoint.deux_fa_super_admin', true);
+        return $this->estSuperAdmin() && config('satspoint.deux_fa_super_admin', true) && ! $this->estStudioDemo();
+    }
+
+    /** Compte « Studio (démo jury) » de l'accès rapide : console en lecture seule (ConsoleDemoLectureSeule). */
+    public function estStudioDemo(): bool
+    {
+        return (bool) config('satspoint.demo.connexion_rapide')
+            && $this->estSuperAdmin()
+            && mb_strtolower((string) $this->email) === mb_strtolower((string) config('satspoint.demo.email_studio'));
     }
 
     /** Préférences complétées par les valeurs par défaut. */

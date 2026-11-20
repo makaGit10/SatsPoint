@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { ShoppingBasket, Store, UserCog } from 'lucide-react'
+import { Mic, ShoppingBasket, Store, UserCog } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { connexionDemo, lireProfilsDemo, type ProfilDemo } from '@/api/demo'
@@ -10,8 +10,10 @@ import { cn } from '@/lib/cn'
 import { HautParleur } from '@/voix/HautParleur'
 import { useMessageErreur } from './useMessageErreur'
 
-const ICONES: Record<ProfilDemo, ReactNode> = { proprietaire: <Store />, gerant: <UserCog />, caissier: <ShoppingBasket /> }
-const VOIX: Record<ProfilDemo, string> = { proprietaire: 'roles.proprietaire', gerant: 'roles.gerant', caissier: 'roles.caissier' }
+const ICONES: Record<ProfilDemo, ReactNode> = { proprietaire: <Store />, gerant: <UserCog />, caissier: <ShoppingBasket />, studio: <Mic /> }
+const VOIX: Record<ProfilDemo, string> = { proprietaire: 'roles.proprietaire', gerant: 'roles.gerant', caissier: 'roles.caissier', studio: 'nav.studio' }
+/** Le studio ouvre directement l'enregistrement des voix (console en lecture seule, enregistrement dans la langue d'essai). */
+const ARRIVEE: Partial<Record<ProfilDemo, string>> = { studio: '/admin/studio' }
 
 /**
  * Accès rapide du jury à la boutique de démonstration : un bouton par profil (propriétaire, gérant, caissier), sans
@@ -30,7 +32,7 @@ export default function AccesDemo({ bascule = false, suite, className }: { bascu
   const entrer = (profil: ProfilDemo) => {
     setEnCours(profil)
     connexionDemo(profil)
-      .then(({ utilisateur }) => window.location.assign(suite ?? cheminAccueil(utilisateur)))
+      .then(({ utilisateur }) => window.location.assign(ARRIVEE[profil] ?? suite ?? cheminAccueil(utilisateur)))
       .catch((e: unknown) => {
         setEnCours(null)
         notifier({ type: 'erreur', titre: messageErreur(e) })
@@ -58,7 +60,7 @@ export default function AccesDemo({ bascule = false, suite, className }: { bascu
             pleineLargeur
             data-profil-demo={c.profil}
           >
-            {c.nom} · {t(`roles.${c.profil}`)}
+            {c.profil === 'studio' ? t('nav.studio') : `${c.nom} · ${t(`roles.${c.profil}`)}`}
           </Bouton>
         ))}
       </div>

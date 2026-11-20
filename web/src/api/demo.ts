@@ -1,7 +1,7 @@
 import { http } from './client'
 import type { ReponseUtilisateur } from './types'
 
-export type ProfilDemo = 'proprietaire' | 'gerant' | 'caissier'
+export type ProfilDemo = 'proprietaire' | 'gerant' | 'caissier' | 'studio'
 export interface CompteDemo {
   profil: ProfilDemo
   nom: string

@@ -36,6 +36,11 @@ class DemoSeeder extends Seeder
             $proprietaire = $this->utilisateur(config('satspoint.demo.email_proprietaire'), 'Awa Ndiaye', $motDePasseDemo['valeur'], $motDePasseDemo['forcer']);
             $caissier = $this->utilisateur(config('satspoint.demo.email_caissier'), 'Moussa Diop', $motDePasseDemo['valeur'], $motDePasseDemo['forcer']);
             $gerant = $this->utilisateur(config('satspoint.demo.email_gerant'), 'Fatou Sow', $motDePasseDemo['valeur'], $motDePasseDemo['forcer']);
+            // Console « Studio (démo jury) » : super-admin en lecture seule, mot de passe aléatoire jamais communiqué (accès rapide uniquement).
+            $studio = $this->utilisateur(config('satspoint.demo.email_studio'), 'Studio (démo jury)', null, false);
+            if (! $studio->estSuperAdmin()) {
+                $studio->forceFill(['role_plateforme' => User::ROLE_SUPER_ADMIN])->save();
+            }
 
             $boutique = $this->boutique($proprietaire);
 

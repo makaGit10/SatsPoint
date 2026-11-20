@@ -90,6 +90,10 @@ return [
         'email_proprietaire' => 'demo@satspoint.local',
         'email_caissier' => 'caissier@satspoint.local',
         'email_gerant' => 'gerant@satspoint.local',
+        // Console « Studio (démo jury) » : super-admin en LECTURE SEULE, sans 2FA, seulement pendant l'accès rapide.
+        'email_studio' => 'studio@satspoint.local',
+        // Langues où le jury peut enregistrer / publier / supprimer pour de vrai depuis la console de démonstration.
+        'langues_essai' => array_filter(explode(',', (string) env('DEMO_LANGUES_ESSAI', 'bm'))),
         // Accès rapide du jury : boutons « se connecter en un clic » (propriétaire, gérant, caissier — jamais le super-admin).
         // Tant qu'il est actif, les actions qui casseraient la démo partagée sont refusées aux comptes de démonstration.
         'connexion_rapide' => filter_var(env('DEMO_CONNEXION_RAPIDE', false), FILTER_VALIDATE_BOOL),
