@@ -22,8 +22,10 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 VIDEO = os.path.dirname(ICI)
 RACINE = os.path.dirname(os.path.dirname(VIDEO))
 L = (sys.argv[1:] or ["fr"])[0]
+# Langue des sous-titres incrustés : anglais par défaut ; « --sous fr » = version anglaise sous-titrée en français.
+SOUS = sys.argv[sys.argv.index("--sous") + 1] if "--sous" in sys.argv else "en"
 OUT = os.path.join(VIDEO, "out")
-TRAVAIL = os.path.join(OUT, f"montage-{L}")
+TRAVAIL = os.path.join(OUT, f"montage-{L}" + ("" if SOUS == "en" else f"-sous-{SOUS}"))
 CARTES = os.path.join(OUT, "cartes")
 SCENES = json.load(open(os.path.join(OUT, "tournage", "scenes.json"), encoding="utf-8"))
 SCENES = {s["nom"]: s for s in SCENES}
@@ -36,6 +38,7 @@ def lignes(dossier):
     return {e["numero"]: e for e in json.load(open(os.path.join(VIDEO, dossier, "timeline.json"), encoding="utf-8"))}
 VO = lignes("voix" if L == "fr" else "voix-en")
 VO_EN = lignes("voix-en")
+VO_SOUS = lignes("voix" if SOUS == "fr" else "voix-en")
 VO_AUTRE = lignes("voix-en" if L == "fr" else "voix")
 DMAX = {n: max(VO[n]["duree_s"], VO_AUTRE[n]["duree_s"]) for n in VO}
 
@@ -231,7 +234,7 @@ def main():
     for tt, n in voix_evts:
         poser(lire_audio(os.path.join(dossier_vo, f"{n:02d}.wav")), tt)
         en = VO_EN[n]
-        ass.append(("Sous" if True else "", tt, tt + VO[n]["duree_s"] + 0.15, esc_ass(en["texte"])))
+        ass.append(("Sous", tt, tt + VO[n]["duree_s"] + 0.15, esc_ass(VO_SOUS[n]["texte"])))
     for tt, fichier in sons_evts:
         signal = lire_audio(fichier)
         poser(signal, tt, 1.0)
@@ -239,12 +242,12 @@ def main():
         fin = tt + len(signal) / TAUX
         if nom.startswith("article."):
             ass.append(("Badge", tt, fin + 0.3, BADGE_NOM))
-            ass.append(("Sous", tt, fin + 0.3, "“Café Touba”"))
+            ass.append(("Sous", tt, fin + 0.3, "« Café Touba »" if SOUS == "fr" else "“Café Touba”"))
         else:
             ass.append(("Badge", tt, fin + 0.3, BADGE_WOLOF))
-            sens = REGISTRE.get(nom, {}).get("texte_en", "")
+            sens = REGISTRE.get(nom, {}).get("texte_fr" if SOUS == "fr" else "texte_en", "")
             if sens:
-                ass.append(("SousWolof", tt, fin + 0.3, "Wolof: “" + esc_ass(sens) + "”"))
+                ass.append(("SousWolof", tt, fin + 0.3, ("Wolof : « " + esc_ass(sens) + " »") if SOUS == "fr" else ("Wolof: “" + esc_ass(sens) + "”")))
     crete = float(np.max(np.abs(piste))) or 1.0
     if crete > 0.98:
         piste *= 0.98 / crete
@@ -299,13 +302,13 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             suffixe = {"tel": "Tel", "pc": "Pc"}.get(typ, "Carte")
             if style in ("Sous", "SousWolof"):
                 style = "Sous" + suffixe
-                if texte.startswith("Wolof: "):
+                if texte.startswith("Wolof"):
                     texte = "{\\c&H8FDCF6&}" + texte
             elif style == "Badge":
                 style = "Badge" + suffixe
             f.write(f"Dialogue: 1,{ass_temps(a)},{ass_temps(b)},{style},,0,0,0,,{texte}\n")
 
-    sortie = os.path.join(OUT, f"SatsPoint-{L.upper()}.mp4")
+    sortie = os.path.join(OUT, f"SatsPoint-{L.upper()}" + ("" if SOUS == "en" else f"-soustitres-{SOUS.upper()}") + ".mp4")
     ff("-i", "images.mp4", "-i", "audio.wav", "-vf", "ass=textes.ass:fontsdir=polices", "-c:v", "libx264", "-preset", "medium", "-crf", "18",
        "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "-shortest", sortie, cwd=TRAVAIL)
     print(f"\n{sortie}  ({total:.0f} s)")
