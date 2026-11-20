@@ -45,16 +45,19 @@ img.g { width: 100%; border-radius: 8px; border: 1px solid #ecdcb4; margin-top: 
 </table>
 
 <h2>Try it in 2 minutes (live app)</h2>
-<div class="boite"><b>Demo merchant account (judges only)</b><br>
-Login: <code>demo@satspoint.local</code> &nbsp;·&nbsp; Password: <code>${esc(env.DEMO_PASSWORD)}</code><br>
-This shared shop belongs to "Awa". Please do not delete its items or revoke its wallet. Its wallet is connected without spending permission: nobody can send its funds from the app.</div>
+<div class="boite"><b>One-click access — no password</b><br>
+On the login page (<b>"J'ai déjà un compte"</b>), the gold box <b>"Accès rapide — démo pour le jury"</b> logs you in with one click as
+<b>Awa · Owner</b>, <b>Fatou · Manager</b> or <b>Moussa · Cashier</b>. Switch profile at any time: tap your avatar (top right) → <b>"Changer de profil (démo)"</b>.<br>
+The demo shop is shared and protected: wallet, payment keys, team, settings and deletions are locked for demo accounts, and the wallet has no spending permission.<br>
+<span style="font-size:9pt;color:#6b5a3a">Fallback login: <code>demo@satspoint.local</code> · <code>${esc(env.DEMO_PASSWORD)}</code></span></div>
 <ol>
 <li><b>First launch:</b> open the site in a private window. The "Choose your language" panel appears. Tap the small speaker on the <b>Wolof</b> tile: you hear a real Wolof recording. Change the country (e.g. <b>Mali</b>): the list of languages changes (Bambara appears).</li>
-<li>Back on <b>Senegal</b>, tap <b>Wolof</b>: the welcome message plays in Wolof. Then <b>"J'ai déjà un compte"</b> and log in with the account above.</li>
+<li>Back on <b>Senegal</b>, tap <b>Wolof</b>: the welcome message plays in Wolof. Then <b>"J'ai déjà un compte"</b> → <b>Awa · Propriétaire</b> (one click).</li>
 <li><b>Caisse</b> (till): tap the coffee picture (<i>Café Touba</i>): it says its name; the amount shows in FCFA and in sats. Tap the speaker on <b>Encaisser</b>: Wolof again.</li>
 <li><b>Encaisser</b> → a real <b>Lightning invoice</b> (QR, valid 5 minutes, price locked). You may pay it with any Lightning wallet (e.g. 100 FCFA ≈ 265 sats): the screen turns green within seconds, after the server verifies the invoice with the wallet. Otherwise tap <b>Annuler la vente</b>.</li>
 <li><b>Plus → Articles → Ajouter</b>: tap <b>"Dire le prix"</b> and say "deux cents francs" (Chrome / Android / Safari, French speech recognition): 200 writes itself, editable on the keypad. Tap <b>Annuler</b> to leave the shop unchanged.</li>
 <li><b>Tableau</b> (dashboard), <b>Ventes</b> (sales) and <b>Portefeuille</b> (wallet): the real sale V-000001 (265 sats) and the balance.</li>
+<li>Avatar → <b>"Changer de profil (démo)"</b> → <b>Moussa · Caissier</b>: the cashier sees the till but not the wallet balance (least privilege).</li>
 </ol>
 
 <h2>Run it locally (one command)</h2>
