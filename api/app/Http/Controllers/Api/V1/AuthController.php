@@ -100,6 +100,51 @@ class AuthController extends Controller
         return (new UtilisateurResource($utilisateur, $this->courante->membre()))->response();
     }
 
+    /**
+     * GET /auth/demo/profils → { profils: [{ profil, nom, actuel }] } — accès rapide du jury à la boutique de démonstration
+     * (DEMO_CONNEXION_RAPIDE=true). Propriétaire, gérant et caissier seulement : jamais le super-admin. 404 si désactivé.
+     */
+    public function profilsDemo(Request $request): JsonResponse
+    {
+        abort_unless(config('satspoint.demo.connexion_rapide'), 404);
+        $actuel = $request->user('web');
+        $profils = [];
+        foreach (self::profilsDemoConfigures() as $profil => $email) {
+            $u = User::query()->where('email', $email)->first();
+            if ($u !== null) {
+                $profils[] = ['profil' => $profil, 'nom' => $u->nom, 'actuel' => $actuel !== null && $actuel->is($u)];
+            }
+        }
+
+        return response()->json(['profils' => $profils]);
+    }
+
+    /** POST /auth/demo/connexion { profil } → { utilisateur } : connexion en un clic à un compte de la boutique de démonstration. */
+    public function connexionDemo(Request $request): JsonResponse
+    {
+        abort_unless(config('satspoint.demo.connexion_rapide'), 404);
+        $profils = self::profilsDemoConfigures();
+        $donnees = $request->validate(['profil' => ['required', 'string', 'in:'.implode(',', array_keys($profils))]]);
+        $utilisateur = User::query()->where('email', $profils[$donnees['profil']])->firstOrFail();
+        abort_if($utilisateur->estSuperAdmin(), 403);
+
+        Auth::guard('web')->login($utilisateur);
+        $this->ouvrirSession($request, $utilisateur, true);
+        Audit::enregistrer('auth.connexion_demo', $utilisateur, ['profil' => $donnees['profil']], $utilisateur);
+
+        return (new UtilisateurResource($utilisateur, $this->courante->membre()))->response();
+    }
+
+    /** @return array<string, string> profil → e-mail du compte de démonstration */
+    public static function profilsDemoConfigures(): array
+    {
+        return array_filter([
+            'proprietaire' => (string) config('satspoint.demo.email_proprietaire'),
+            'gerant' => (string) config('satspoint.demo.email_gerant'),
+            'caissier' => (string) config('satspoint.demo.email_caissier'),
+        ]);
+    }
+
     /** POST /auth/deconnexion → 204 */
     public function deconnexion(Request $request): Response
     {

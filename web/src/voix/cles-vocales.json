@@ -170,6 +170,8 @@
   {"cle":"recherche.vider","ecran":"navigation","contexte":"Bouton icône — En-tête et menus","texte_fr":"Effacer la recherche","texte_en":"Clear the search","essentielle":false},
   {"cle":"recherche.effacerRecentes","ecran":"navigation","contexte":"Bouton icône — En-tête et menus","texte_fr":"Effacer les dernières recherches","texte_en":"Clear recent searches","essentielle":false},
   {"cle":"recherche.titre","ecran":"navigation","contexte":"Texte lu — En-tête et menus","texte_fr":"Recherche","texte_en":"Search","essentielle":false},
+  {"cle":"demo.changer","ecran":"compte","contexte":"Texte lu — Compte","texte_fr":"Changer de profil (démo)","texte_en":"Switch profile (demo)","essentielle":false},
+  {"cle":"demo.titre","ecran":"compte","contexte":"Texte lu — Compte","texte_fr":"Accès rapide — démo pour le jury","texte_en":"Quick access — demo for judges","essentielle":false},
   {"cle":"auth.inscription.titre","ecran":"compte","contexte":"Titre de l'écran — Compte","texte_fr":"Créer ma boutique","texte_en":"Create my shop","essentielle":false},
   {"cle":"auth.inscription.nom","ecran":"compte","contexte":"Champ — Compte","texte_fr":"Votre nom","texte_en":"Your name","essentielle":false},
   {"cle":"auth.inscription.identifiant","ecran":"compte","contexte":"Élément d'action — Compte","texte_fr":"Téléphone ou e-mail","texte_en":"Phone or email","essentielle":false},

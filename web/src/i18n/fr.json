@@ -195,6 +195,9 @@
     "coupee": "voix coupée"
   },
   "demo": {
+    "titre": "Accès rapide — démo pour le jury",
+    "texte": "Un clic, sans mot de passe : entrez dans la boutique d'Awa avec le profil de votre choix.",
+    "changer": "Changer de profil (démo)",
     "bandeau": "Mode démo : paiements simulés"
   },
   "temps": {

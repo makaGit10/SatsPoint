@@ -63,18 +63,21 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('connexion', [AuthController::class, 'connexion'])->middleware('throttle:connexion')->name('connexion');
         Route::post('mot-de-passe/oubli', [MotDePasseController::class, 'oubli'])->middleware('throttle:oubli')->name('mot-de-passe.oubli');
         Route::post('mot-de-passe/reinitialisation', [MotDePasseController::class, 'reinitialisation'])->middleware('throttle:reinitialisation')->name('mot-de-passe.reinitialisation');
+        // Accès rapide du jury à la boutique de démonstration (DEMO_CONNEXION_RAPIDE) : 404 si désactivé.
+        Route::get('demo/profils', [AuthController::class, 'profilsDemo'])->middleware('throttle:public')->name('demo.profils');
+        Route::post('demo/connexion', [AuthController::class, 'connexionDemo'])->middleware('throttle:connexion')->name('demo.connexion');
 
         Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
             Route::post('deconnexion', [AuthController::class, 'deconnexion'])->name('deconnexion');
-            Route::post('deconnexion-partout', [AuthController::class, 'deconnexionPartout'])->name('deconnexion-partout');
+            Route::post('deconnexion-partout', [AuthController::class, 'deconnexionPartout'])->middleware('demo.protege')->name('deconnexion-partout');
         });
 
         // ---- 2FA TOTP (CONTRAT_API vague 3 § 2) : 5 / min, jamais soumis à « 2fa.obligatoire ».
         Route::middleware(['auth:sanctum', 'session.valide', 'throttle:deux-fa'])->prefix('2fa')->name('2fa.')->group(function () {
-            Route::post('initialiser', [DeuxFacteursController::class, 'initialiser'])->name('initialiser');
-            Route::post('activer', [DeuxFacteursController::class, 'activer'])->name('activer');
+            Route::post('initialiser', [DeuxFacteursController::class, 'initialiser'])->middleware('demo.protege')->name('initialiser');
+            Route::post('activer', [DeuxFacteursController::class, 'activer'])->middleware('demo.protege')->name('activer');
             Route::post('verifier', [DeuxFacteursController::class, 'verifier'])->name('verifier');
-            Route::delete('/', [DeuxFacteursController::class, 'desactiver'])->name('desactiver');
+            Route::delete('/', [DeuxFacteursController::class, 'desactiver'])->middleware('demo.protege')->name('desactiver');
         });
         // Développement local uniquement (config satspoint.deux_fa_code_local) : code TOTP du moment. Hors du
         // groupe « deux-fa » (5/min) pour ne pas consommer le quota des vraies tentatives de code.
@@ -91,13 +94,13 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::post('boutique', [BoutiqueController::class, 'store'])->name('boutique.store');
         Route::get('boutique', [BoutiqueController::class, 'show'])->name('boutique.show');
-        Route::patch('boutique', [BoutiqueController::class, 'update'])->name('boutique.update');
+        Route::patch('boutique', [BoutiqueController::class, 'update'])->middleware('demo.protege')->name('boutique.update');
 
         Route::get('equipe', [EquipeController::class, 'index'])->name('equipe.index');
-        Route::post('equipe/invitations', [InvitationController::class, 'store'])->middleware('throttle:invitations')->name('equipe.invitations.store');
-        Route::delete('equipe/invitations/{invitation}', [InvitationController::class, 'destroy'])->name('equipe.invitations.destroy');
-        Route::patch('equipe/{membre}', [EquipeController::class, 'update'])->name('equipe.update');
-        Route::delete('equipe/{membre}', [EquipeController::class, 'destroy'])->name('equipe.destroy');
+        Route::post('equipe/invitations', [InvitationController::class, 'store'])->middleware(['throttle:invitations', 'demo.protege'])->name('equipe.invitations.store');
+        Route::delete('equipe/invitations/{invitation}', [InvitationController::class, 'destroy'])->middleware('demo.protege')->name('equipe.invitations.destroy');
+        Route::patch('equipe/{membre}', [EquipeController::class, 'update'])->middleware('demo.protege')->name('equipe.update');
+        Route::delete('equipe/{membre}', [EquipeController::class, 'destroy'])->middleware('demo.protege')->name('equipe.destroy');
 
         Route::post('invitations/{jeton}/accepter', [InvitationController::class, 'accepter'])->middleware('throttle:invitations-accepter')->name('invitations.accepter');
 
@@ -142,32 +145,32 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('wallet', [WalletController::class, 'show'])->name('wallet.show');
         Route::get('wallet/transactions', [WalletController::class, 'transactions'])->name('wallet.transactions');
         Route::post('wallet/recevoir', [WalletController::class, 'recevoir'])->middleware('throttle:ventes')->name('wallet.recevoir');
-        Route::post('wallet/envoyer/apercu', [WalletController::class, 'apercu'])->middleware('throttle:wallet-envoi')->name('wallet.envoyer.apercu');
-        Route::post('wallet/envoyer', [WalletController::class, 'envoyer'])->middleware('throttle:wallet-envoi')->name('wallet.envoyer');
-        Route::put('boutique/wallet', [BoutiqueWalletController::class, 'update'])->middleware('throttle:configuration')->name('boutique.wallet.update');
-        Route::delete('boutique/wallet', [BoutiqueWalletController::class, 'destroy'])->name('boutique.wallet.destroy');
+        Route::post('wallet/envoyer/apercu', [WalletController::class, 'apercu'])->middleware(['throttle:wallet-envoi', 'demo.protege'])->name('wallet.envoyer.apercu');
+        Route::post('wallet/envoyer', [WalletController::class, 'envoyer'])->middleware(['throttle:wallet-envoi', 'demo.protege'])->name('wallet.envoyer');
+        Route::put('boutique/wallet', [BoutiqueWalletController::class, 'update'])->middleware(['throttle:configuration', 'demo.protege'])->name('boutique.wallet.update');
+        Route::delete('boutique/wallet', [BoutiqueWalletController::class, 'destroy'])->middleware('demo.protege')->name('boutique.wallet.destroy');
 
         // ---- PayTech (CONTRAT_API § 8) -----------------------------------
-        Route::put('boutique/paytech', [BoutiquePaytechController::class, 'update'])->middleware('throttle:configuration')->name('boutique.paytech.update');
-        Route::delete('boutique/paytech', [BoutiquePaytechController::class, 'destroy'])->name('boutique.paytech.destroy');
+        Route::put('boutique/paytech', [BoutiquePaytechController::class, 'update'])->middleware(['throttle:configuration', 'demo.protege'])->name('boutique.paytech.update');
+        Route::delete('boutique/paytech', [BoutiquePaytechController::class, 'destroy'])->middleware('demo.protege')->name('boutique.paytech.destroy');
         Route::post('boutique/paytech/verifier', [BoutiquePaytechController::class, 'verifier'])->middleware('throttle:configuration')->name('boutique.paytech.verifier');
 
         // ---- Moyens de paiement du pays (CONTRAT_API § 14.3) : propriétaire / gérant
         Route::get('boutique/moyens-pays', [BoutiqueMoyensPaysController::class, 'index'])->name('boutique.moyens-pays.index');
-        Route::put('boutique/moyens-pays/{moyen}', [BoutiqueMoyensPaysController::class, 'update'])->middleware('throttle:configuration')->name('boutique.moyens-pays.update');
+        Route::put('boutique/moyens-pays/{moyen}', [BoutiqueMoyensPaysController::class, 'update'])->middleware(['throttle:configuration', 'demo.protege'])->name('boutique.moyens-pays.update');
 
         // ---- Articles (CONTRAT_API § 9) ----------------------------------
         Route::get('articles', [ArticleController::class, 'index'])->name('articles.index');
         Route::post('articles', [ArticleController::class, 'store'])->middleware('throttle:medias-envoi')->name('articles.store');
         Route::post('articles/ordre', [ArticleController::class, 'ordre'])->name('articles.ordre');
         Route::patch('articles/{article}', [ArticleController::class, 'update'])->name('articles.update');
-        Route::delete('articles/{article}', [ArticleController::class, 'destroy'])->name('articles.destroy');
+        Route::delete('articles/{article}', [ArticleController::class, 'destroy'])->middleware('demo.protege')->name('articles.destroy');
 
         // ---- Articles sans écrire (CONTRAT_API § 15) : photo et nom dit à voix haute, contenus en base.
         Route::post('articles/{article}/photo', [ArticleController::class, 'envoyerPhoto'])->middleware('throttle:medias-envoi')->name('articles.photo.store');
-        Route::delete('articles/{article}/photo', [ArticleController::class, 'supprimerPhoto'])->name('articles.photo.destroy');
+        Route::delete('articles/{article}/photo', [ArticleController::class, 'supprimerPhoto'])->middleware('demo.protege')->name('articles.photo.destroy');
         Route::post('articles/{article}/voix', [ArticleController::class, 'envoyerVoix'])->middleware('throttle:medias-envoi')->name('articles.voix.store');
-        Route::delete('articles/{article}/voix', [ArticleController::class, 'supprimerVoix'])->name('articles.voix.destroy');
+        Route::delete('articles/{article}/voix', [ArticleController::class, 'supprimerVoix'])->middleware('demo.protege')->name('articles.voix.destroy');
         Route::get('articles/{article}/photo', [ArticleController::class, 'photo'])->withoutMiddleware('throttle:api')->middleware('throttle:medias-lecture')->name('articles.photo');
         Route::get('articles/{article}/voix', [ArticleController::class, 'voix'])->withoutMiddleware('throttle:api')->middleware('throttle:medias-lecture')->name('articles.voix');
     });

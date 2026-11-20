@@ -195,6 +195,9 @@
     "coupee": "voice off"
   },
   "demo": {
+    "titre": "Quick access — demo for judges",
+    "texte": "One click, no password: enter Awa's shop with the profile of your choice.",
+    "changer": "Switch profile (demo)",
     "bandeau": "Demo mode: simulated payments"
   },
   "temps": {

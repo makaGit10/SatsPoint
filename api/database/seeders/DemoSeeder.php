@@ -35,11 +35,13 @@ class DemoSeeder extends Seeder
 
             $proprietaire = $this->utilisateur(config('satspoint.demo.email_proprietaire'), 'Awa Ndiaye', $motDePasseDemo['valeur'], $motDePasseDemo['forcer']);
             $caissier = $this->utilisateur(config('satspoint.demo.email_caissier'), 'Moussa Diop', $motDePasseDemo['valeur'], $motDePasseDemo['forcer']);
+            $gerant = $this->utilisateur(config('satspoint.demo.email_gerant'), 'Fatou Sow', $motDePasseDemo['valeur'], $motDePasseDemo['forcer']);
 
             $boutique = $this->boutique($proprietaire);
 
-            $courante->pour($boutique, function (Boutique $boutique) use ($proprietaire, $caissier) {
+            $courante->pour($boutique, function (Boutique $boutique) use ($proprietaire, $caissier, $gerant) {
                 $this->membre($boutique, $proprietaire, Membre::ROLE_PROPRIETAIRE);
+                $this->membre($boutique, $gerant, Membre::ROLE_GERANT, $proprietaire);
                 $this->membre($boutique, $caissier, Membre::ROLE_CAISSIER, $proprietaire);
                 $this->articles();
                 $this->portefeuille();

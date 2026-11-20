@@ -1,5 +1,5 @@
 import { LogIn } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { lazy, Suspense, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ErreurApi } from '@/api/client'
@@ -16,6 +16,8 @@ import { SAISIE_VIDE, valeurIdentifiant, type SaisieIdentifiant } from './identi
 import { useMessageErreur } from './useMessageErreur'
 import { useGuideVocal } from '@/voix/guide'
 import { HautParleur } from '@/voix/HautParleur'
+
+const AccesDemo = lazy(() => import('./AccesDemo'))
 
 export default function Connexion() {
   const { t } = useTranslation()
@@ -107,6 +109,9 @@ export default function Connexion() {
           {t('auth.connexion.valider')}
         </Bouton>
       </form>
+      <Suspense fallback={null}>
+        <AccesDemo suite={suiteSure(params.get('suite'))} className="mt-5" />
+      </Suspense>
       <p className="mt-6 flex flex-wrap items-center justify-center gap-x-1 text-center text-sm text-texte-2">
         {t('auth.connexion.pasDeCompte')}{' '}
         <Link to={suiteSure(params.get('suite')) ? `/inscription?suite=${encodeURIComponent(suiteSure(params.get('suite'))!)}` : '/inscription'} className="font-medium text-accent-texte hover:underline">

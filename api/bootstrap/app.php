@@ -72,6 +72,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'session.valide' => VerifierSessionRevoquee::class,
             'boutique.active' => VerifierBoutiqueActive::class,
             '2fa.obligatoire' => ExigerDeuxFacteurs::class,
+            'demo.protege' => \App\Http\Middleware\ProtegerDemo::class,
             'super.admin' => ExigerSuperAdmin::class,
         ]);
 

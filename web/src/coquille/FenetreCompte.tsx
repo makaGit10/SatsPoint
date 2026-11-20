@@ -9,6 +9,7 @@ import { Dialogue } from '@/composants/Dialogue'
 import { SqueletteTexte } from '@/composants/Squelette'
 import { Avatar } from './MenuUtilisateur'
 
+const AccesDemo = lazy(() => import('@/ecrans/auth/AccesDemo'))
 const PanneauPreferences = lazy(() => import('./Preferences').then((m) => ({ default: m.PanneauPreferences })))
 
 /** Fenêtre « Mon compte » : identité, préférences, sécurité, déconnexion. */
@@ -61,6 +62,9 @@ export default function FenetreCompte({ ouvert, onOuvertChange }: { ouvert: bool
         </div>
       }
     >
+      <Suspense fallback={null}>
+        <AccesDemo bascule className="mb-3" />
+      </Suspense>
       <Suspense fallback={<SqueletteTexte lignes={4} className="py-1" />}>
         <PanneauPreferences className="pt-1 pb-1" />
       </Suspense>

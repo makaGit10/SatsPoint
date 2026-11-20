@@ -89,6 +89,10 @@ return [
         'mot_de_passe' => env('DEMO_PASSWORD'),
         'email_proprietaire' => 'demo@satspoint.local',
         'email_caissier' => 'caissier@satspoint.local',
+        'email_gerant' => 'gerant@satspoint.local',
+        // Accès rapide du jury : boutons « se connecter en un clic » (propriétaire, gérant, caissier — jamais le super-admin).
+        // Tant qu'il est actif, les actions qui casseraient la démo partagée sont refusées aux comptes de démonstration.
+        'connexion_rapide' => filter_var(env('DEMO_CONNEXION_RAPIDE', false), FILTER_VALIDATE_BOOL),
         'nom_boutique' => 'Boutique Démo',
     ],
 
