@@ -47,7 +47,7 @@ img.g { width: 100%; border-radius: 8px; border: 1px solid #ecdcb4; margin-top: 
 <h2>Try it in 2 minutes (live app)</h2>
 <div class="boite"><b>One-click access — no password</b><br>
 On the login page (<b>"J'ai déjà un compte"</b>), the gold box <b>"Accès rapide — démo pour le jury"</b> logs you in with one click as
-<b>Awa · Owner</b>, <b>Fatou · Manager</b> or <b>Moussa · Cashier</b>. Switch profile at any time: tap your avatar (top right) → <b>"Changer de profil (démo)"</b>.<br>
+<b>Awa · Owner</b>, <b>Fatou · Manager</b>, <b>Moussa · Cashier</b> or <b>Studio audio</b> (the voice-recording console). Switch profile at any time: tap your avatar (top right) → <b>"Changer de profil (démo)"</b>.<br>
 The demo shop is shared and protected: wallet, payment keys, team, settings and deletions are locked for demo accounts, and the wallet has no spending permission.<br>
 <span style="font-size:9pt;color:#6b5a3a">Fallback login: <code>demo@satspoint.local</code> · <code>${esc(env.DEMO_PASSWORD)}</code></span></div>
 <ol>
@@ -58,6 +58,7 @@ The demo shop is shared and protected: wallet, payment keys, team, settings and 
 <li><b>Plus → Articles → Ajouter</b>: tap <b>"Dire le prix"</b> and say "deux cents francs" (Chrome / Android / Safari, French speech recognition): 200 writes itself, editable on the keypad. Tap <b>Annuler</b> to leave the shop unchanged.</li>
 <li><b>Tableau</b> (dashboard), <b>Ventes</b> (sales) and <b>Portefeuille</b> (wallet): the real sale V-000001 (265 sats) and the balance.</li>
 <li>Avatar → <b>"Changer de profil (démo)"</b> → <b>Moussa · Caissier</b>: the cashier sees the till but not the wallet balance (least privilege).</li>
+<li><b>Studio audio</b> (login page → <b>Studio audio</b>): listen to the 23 Wolof recordings (✓ in the WO column). Then record for real in the <b>Bamanankan</b> (Bambara, BM) column — the trial language added for Mali: tap the mic, wait 3-2-1, speak, validate; silences and noise are cleaned automatically; then <b>"Publier les brouillons"</b>. Open the app in a private window, choose <b>Mali → Bamanankan</b> and tap a speaker: you hear your own recording. (The team's Wolof voices are listen-only.)</li>
 </ol>
 
 <h2>Run it locally (one command)</h2>

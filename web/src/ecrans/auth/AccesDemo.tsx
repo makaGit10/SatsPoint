@@ -31,6 +31,14 @@ export default function AccesDemo({ bascule = false, suite, className }: { bascu
 
   const entrer = (profil: ProfilDemo) => {
     setEnCours(profil)
+    // Studio : on ouvre sur la langue d'essai (bambara), la seule où le jury peut enregistrer et publier.
+    if (profil === 'studio') {
+      try {
+        localStorage.setItem('satspoint.studio.langue', 'bm')
+      } catch {
+        /* stockage indisponible : le studio s'ouvre sur sa langue par défaut */
+      }
+    }
     connexionDemo(profil)
       .then(({ utilisateur }) => window.location.assign(ARRIVEE[profil] ?? suite ?? cheminAccueil(utilisateur)))
       .catch((e: unknown) => {
